@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (this.value === 'exchange') {
                 if (exchangeForm) exchangeForm.classList.remove('hidden');
             }
+            updateRequiredFieldsVisibility();
         });
     }
     
@@ -120,7 +121,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     addCarButtonContainer.style.visibility = 'hidden';
                 }
                 updateShareOptions();
+                updateRequiredFieldsVisibility();
             });
+
         }
         
         if (removeSecondDefectiveCarBtn) {
@@ -156,8 +159,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (sourcePreview) sourcePreview.style.display = 'none';
                 if (destinationPreview) destinationPreview.style.display = 'none';
+                updateRequiredFieldsVisibility();
             });
         }
+        updateRequiredFieldsVisibility();
     }
     
     function setupSharedLocationOptions() {
@@ -312,6 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
             backToEdit.addEventListener('click', function() {
                 mainForm.classList.remove('hidden');
                 summaryPage.classList.add('hidden');
+                updateRequiredFieldsVisibility();
             });
         }
         
@@ -824,6 +830,22 @@ function hideVehicleTypeField(fieldId) {
     if (field) {
         field.closest('.form-group').classList.add('vehicle-type-hidden');
     }
+}
+
+function updateRequiredFieldsVisibility() {
+    // נבחר את כל השדות שהם required
+    const requiredInputs = document.querySelectorAll('[required]');
+    
+    requiredInputs.forEach(input => {
+        // אם ההורה של השדה מוסתר (display: none או יש לו class hidden)
+        const isVisible = input.offsetParent !== null && !input.closest('.hidden');
+        
+        if (isVisible) {
+            input.setAttribute('required', 'required');
+        } else {
+            input.removeAttribute('required');
+        }
+    });
 }
 
 // פונקציה לקבלת ID של שדה סוג רכב לפי context
