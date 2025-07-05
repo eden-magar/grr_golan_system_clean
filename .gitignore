@@ -1,0 +1,18 @@
+# Admin configuration
+admins.json
+
+# Node modules
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# Logs
+*.log
+
+# Backup files
+public/shared/backups/
+
+# Ignore sensitive key file only
+public/towing-form/service-account-key.json.json

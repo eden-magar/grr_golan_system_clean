@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>גרר גולן - טופס גרירה</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+</head>
+<body>
+    <div id="formError" class="error-message" style="display: none;"></div>
+    <header class="main-header">
+        <div class="logo">
+            <h1 id="companyName"></h1>
+            <button id="logoutBtn" onclick="logout()">
+                התנתק
+            </button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <main class="main-content">
+            <div class="form-card">
+                <div class="section-header">
+                    <h2>טופס גרירה</h2>
+                </div>
+
+                <form id="towingForm">
+                    <!-- פרטי הזמנה בסיסיים -->
+                    <div class="form-section">
+                        <h3>פרטי ההזמנה</h3>
+                        <div class="form-group">
+                            <label for="orderNumber">
+                                <i class="fas fa-hashtag"></i>
+                                מספר הזמנה:
+                            </label>
+                            <input type="text" id="orderNumber" name="orderNumber">
+                        </div>
+
+                        <!-- בחירת תאריך -->
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-calendar"></i>
+                                תאריך ביצוע:
+                            </label>
+                            <div class="date-time-selector">
+                                <div class="toggle-buttons">
+                                    <button type="button" class="toggle-btn active" data-target="today">
+                                        <i class="fas fa-calendar-day"></i>
+                                        היום
+                                    </button>
+                                    <button type="button" class="toggle-btn" data-target="other-date">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        תאריך אחר
+                                    </button>
+                                </div>
+                                <div class="date-input-container hidden" id="datePicker">
+                                    <input type="date" id="executionDate" name="executionDate">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- שדה שעה מוסתר לשימוש פנימי -->
+                        <div class="form-group" style="display: none;">
+                            <label>
+                                <i class="fas fa-clock"></i>
+                                שעת ביצוע:
+                            </label>
+                            <div class="date-time-selector">
+                                <div class="toggle-buttons">
+                                    <button type="button" class="toggle-btn active" data-target="now">
+                                        <i class="fas fa-bolt"></i>
+                                        עכשיו
+                                    </button>
+                                    <button type="button" class="toggle-btn" data-target="other-time">
+                                        <i class="fas fa-clock"></i>
+                                        שעה אחרת
+                                    </button>
+                                </div>
+                                <div class="time-input-container hidden" id="timePicker">
+                                    <input type="time" id="executionTime" name="executionTime">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- בחירת סוג גרירה -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="towingType">
+                                <i class="fas fa-truck-pickup"></i>
+                                סוג הגרירה:
+                            </label>
+                            <select id="towingType" name="towingType">
+                                <option value="">בחר סוג גרירה</option>
+                                <option value="defective">גרירת רכב תקול</option>
+                                <option value="exchange">מסירת רכב תקין ואיסוף רכב תקול</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- טופס לרכב תקול -->
+                    <div id="defectiveCarForm" class="form-section hidden">
+                        <h3>פרטי רכב תקול</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-car"></i>
+                                    מספר רכב:
+                                </label>
+                                <div class="input-with-button">
+                                    <input type="text" id="defectiveCarNumber" name="defectiveCarNumber" minlength="6" maxlength="8" 
+                                        title="אנא הכנס מספר רכב תקין">
+                                    <button type="button" class="lookup-btn" data-target="defective">
+                                        הזן
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group vehicle-type-hidden">
+                                <label>
+                                    <i class="fas fa-info-circle"></i>
+                                    סוג רכב:
+                                </label>
+                                <input type="text" id="defectiveCarType" name="defectiveCarType" minlength="2"
+                                    title="אנא הכנס סוג רכב">
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-key"></i>
+                                    קוד הרכב:
+                                </label>
+                                <input type="text" id="defectiveCarCode" name="defectiveCarCode">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-exclamation-circle"></i>
+                                פירוט התקלה:
+                            </label>
+                            <textarea id="defectDetails" name="defectDetails" minlength="5"
+                                title="אנא הכנס פירוט תקלה מספק"></textarea>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    מוצא:
+                                </label>
+                                <input type="text" id="defectiveSource" name="defectiveSource" minlength="3"
+                                    title="אנא הכנס כתובת מוצא" required>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-map-pin"></i>
+                                    יעד:
+                                </label>
+                                <input type="text" id="defectiveDestination" name="defectiveDestination" minlength="3"
+                                title="אנא הכנס כתובת יעד" required>
+                            </div>
+                        </div>
+
+                        <div class="contacts-grid">
+                            <div class="contact-card">
+                                <h4>איש קשר במקום</h4>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-user"></i>
+                                        שם:
+                                    </label>
+                                    <input type="text" id="contactName1" name="contactName1" minlength="2"
+                                     title="אנא הכנס שם איש קשר" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-phone"></i>
+                                        טלפון:
+                                    </label>
+                                    <input type="tel" id="contactPhone1" name="contactPhone1" minlength="9" maxlength="11"
+                                    title="אנא הכנס מספר טלפון תקין">
+                                </div>
+                            </div>
+                            <div class="contact-card">
+                                <h4>איש קשר ביעד</h4>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-user"></i>
+                                        שם:
+                                    </label>
+                                    <input type="text" id="destContactName" name="destContactName">
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-phone"></i>
+                                        טלפון:
+                                    </label>
+                                    <input type="tel" id="destContactPhone" name="destContactPhone">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- כפתור להוספת רכב תקול נוסף -->
+                    <div id="addCarButtonContainer" class="form-actions secondary-actions hidden" style="visibility: hidden;">
+                        <button type="button" id="addSecondDefectiveCar" class="secondary-btn">
+                            <i class="fas fa-plus-circle"></i>
+                            הוסף רכב תקול נוסף
+                        </button>
+                    </div>
+
+                    <!-- טופס לרכב תקול נוסף -->
+                    <div id="secondDefectiveCarForm" class="form-section hidden">
+                        <h3>פרטי רכב תקול נוסף</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-car"></i>
+                                    מספר רכב:
+                                </label>
+                                <div class="input-with-button">
+                                    <input type="text" id="defectiveCarNumber2" name="defectiveCarNumber2" minlength="6" maxlength="8" 
+                                        title="אנא הכנס מספר רכב תקין">
+                                    <button type="button" class="lookup-btn" data-target="defective2">
+                                        הזן
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group vehicle-type-hidden">
+                                <label>
+                                    <i class="fas fa-info-circle"></i>
+                                    סוג רכב:
+                                </label>
+                                <input type="text" id="defectiveCarType2" name="defectiveCarType2" minlength="2"
+                                    title="אנא הכנס סוג רכב">
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-key"></i>
+                                    קוד הרכב:
+                                </label>
+                                <input type="text" id="defectiveCarCode2" name="defectiveCarCode2">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-exclamation-circle"></i>
+                                פירוט התקלה:
+                            </label>
+                            <textarea id="defectDetails2" name="defectDetails2" minlength="5"
+                                title="אנא הכנס פירוט תקלה מספק (לפחות 10 תווים)"></textarea>
+                        </div>
+                        
+                        <!-- אפשרויות שיתוף מוצא/יעד -->
+                        <div class="share-options">
+                            <h4>הגדרת מוצא ויעד לרכב השני</h4>
+                            <p class="instruction-text">יש לבחור עבור כל כתובת אם היא זהה או שונה מהרכב הראשון</p>
+                            
+                            <!-- בחירת מוצא -->
+                            <div class="form-group required-choice">
+                                <label><i class="fas fa-map-marker-alt"></i> מוצא:</label>
+                                <div class="choice-buttons" data-field="source">
+                                    <button type="button" class="choice-btn" data-target="same-source" data-field="source">
+                                        <i class="fas fa-link"></i>
+                                        זהה לרכב הראשון
+                                    </button>
+                                    <button type="button" class="choice-btn" data-target="different-source" data-field="source">
+                                        <i class="fas fa-unlink"></i>
+                                        שונה מהרכב הראשון
+                                    </button>
+                                </div>
+                                <div class="error-message">יש לבחור אחת מהאפשרויות</div>
+                                <div id="sourcePreview" class="preview-text"></div>
+                            </div>
+
+                            <!-- בחירת יעד -->
+                            <div class="form-group required-choice">
+                                <label><i class="fas fa-map-pin"></i> יעד:</label>
+                                <div class="choice-buttons" data-field="destination">
+                                    <button type="button" class="choice-btn" data-target="same-destination" data-field="destination">
+                                        <i class="fas fa-link"></i>
+                                        זהה לרכב הראשון
+                                    </button>
+                                    <button type="button" class="choice-btn" data-target="different-destination" data-field="destination">
+                                        <i class="fas fa-unlink"></i>
+                                        שונה מהרכב הראשון
+                                    </button>
+                                </div>
+                                <div class="error-message">יש לבחור אחת מהאפשרויות</div>
+                                <div id="destinationPreview" class="preview-text"></div>
+                            </div>
+                        </div>
+
+                        <!-- שדות מוצא ויעד לרכב השני (יוצגו רק אם לא משותפים) -->
+                        <div id="secondCarSourceFields" class="additional-fields hidden">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    מוצא:
+                                </label>
+                                <input type="text" id="defectiveSource2" name="defectiveSource2" minlength="3"
+                                    title="אנא הכנס כתובת מוצא">
+                            </div>
+                            
+                            <div class="contact-card">
+                                <h4>איש קשר במקום</h4>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-user"></i>
+                                        שם:
+                                    </label>
+                                    <input type="text" id="contactName2" name="contactName2" minlength="2"
+                                    title="אנא הכנס שם איש קשר">
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-phone"></i>
+                                        טלפון:
+                                    </label>
+                                    <input type="tel" id="contactPhone2" name="contactPhone2" minlength="9" maxlength="11"
+                                    title="אנא הכנס מספר טלפון תקין">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="secondCarDestinationFields" class="additional-fields hidden">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-map-pin"></i>
+                                    יעד:
+                                </label>
+                                <input type="text" id="defectiveDestination2" name="defectiveDestination2" minlength="3"
+                                title="אנא הכנס כתובת יעד">
+                            </div>
+                            
+                            <div class="contact-card">
+                                <h4>איש קשר ביעד</h4>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-user"></i>
+                                        שם:
+                                    </label>
+                                    <input type="text" id="destContactName2" name="destContactName2">
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-phone"></i>
+                                        טלפון:
+                                    </label>
+                                    <input type="tel" id="destContactPhone2" name="destContactPhone2">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions secondary-actions">
+                            <button type="button" id="removeSecondDefectiveCar" class="secondary-btn delete-btn">
+                                <i class="fas fa-trash"></i>
+                                הסר רכב נוסף
+                            </button>
+                        </div>
+                    </div>
+
+                     <!-- טופס להחלפת רכב -->
+                     <div id="exchangeForm" class="form-section hidden">
+                        <h3>פרטי רכב תקין למסירה</h3>
+                        <div class="form-grid">
+                            <div class="form-group vehicle-type-hidden">
+                                <label>
+                                    <i class="fas fa-car"></i>
+                                    סוג רכב:
+                                </label>
+                                <input type="text" id="workingCarType" name="workingCarType">
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-hashtag"></i>
+                                    מספר רישוי:
+                                </label>
+                                <div class="input-with-button">
+                                    <input type="text" id="workingCarNumber" name="workingCarNumber" minlength="6" maxlength="8" 
+                                        title="אנא הכנס מספר רכב תקין">
+                                    <button type="button" class="lookup-btn" data-target="working">
+                                        הזן
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-key"></i>
+                                    קוד:
+                                </label>
+                                <input type="text" id="workingCarCode" name="workingCarCode">
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    מאיפה לאסוף:
+                                </label>
+                                <input type="text" id="workingCarSource" name="workingCarSource">
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-map-pin"></i>
+                                    לאן לשלוח:
+                                </label>
+                                <input type="text" id="workingCarDestination" name="workingCarDestination">
+                            </div>
+                        </div>
+
+                        <div class="contacts-grid">
+                            <div class="contact-card">
+                                <h4>איש קשר במקום האיסוף</h4>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-user"></i>
+                                        שם:
+                                    </label>
+                                    <input type="text" id="workingSourceContact" name="workingSourceContact">
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-phone"></i>
+                                        טלפון:
+                                    </label>
+                                    <input type="tel" id="workingSourcePhone" name="workingSourcePhone">
+                                </div>
+                            </div>
+
+                            <div class="contact-card">
+                                <h4>איש קשר ביעד</h4>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-user"></i>
+                                        שם:
+                                    </label>
+                                    <input type="text" id="workingDestContact" name="workingDestContact" minlength="2"
+                                    title="אנא הכנס שם איש קשר">
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-phone"></i>
+                                        טלפון:
+                                    </label>
+                                    <input type="tel" id="workingDestPhone" name="workingDestPhone" minlength="9" maxlength="10"
+                                    title="אנא הכנס מספר טלפון תקין">
+                                </div>
+                            </div>
+                        </div>
+                        <h3>פרטי רכב תקול לאיסוף</h3>
+                        <div class="form-grid">
+                            <div class="form-group vehicle-type-hidden">
+                                <label>
+                                    <i class="fas fa-car"></i>
+                                    סוג רכב:
+                                </label>
+                                <input type="text" id="exchangeDefectiveType" name="exchangeDefectiveType">
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-hashtag"></i>
+                                    מספר רישוי:
+                                </label>
+                                <div class="input-with-button">
+                                    <input type="text" id="exchangeDefectiveNumber" name="exchangeDefectiveNumber" minlength="6" maxlength="8" 
+                                        title="אנא הכנס מספר רכב תקין">
+                                    <button type="button" class="lookup-btn" data-target="exchangeDefective">
+                                        הזן
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-key"></i>
+                                    קוד:
+                                </label>
+                                <input type="text" id="exchangeDefectiveCode" name="exchangeDefectiveCode">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-exclamation-circle"></i>
+                                פירוט התקלה:
+                            </label>
+                            <textarea id="exchangeDefectiveDetails" name="exchangeDefectiveDetails" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-map-pin"></i>
+                                לאן לגרור:
+                            </label>
+                            <input type="text" id="exchangeDefectiveDestination" name="exchangeDefectiveDestination" minlength="3"
+                            title="אנא הכנס כתובת יעד">
+                        </div>
+
+                        <div class="contact-card">
+                            <h4>איש קשר ביעד - מסירת רכב תקול</h4>
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-user"></i>
+                                    שם:
+                                </label>
+                                <input type="text" id="garageContact" name="garageContact">
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-phone"></i>
+                                    טלפון:
+                                </label>
+                                <input type="tel" id="garagePhone" name="garagePhone">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- הערות -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-comment"></i>
+                                הערות נוספות:
+                            </label>
+                            <textarea id="notes" name="notes" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            שלח טופס
+                        </button>
+                    </div>
+                    
+                </form>
+                <div id="summaryPage" class="summary-page hidden">
+                    <div class="section-header">
+                        <h2>אישור פרטי ההזמנה</h2>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h3>פרטי ההזמנה</h3>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <span class="label">מספר הזמנה:</span>
+                                <span id="summary-orderNumber" class="value"></span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">חברה:</span>
+                                <span id="summary-company" class="value"></span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">תאריך ביצוע:</span>
+                                <span id="summary-date" class="value"></span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">שעת הזמנה:</span>
+                                <span id="summary-time" class="value"></span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">סוג גרירה:</span>
+                                <span id="summary-towingType" class="value"></span>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- סיכום רכב תקול -->
+                    <div id="summary-defectiveCar" class="summary-section hidden">
+                        <div class="car-summary-box first-car-box">
+                            <h3>פרטי רכב תקול</h3>
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <span class="label">מספר רכב:</span>
+                                    <span id="summary-defectiveCarNumber" class="value"></span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">סוג רכב:</span>
+                                    <span id="summary-defectiveCarType" class="value"></span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">קוד רכב:</span>
+                                    <span id="summary-defectiveCarCode" class="value"></span>
+                                </div>
+                            </div>
+                            <div class="summary-item full-width">
+                                <span class="label">פירוט התקלה:</span>
+                                <span id="summary-defectDetails" class="value"></span>
+                            </div>
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <span class="label">מוצא:</span>
+                                    <span id="summary-defectiveSource" class="value"></span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">יעד:</span>
+                                    <span id="summary-defectiveDestination" class="value"></span>
+                                </div>
+                            </div>
+                            <div class="contacts-summary">
+                                <h4>אנשי קשר</h4>
+                                <div class="summary-grid">
+                                    <div class="contact-summary">
+                                        <h5>איש קשר במקום</h5>
+                                        <div class="summary-item">
+                                            <span class="label">שם:</span>
+                                            <span id="summary-contactName1" class="value"></span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">טלפון:</span>
+                                            <span id="summary-contactPhone1" class="value"></span>
+                                        </div>
+                                    </div>
+                                    <div class="contact-summary">
+                                        <h5>איש קשר ביעד</h5>
+                                        <div class="summary-item">
+                                            <span class="label">שם:</span>
+                                            <span id="summary-destContactName" class="value"></span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">טלפון:</span>
+                                            <span id="summary-destContactPhone" class="value"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- סיכום רכב תקול נוסף -->
+                        <div id="summary-secondDefectiveCar" class="car-summary-box second-car-box hidden">
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <span class="label">מספר רכב:</span>
+                                    <span id="summary-defectiveCarNumber2" class="value"></span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">סוג רכב:</span>
+                                    <span id="summary-defectiveCarType2" class="value"></span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">קוד רכב:</span>
+                                    <span id="summary-defectiveCarCode2" class="value"></span>
+                                </div>
+                            </div>
+                            <div class="summary-item full-width">
+                                <span class="label">פירוט התקלה:</span>
+                                <span id="summary-defectDetails2" class="value"></span>
+                            </div>
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <span class="label">מוצא:</span>
+                                    <span id="summary-defectiveSource2" class="value"></span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">יעד:</span>
+                                    <span id="summary-defectiveDestination2" class="value"></span>
+                                </div>
+                            </div>
+                            <div class="contacts-summary">
+                                <h4>אנשי קשר</h4>
+                                <div class="summary-grid">
+                                    <div class="contact-summary">
+                                        <h5>איש קשר במקום</h5>
+                                        <div class="summary-item">
+                                            <span class="label">שם:</span>
+                                            <span id="summary-contactName2" class="value"></span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">טלפון:</span>
+                                            <span id="summary-contactPhone2" class="value"></span>
+                                        </div>
+                                    </div>
+                                    <div class="contact-summary">
+                                        <h5>איש קשר ביעד</h5>
+                                        <div class="summary-item">
+                                            <span class="label">שם:</span>
+                                            <span id="summary-destContactName2" class="value"></span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">טלפון:</span>
+                                            <span id="summary-destContactPhone2" class="value"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- סיכום החלפת רכב -->
+                    <div id="summary-exchange" class="summary-section hidden">
+                        <div class="car-summary-box first-car-box">
+                            <h3>פרטי רכב תקין למסירה</h3>
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <span class="label">סוג רכב:</span>
+                                    <span id="summary-workingCarType" class="value"></span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">מספר רישוי:</span>
+                                    <span id="summary-workingCarNumber" class="value"></span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">קוד:</span>
+                                    <span id="summary-workingCarCode" class="value"></span>
+                                </div>
+                            </div>
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <span class="label">מאיפה לאסוף:</span>
+                                    <span id="summary-workingCarSource" class="value"></span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">לאן לשלוח:</span>
+                                    <span id="summary-workingCarDestination" class="value"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="car-summary-box second-car-box">
+                            <h3>פרטי רכב תקול לאיסוף</h3>
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <span class="label">סוג רכב:</span>
+                                    <span id="summary-exchangeDefectiveType" class="value"></span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">מספר רישוי:</span>
+                                    <span id="summary-exchangeDefectiveNumber" class="value"></span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">קוד:</span>
+                                    <span id="summary-exchangeDefectiveCode" class="value"></span>
+                                </div>
+                            </div>
+                            <div class="summary-item full-width">
+                                <span class="label">פירוט התקלה:</span>
+                                <span id="summary-exchangeDefectiveDetails" class="value"></span>
+                            </div>
+                            <div class="summary-item full-width">
+                                <span class="label">יעד:</span>
+                                <span id="summary-exchangeDefectiveDestination" class="value"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- הוספת הערות לסיכום בתחתית כל האלמנטים -->
+                    <div class="summary-item full-width">
+                        <span class="label">הערות נוספות:</span>
+                        <span id="summary-notes" class="value"></span>
+                    </div>
+              
+                    <div class="summary-actions">
+                        <button type="button" class="back-btn" id="backToEdit">
+                            <i class="fas fa-arrow-right"></i>
+                            חזור לעריכה
+                        </button>
+                        <button type="button" class="confirm-btn" id="confirmSubmit">
+                            <i class="fas fa-check"></i>
+                            אשר ושלח
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDODJL79CEmfHOVZ175QqalS-wvtANy6hE&libraries=places"></script>
+    <script src="address-autocomplete.js"></script>
+    <script src="script.js"></script>
+    <script>
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+    </script>
+    <script src="calendar-integration.js"></script>
+</body>
+</html>

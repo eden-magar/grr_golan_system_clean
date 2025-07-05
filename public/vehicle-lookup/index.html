@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מערכת בדיקת מידע רכב | קבל מידע מלא על כל סוגי הרכב</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+
+  <div class="container">
+    <header class="page-header">
+      <h1>מערכת בדיקת מידע רכב</h1>
+      <p>הזן מספר רישוי וקבל מידע מקיף על הרכב באופן מיידי</p>
+    </header>
+
+    <div class="admin-section">
+      <button id="admin-login-btn" class="admin-button">🔑 התחבר כמנהל</button>
+      <div id="admin-status" class="admin-status hidden"></div>
+  </div>  
+
+    <div class="tabs">
+      <div class="tab active" data-tab="private"><span class="icon">🚗</span> רכב פרטי/מסחרי</div>
+      <div class="tab" data-tab="motorcycle"><span class="icon">🏍️</span> דו גלגלי</div>
+      <div class="tab" data-tab="heavy"><span class="icon">🚚</span> רכב כבד (מעל 3.5 טון)</div>
+      <div class="tab" data-tab="machinery"><span class="icon">🚜</span> כלי צמ"ה</div>
+    </div>
+
+    <div class="tab-content active" id="private-tab">
+      <form id="private-form">
+        <div class="form-group">
+          <label for="private-license">מספר רישוי רכב פרטי/מסחרי:</label>
+          <input type="text" id="private-license" name="license" placeholder="הזן מספר רישוי" maxlength="10" required>
+        </div>
+        <button type="submit"><span>בדיקה מיידית</span></button>
+      </form>
+    </div>
+
+    <div class="tab-content" id="motorcycle-tab">
+      <form id="motorcycle-form">
+        <div class="form-group">
+          <label for="motorcycle-license">מספר רישוי רכב דו גלגלי:</label>
+          <input type="text" id="motorcycle-license" name="license" placeholder="הזן מספר רישוי" maxlength="10" required>
+        </div>
+        <button type="submit"><span>בדיקה מיידית</span></button>
+      </form>
+    </div>
+
+    <div class="tab-content" id="heavy-tab">
+      <form id="heavy-form">
+        <div class="form-group">
+          <label for="heavy-license">מספר רישוי רכב מעל 3.5 טון:</label>
+          <input type="text" id="heavy-license" name="license" placeholder="הזן מספר רישוי" maxlength="10" required>
+        </div>
+        <button type="submit"><span>בדיקה מיידית</span></button>
+      </form>
+    </div>
+
+    <div class="tab-content" id="machinery-tab">
+      <form id="machinery-form">
+        <div class="form-group">
+          <label for="machinery-license">מספר רישוי כלי צמ"ה:</label>
+          <input type="text" id="machinery-license" name="license" placeholder="הזן מספר רישוי" maxlength="10" required>
+        </div>
+        <button type="submit"><span>בדיקה מיידית</span></button>
+      </form>
+    </div>
+
+    <div class="results-container" id="results">
+      <h2>תוצאות הבדיקה</h2>
+      <div id="loading" class="loading hidden">טוען נתוני רכב...</div>
+      <div id="result-content"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>

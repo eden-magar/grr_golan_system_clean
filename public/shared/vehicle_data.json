@@ -1,0 +1,2079 @@
+{
+  "הונדה_בריטניה_CR-V_2009_emR-20-A-2_tlSPORT_mc81_ftבנזין": {
+    "manufacturer": "הונדה בריטניה",
+    "model": "CR-V",
+    "year": 2009,
+    "engineVolume": "",
+    "engineModel": "R-20-A-2",
+    "trimLevel": "SPORT",
+    "modelCode": 81,
+    "fuelType": "בנזין",
+    "color": "כסף",
+    "weight": 2080,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-22T14:09:16.728Z"
+  },
+  "סרס_סין_SERES_M5_2025_emSE200_tlRWD_mc8_ftחשמל": {
+    "manufacturer": "סרס סין",
+    "model": "SERES M5",
+    "year": 2025,
+    "engineVolume": "",
+    "engineModel": "SE200",
+    "trimLevel": "RWD",
+    "modelCode": 8,
+    "fuelType": "חשמל",
+    "color": "שנהב לבן",
+    "weight": 2610,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:00:42.605Z"
+  },
+  "יונדאי_טורקיה_I10_2014_emG3LA_tlINSIGHT_mc25_ftבנזין": {
+    "manufacturer": "יונדאי טורקיה",
+    "model": "I10",
+    "year": 2014,
+    "engineVolume": "",
+    "engineModel": "G3LA",
+    "trimLevel": "INSIGHT",
+    "modelCode": 25,
+    "fuelType": "בנזין",
+    "color": "כתום",
+    "weight": 1440,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:01:45.284Z"
+  },
+  "קיה_סלובקיה_SPORTAGE_2023_emG4NL_tlURBAN_mc255_ftבנזין": {
+    "manufacturer": "קיה סלובקיה",
+    "model": "SPORTAGE",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "G4NL",
+    "trimLevel": "URBAN",
+    "modelCode": 255,
+    "fuelType": "בנזין",
+    "color": "שחור",
+    "weight": 2030,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:03:17.451Z"
+  },
+  "ג'אקו_סין_JAECOO_7_PHEV_2025_emSQRH4J15_tlPREMIUM_mc4_ftחשמלבנזין": {
+    "manufacturer": "ג'אקו סין",
+    "model": "JAECOO 7 PHEV",
+    "year": 2025,
+    "engineVolume": "",
+    "engineModel": "SQRH4J15",
+    "trimLevel": "PREMIUM",
+    "modelCode": 4,
+    "fuelType": "חשמל/בנזין",
+    "color": "כסף",
+    "weight": 2310,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:05:09.036Z"
+  },
+  "סרס_סין_SERES_2024_emSEP200:SEP201_tlAWD_mc6_ftחשמל": {
+    "manufacturer": "סרס סין",
+    "model": "SERES",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "SEP200:SEP201",
+    "trimLevel": "AWD",
+    "modelCode": 6,
+    "fuelType": "חשמל",
+    "color": "שחור",
+    "weight": 2735,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:12:40.034Z"
+  },
+  "צ'רי_סין_TIGGO_8_PRO_2022_emSQRF4J16_tlNOBEL_mc9_ftבנזין": {
+    "manufacturer": "צ'רי סין",
+    "model": "TIGGO 8 PRO",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "SQRF4J16",
+    "trimLevel": "NOBEL",
+    "modelCode": 9,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 2143,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:13:11.833Z"
+  },
+  "פיג'ו_צרפת_3008_2024_emYH01_tlACTIVE_PACK_mc339_ftדיזל": {
+    "manufacturer": "פיג'ו צרפת",
+    "model": "3008",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "YH01",
+    "trimLevel": "ACTIVE PACK",
+    "modelCode": 339,
+    "fuelType": "דיזל",
+    "color": "שחור מטלי",
+    "weight": 2000,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:13:33.916Z"
+  },
+  "יונדאי_קוריאה_IONIQ5_2023_emEM17_tlLUXURY_mc385_ftחשמל": {
+    "manufacturer": "יונדאי קוריאה",
+    "model": "IONIQ5",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "EM17",
+    "trimLevel": "LUXURY",
+    "modelCode": 385,
+    "fuelType": "חשמל",
+    "color": "בז מטאלי",
+    "weight": 2430,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:13:56.468Z"
+  },
+  "גופל_GWMZZ_2022_ftחשמל": {
+    "manufacturer": "גופל",
+    "model": "GWMZZ",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "חשמל",
+    "color": "",
+    "weight": 1800,
+    "towTypes": [
+      "רמ-סע",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:16:06.949Z"
+  },
+  "צ'רי_סין_TIGGO_4_PRO_2025_emSQRG4G15_tlNOBLE_mc36_ftבנזין": {
+    "manufacturer": "צ'רי סין",
+    "model": "TIGGO 4 PRO",
+    "year": 2025,
+    "engineVolume": "",
+    "engineModel": "SQRG4G15",
+    "trimLevel": "NOBLE",
+    "modelCode": 36,
+    "fuelType": "בנזין",
+    "color": "שחור מטלי",
+    "weight": 1741,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:17:52.279Z"
+  },
+  "אף_אי_דאבל_יו_EHS7_2025_emCAM220PT17_tlCORE_mc13_ftחשמל": {
+    "manufacturer": "אף אי דאבל יו",
+    "model": "EHS7",
+    "year": 2025,
+    "engineVolume": "",
+    "engineModel": "CAM220PT17",
+    "trimLevel": "CORE",
+    "modelCode": 13,
+    "fuelType": "חשמל",
+    "color": "שחור",
+    "weight": 2918,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:19:10.014Z"
+  },
+  "יונדאי_קוריאה_VENUE_2023_emG4FM_tlINTENSE_mc273_ftבנזין": {
+    "manufacturer": "יונדאי קוריאה",
+    "model": "VENUE",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "G4FM",
+    "trimLevel": "INTENSE",
+    "modelCode": 273,
+    "fuelType": "בנזין",
+    "color": "אפור מטל",
+    "weight": 1700,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:21:03.292Z"
+  },
+  "יונדאי_צ'כיה_TUCSON_2022_emG4FP_tlPANORAMIC_mc100_ftבנזין": {
+    "manufacturer": "יונדאי צ'כיה",
+    "model": "TUCSON",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "G4FP",
+    "trimLevel": "PANORAMIC",
+    "modelCode": 100,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 2100,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:21:26.183Z"
+  },
+  "פולקסווגן_מכסי_JETTA_2013_emCBZ_tlTRENDLINE_mc7_ftבנזין": {
+    "manufacturer": "פולקסווגן מכסי",
+    "model": "JETTA",
+    "year": 2013,
+    "engineVolume": "",
+    "engineModel": "CBZ",
+    "trimLevel": "TRENDLINE",
+    "modelCode": 7,
+    "fuelType": "בנזין",
+    "color": "שחור",
+    "weight": 1820,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:22:08.369Z"
+  },
+  "בי_ווי_די_ATTO_3_2024_em2G_tlCOMFORT_mc4_ftחשמל": {
+    "manufacturer": "בי ווי די",
+    "model": "ATTO 3",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "2G",
+    "trimLevel": "COMFORT",
+    "modelCode": 4,
+    "fuelType": "חשמל",
+    "color": "שנהב לבן",
+    "weight": 2160,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:22:32.854Z"
+  },
+  "קיה_קוריאה_STONIC_2024_emG3LE_tlLX_mc512_ftבנזין": {
+    "manufacturer": "קיה קוריאה",
+    "model": "STONIC",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "G3LE",
+    "trimLevel": "LX",
+    "modelCode": 512,
+    "fuelType": "בנזין",
+    "color": "שחור",
+    "weight": 1680,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:22:58.817Z"
+  },
+  "סקודה_צ'כיה_NEW_YETI_2016_emCJZ_tlAMBITION_mc455_ftבנזין": {
+    "manufacturer": "סקודה צ'כיה",
+    "model": "NEW YETI",
+    "year": 2016,
+    "engineVolume": "",
+    "engineModel": "CJZ",
+    "trimLevel": "AMBITION",
+    "modelCode": 455,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1905,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:23:23.587Z"
+  },
+  "סיטרואן_ספרד_C4_SPACETOURER_2021_emHN05_tlEXCLUSIVE_mc169_ftבנזין": {
+    "manufacturer": "סיטרואן ספרד",
+    "model": "C4 SPACETOURER",
+    "year": 2021,
+    "engineVolume": "",
+    "engineModel": "HN05",
+    "trimLevel": "EXCLUSIVE",
+    "modelCode": 169,
+    "fuelType": "בנזין",
+    "color": "אפור כהה",
+    "weight": 2130,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:23:52.024Z"
+  },
+  "ג'יפ_ארה\"ב_WRANGLER_UNLIMI_2025_emN_tlSPORT_S_mc454_ftבנזין": {
+    "manufacturer": "ג'יפ ארה\"ב",
+    "model": "WRANGLER UNLIMI",
+    "year": 2025,
+    "engineVolume": "",
+    "engineModel": "N",
+    "trimLevel": "SPORT S",
+    "modelCode": 454,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": "",
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:24:20.232Z"
+  },
+  "ג'יפ_פולין_AVENGER_2025_emZK02_tlSUMMIT_mc3_ftחשמל": {
+    "manufacturer": "ג'יפ פולין",
+    "model": "AVENGER",
+    "year": 2025,
+    "engineVolume": "",
+    "engineModel": "ZK02",
+    "trimLevel": "SUMMIT",
+    "modelCode": 3,
+    "fuelType": "חשמל",
+    "color": "אדום",
+    "weight": 2015,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T20:24:48.799Z"
+  },
+  "טויוטה_אנגליה_AURIS_2018_em1ZR_tlGLI_TSS_mc38_ftבנזין": {
+    "manufacturer": "טויוטה אנגליה",
+    "model": "AURIS",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "1ZR",
+    "trimLevel": "GLI TSS",
+    "modelCode": 38,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1830,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:15:21.041Z"
+  },
+  "טויוטה_טורקיה_C-HR_HYBRID_2018_em2ZR_tlCLUB_mc66_ftבנזין": {
+    "manufacturer": "טויוטה טורקיה",
+    "model": "C-HR HYBRID",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "2ZR",
+    "trimLevel": "CLUB",
+    "modelCode": 66,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1860,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:15:48.525Z"
+  },
+  "טויוטה_טורקיה_COROLLA_2018_em1ZR_tlGLI_mc32_ftבנזין": {
+    "manufacturer": "טויוטה טורקיה",
+    "model": "COROLLA",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "1ZR",
+    "trimLevel": "GLI",
+    "modelCode": 32,
+    "fuelType": "בנזין",
+    "color": "כסוף כהה מטלי",
+    "weight": 1775,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:16:09.463Z"
+  },
+  "טויוטה_טורקיה_COROLLA_2018_em1ZR_tlSUN_mc64_ftבנזין": {
+    "manufacturer": "טויוטה טורקיה",
+    "model": "COROLLA",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "1ZR",
+    "trimLevel": "SUN",
+    "modelCode": 64,
+    "fuelType": "בנזין",
+    "color": "כסף מטלי",
+    "weight": 1775,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:17:13.493Z"
+  },
+  "טויוטה_יפן_RAV_4_HYBRID_2018_em2AR_tlPREMIUM_TSS_mc94_ftבנזין": {
+    "manufacturer": "טויוטה יפן",
+    "model": "RAV 4 HYBRID",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "2AR",
+    "trimLevel": "PREMIUM TSS",
+    "modelCode": 94,
+    "fuelType": "בנזין",
+    "color": "כסף מטלי",
+    "weight": 2205,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:17:57.382Z"
+  },
+  "טויוטה_צרפת_YARIS_2018_em2NR_tlSTYLE_mc48_ftבנזין": {
+    "manufacturer": "טויוטה צרפת",
+    "model": "YARIS",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "2NR",
+    "trimLevel": "STYLE",
+    "modelCode": 48,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1545,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:19:41.682Z"
+  },
+  "טויוטה_אנגליה_AURIS_HYBRID_2018_em2ZR_tlTSS_mc39_ftבנזין": {
+    "manufacturer": "טויוטה אנגליה",
+    "model": "AURIS HYBRID",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "2ZR",
+    "trimLevel": "TSS",
+    "modelCode": 39,
+    "fuelType": "בנזין",
+    "color": "אפור בהיר מטלי",
+    "weight": 1815,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:19:59.837Z"
+  },
+  "טויוטה_יפן_LAND_CRUISER_2018_em1GD_tlSELECT_mc116_ftדיזל": {
+    "manufacturer": "טויוטה יפן",
+    "model": "LAND CRUISER",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "1GD",
+    "trimLevel": "SELECT",
+    "modelCode": 116,
+    "fuelType": "דיזל",
+    "color": "כסף מטלי",
+    "weight": 2990,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:20:46.759Z"
+  },
+  "טויוטה_טורקיה_VERSO_2018_em2ZR_tlGLI_MM_mc60_ftבנזין": {
+    "manufacturer": "טויוטה טורקיה",
+    "model": "VERSO",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "2ZR",
+    "trimLevel": "GLI MM",
+    "modelCode": 60,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 2125,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:21:08.819Z"
+  },
+  "לקסוס_יפן_LEXUS_CT200H_2018_em2ZR_tlLUXURY_mc165_ftבנזין": {
+    "manufacturer": "לקסוס יפן",
+    "model": "LEXUS CT200H",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "2ZR",
+    "trimLevel": "LUXURY",
+    "modelCode": 165,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1845,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:21:40.717Z"
+  },
+  "טויוטה_צרפת_YARIS_2018_em2NR_tlBLACKTOP_mc49_ftבנזין": {
+    "manufacturer": "טויוטה צרפת",
+    "model": "YARIS",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "2NR",
+    "trimLevel": "BLACKTOP",
+    "modelCode": 49,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1545,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:22:17.259Z"
+  },
+  "לקסוס_יפן_LEXUS_CT200H_2018_em2ZR_tlPREMIUM_mc132_ftבנזין": {
+    "manufacturer": "לקסוס יפן",
+    "model": "LEXUS CT200H",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "2ZR",
+    "trimLevel": "PREMIUM",
+    "modelCode": 132,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1845,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:23:48.766Z"
+  },
+  "טויוטה_תאילנד_HILUX_2018_em2GD_tlADVENTURE_mc37_ftדיזל": {
+    "manufacturer": "טויוטה תאילנד",
+    "model": "HILUX",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "2GD",
+    "trimLevel": "ADVENTURE",
+    "modelCode": 37,
+    "fuelType": "דיזל",
+    "color": "שנהב לבן",
+    "weight": 2910,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:24:08.671Z"
+  },
+  "טויוטה_אנגליה_AURIS_HYBRID_2018_em2ZR_tlTS_SKY_TSS_mc42_ftבנזין": {
+    "manufacturer": "טויוטה אנגליה",
+    "model": "AURIS HYBRID",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "2ZR",
+    "trimLevel": "TS SKY TSS",
+    "modelCode": 42,
+    "fuelType": "בנזין",
+    "color": "אפור בהיר מטלי",
+    "weight": 1865,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:25:14.481Z"
+  },
+  "טויוטה_יפן_LAND_CRUISER_2018_em1GD_tlLUXURY_mc115_ftדיזל": {
+    "manufacturer": "טויוטה יפן",
+    "model": "LAND CRUISER",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "1GD",
+    "trimLevel": "LUXURY",
+    "modelCode": 115,
+    "fuelType": "דיזל",
+    "color": "כסף מטלי",
+    "weight": 2990,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:26:37.397Z"
+  },
+  "טויוטה_צרפת_YARIS_HYBRID_2018_em1NZ_tlSTYLE_mc52_ftבנזין": {
+    "manufacturer": "טויוטה צרפת",
+    "model": "YARIS HYBRID",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "1NZ",
+    "trimLevel": "STYLE",
+    "modelCode": 52,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1565,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-05T21:27:05.326Z"
+  },
+  "סקודה_צ'כיה_SUPERB_2022_emDPC_tlAMBITION_mc1137_ftבנזין": {
+    "manufacturer": "סקודה צ'כיה",
+    "model": "SUPERB",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "DPC",
+    "trimLevel": "AMBITION",
+    "modelCode": 1137,
+    "fuelType": "בנזין",
+    "color": "אפור מטל",
+    "weight": 2065,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-06T07:34:11.604Z"
+  },
+  "יונדאי_קוריאה_SONATA_HYBRID_2023_emG4NR_tlPRESTIGE_mc305_ftבנזין": {
+    "manufacturer": "יונדאי קוריאה",
+    "model": "SONATA HYBRID",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "G4NR",
+    "trimLevel": "PRESTIGE",
+    "modelCode": 305,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 2050,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-06T07:35:44.365Z"
+  },
+  "קיה_קוריאה_SELTOS_2024_emG4NH_tlEX_mc607_ftבנזין": {
+    "manufacturer": "קיה קוריאה",
+    "model": "SELTOS",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "G4NH",
+    "trimLevel": "EX",
+    "modelCode": 607,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1760,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-06T08:30:28.887Z"
+  },
+  "טויוטה_טורקיה_C-HR_HYBRID_2024_em2ZR_tlC-HIC_mc315_ftבנזין": {
+    "manufacturer": "טויוטה טורקיה",
+    "model": "C-HR HYBRID",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "2ZR",
+    "trimLevel": "C-HIC",
+    "modelCode": 315,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1860,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-06T08:32:10.337Z"
+  },
+  "שברולט_דקוריא_TRAIL_BLAZER_2022_emL3T_tlLT_PLUS_mc328_ftבנזין": {
+    "manufacturer": "שברולט ד.קוריא",
+    "model": "TRAIL BLAZER",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "L3T",
+    "trimLevel": "LT PLUS",
+    "modelCode": 328,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1930,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-06T08:51:37.774Z"
+  },
+  "יונדאי_צ'כיה_TUCSON_2024_emG4NL_tlPRIME_mc124_ftבנזין": {
+    "manufacturer": "יונדאי צ'כיה",
+    "model": "TUCSON",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "G4NL",
+    "trimLevel": "PRIME",
+    "modelCode": 124,
+    "fuelType": "בנזין",
+    "color": "כסף מטלי",
+    "weight": 1995,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-06T08:52:50.991Z"
+  },
+  "קיה_סלובקיה_SPORTAGE_2024_emG4FP_tlURBAN_mc275_ftבנזין": {
+    "manufacturer": "קיה סלובקיה",
+    "model": "SPORTAGE",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "G4FP",
+    "trimLevel": "URBAN",
+    "modelCode": 275,
+    "fuelType": "בנזין",
+    "color": "כסף",
+    "weight": 2120,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-06T09:39:35.382Z"
+  },
+  "שברולט_דקוריא_TRAIL_BLAZER_2022_emL3T_tlLTZ_mc329_ftבנזין": {
+    "manufacturer": "שברולט ד.קוריא",
+    "model": "TRAIL BLAZER",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "L3T",
+    "trimLevel": "LTZ",
+    "modelCode": 329,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1930,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-06T09:41:05.489Z"
+  },
+  "קיה_קוריאה_K2500_2022_emD4CB_tlLX_mc6_ftדיזל": {
+    "manufacturer": "קיה קוריאה",
+    "model": "K2500",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "D4CB",
+    "trimLevel": "LX",
+    "modelCode": 6,
+    "fuelType": "דיזל",
+    "color": "שנהב לבן",
+    "weight": 3240,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-08T04:21:32.256Z"
+  },
+  "סיטרואן_ספרד_C4_SPACETOURER_2022_emHN05_tlEXCLUSIVE_mc182_ftבנזין": {
+    "manufacturer": "סיטרואן ספרד",
+    "model": "C4 SPACETOURER",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "HN05",
+    "trimLevel": "EXCLUSIVE",
+    "modelCode": 182,
+    "fuelType": "בנזין",
+    "color": "בז",
+    "weight": 2130,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-08T04:33:55.812Z"
+  },
+  "ב_מ_וו_גרמניה_I4_EDRIVE_40_2023_emHA0001N0_tlULTIMATE_M_mc2002_ftחשמל": {
+    "manufacturer": "ב מ וו גרמניה",
+    "model": "I4 EDRIVE 40",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "HA0001N0",
+    "trimLevel": "ULTIMATE M",
+    "modelCode": 2002,
+    "fuelType": "חשמל",
+    "color": "אפור בהיר מטלי",
+    "weight": 2600,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-08T08:45:40.657Z"
+  },
+  "זיקר_ZEEKR_X_2024_emTZ22_tlKRYPTON_mc5_ftחשמל": {
+    "manufacturer": "זיקר",
+    "model": "ZEEKR X",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "TZ22",
+    "trimLevel": "KRYPTON",
+    "modelCode": 5,
+    "fuelType": "חשמל",
+    "color": "אפור בהיר מטלי",
+    "weight": 2510,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-08T08:55:19.017Z"
+  },
+  "יונדאי_צ'כיה_TUCSON_2024_emG4FP_tlLUXURY_FL_mc136_ftבנזין": {
+    "manufacturer": "יונדאי צ'כיה",
+    "model": "TUCSON",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "G4FP",
+    "trimLevel": "LUXURY FL",
+    "modelCode": 136,
+    "fuelType": "בנזין",
+    "color": "זית מטאלי",
+    "weight": 2095,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-08T14:01:32.845Z"
+  },
+  "קיה_קוריאה_NIRO_PHEV_2022_emG4LE_tlLX_mc506_ftחשמלבנזין": {
+    "manufacturer": "קיה קוריאה",
+    "model": "NIRO PHEV",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "G4LE",
+    "trimLevel": "LX",
+    "modelCode": 506,
+    "fuelType": "חשמל/בנזין",
+    "color": "שנהב לבן",
+    "weight": 2000,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-08T14:02:36.662Z"
+  },
+  "יונדאי_קוריאה_SONATA_HYBRID_2024_emG4NR_tlLUXURY_FL_mc468_ftבנזין": {
+    "manufacturer": "יונדאי קוריאה",
+    "model": "SONATA HYBRID",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "G4NR",
+    "trimLevel": "LUXURY FL",
+    "modelCode": 468,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 2075,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-08T14:19:39.956Z"
+  },
+  "צ'רי_סין_TIGGO7_PRO_PHEV_2025_emSQRH4J15_tlLUXURY_mc48_ftחשמלבנזין": {
+    "manufacturer": "צ'רי סין",
+    "model": "TIGGO7 PRO PHEV",
+    "year": 2025,
+    "engineVolume": "",
+    "engineModel": "SQRH4J15",
+    "trimLevel": "LUXURY",
+    "modelCode": 48,
+    "fuelType": "חשמל/בנזין",
+    "color": "כסף מטלי",
+    "weight": 2295,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-08T14:21:12.420Z"
+  },
+  "ניסאן_ספרד_NAVARA_2021_emYS23_tlACENTA_mc41_ftדיזל": {
+    "manufacturer": "ניסאן ספרד",
+    "model": "NAVARA",
+    "year": 2021,
+    "engineVolume": "",
+    "engineModel": "YS23",
+    "trimLevel": "ACENTA",
+    "modelCode": 41,
+    "fuelType": "דיזל",
+    "color": "כסף מטלי",
+    "weight": 3250,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-08T14:32:55.904Z"
+  },
+  "XCMG_FD30T_2019": {
+    "manufacturer": "XCMG",
+    "model": "FD30T",
+    "year": 2019,
+    "engineVolume": "",
+    "engineModel": "",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "",
+    "color": "",
+    "weight": "",
+    "towTypes": [
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-09T03:20:45.204Z"
+  },
+  "טויוטה_טורקיה_COROLLA_SDN_HSD_2024_em2ZR_tlSUN_mc318_ftבנזין": {
+    "manufacturer": "טויוטה טורקיה",
+    "model": "COROLLA SDN HSD",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "2ZR",
+    "trimLevel": "SUN",
+    "modelCode": 318,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1835,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-09T03:47:45.136Z"
+  },
+  "מזדה_תאילנד_MAZDA_2_2019_emP5_tlDYNAMIC_mc32_ftבנזין": {
+    "manufacturer": "מזדה תאילנד",
+    "model": "MAZDA 2",
+    "year": 2019,
+    "engineVolume": "",
+    "engineModel": "P5",
+    "trimLevel": "DYNAMIC",
+    "modelCode": 32,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1524,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-09T06:17:11.853Z"
+  },
+  "בומברדיה_מקסיק_TRAXTER_HD9_2022_ev976_em1010_ftבנזין": {
+    "manufacturer": "בומברדיה מקסיק",
+    "model": "TRAXTER HD9",
+    "year": 2022,
+    "engineVolume": 976,
+    "engineModel": "1010",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "בנזין",
+    "color": "",
+    "weight": 1435,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-09T11:50:20.708Z"
+  },
+  "גילי_סין_GEOMETRY_C_2024_emTZ18_tl480PURE_mc16_ftחשמל": {
+    "manufacturer": "גילי סין",
+    "model": "GEOMETRY C",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "TZ18",
+    "trimLevel": "480PURE",
+    "modelCode": 16,
+    "fuelType": "חשמל",
+    "color": "שנהב לבן",
+    "weight": 2120,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-09T12:27:55.059Z"
+  },
+  "יונדאי_קוריאה_SANTA_FE_2023_emD4HE_tlELITE_mc275_ftדיזל": {
+    "manufacturer": "יונדאי קוריאה",
+    "model": "SANTA FE",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "D4HE",
+    "trimLevel": "ELITE",
+    "modelCode": 275,
+    "fuelType": "דיזל",
+    "color": "אפור כהה",
+    "weight": 2600,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-10T05:25:35.032Z"
+  },
+  "יונדאי_קוריאה_ELANTRA_HEV_2023_emG4LE_tlPREMIUM_mc323_ftבנזין": {
+    "manufacturer": "יונדאי קוריאה",
+    "model": "ELANTRA HEV",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "G4LE",
+    "trimLevel": "PREMIUM",
+    "modelCode": 323,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1850,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-10T09:26:52.154Z"
+  },
+  "SCHMIDT_CLEANGO500_2024": {
+    "manufacturer": "SCHMIDT",
+    "model": "CLEANGO500",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "",
+    "color": "",
+    "weight": "",
+    "towTypes": [
+      "רמ-סע",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-10T10:17:20.016Z"
+  },
+  "שברולט_דקוריא_TRAIL_BLAZER_2023_emL3T_tlLT_PLUS_mc328_ftבנזין": {
+    "manufacturer": "שברולט ד.קוריא",
+    "model": "TRAIL BLAZER",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "L3T",
+    "trimLevel": "LT PLUS",
+    "modelCode": 328,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1930,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T05:36:22.149Z"
+  },
+  "יונדאי_קוריאה_ELANTRA_HEV_2024_emG4LE_tlPREMIUM_FL_mc429_ftבנזין": {
+    "manufacturer": "יונדאי קוריאה",
+    "model": "ELANTRA HEV",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "G4LE",
+    "trimLevel": "PREMIUM FL",
+    "modelCode": 429,
+    "fuelType": "בנזין",
+    "color": "כסוף כהה",
+    "weight": 1850,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T12:57:39.647Z"
+  },
+  "טויוטה_ספרד_TOYOTA_CITY_2021_emYH01_tlCITY_5_mc3_ftדיזל": {
+    "manufacturer": "טויוטה ספרד",
+    "model": "TOYOTA CITY",
+    "year": 2021,
+    "engineVolume": "",
+    "engineModel": "YH01",
+    "trimLevel": "CITY 5",
+    "modelCode": 3,
+    "fuelType": "דיזל",
+    "color": "שנהב לבן",
+    "weight": 2365,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T06:45:44.908Z"
+  },
+  "פיגו_איטליה_YECPFC_2022_ev2179_em4H03_ftדיזל": {
+    "manufacturer": "פיגו איטליה",
+    "model": "YECPFC",
+    "year": 2022,
+    "engineVolume": 2179,
+    "engineModel": "4H03",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "דיזל",
+    "color": "",
+    "weight": 3995,
+    "towTypes": [
+      "רמ-סע",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T07:06:19.615Z"
+  },
+  "מיצובישי_תאילנ_L200_2022_em4N14_tlDESERT_mc71_ftדיזל": {
+    "manufacturer": "מיצובישי תאילנ",
+    "model": "L200",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "4N14",
+    "trimLevel": "DESERT",
+    "modelCode": 71,
+    "fuelType": "דיזל",
+    "color": "שנהב לבן",
+    "weight": 3010,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T08:22:58.877Z"
+  },
+  "יונדאי_קוריאה_KONA_HYBRID_2025_emG4LL_tlPREMIUM_mc478_ftבנזין": {
+    "manufacturer": "יונדאי קוריאה",
+    "model": "KONA HYBRID",
+    "year": 2025,
+    "engineVolume": "",
+    "engineModel": "G4LL",
+    "trimLevel": "PREMIUM",
+    "modelCode": 478,
+    "fuelType": "בנזין",
+    "color": "אפור מטל",
+    "weight": 1950,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T08:42:09.280Z"
+  },
+  "סיאט_ספרד_ARONA_2024_emDUS_tlSTYLE_mc609_ftבנזין": {
+    "manufacturer": "סיאט ספרד",
+    "model": "ARONA",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "DUS",
+    "trimLevel": "STYLE",
+    "modelCode": 609,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1710,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T09:55:46.817Z"
+  },
+  "סיאט_ספרד_ARONA_2025_emDUS_tlSTYLE_mc613_ftבנזין": {
+    "manufacturer": "סיאט ספרד",
+    "model": "ARONA",
+    "year": 2025,
+    "engineVolume": "",
+    "engineModel": "DUS",
+    "trimLevel": "STYLE",
+    "modelCode": 613,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1650,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T10:15:04.835Z"
+  },
+  "פורד_ספרד_FOCUS_2002_emFYD_tlLX_mc211_ftבנזין": {
+    "manufacturer": "פורד ספרד",
+    "model": "FOCUS",
+    "year": 2002,
+    "engineVolume": "",
+    "engineModel": "FYD",
+    "trimLevel": "LX",
+    "modelCode": 211,
+    "fuelType": "בנזין",
+    "color": "כחול בהיר",
+    "weight": 1129,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T10:24:57.024Z"
+  },
+  "טויוטה_ספרד_TOYOTA_CITY_2024_emYH01_tlCITY_5_mc9_ftדיזל": {
+    "manufacturer": "טויוטה ספרד",
+    "model": "TOYOTA CITY",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "YH01",
+    "trimLevel": "CITY 5",
+    "modelCode": 9,
+    "fuelType": "דיזל",
+    "color": "שנהב לבן",
+    "weight": 2100,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T10:48:46.533Z"
+  },
+  "פורד_ארהב\"_FDD355LSH_2020_ev1995_emYMR6_ftדיזל": {
+    "manufacturer": "פורד ארהב\"",
+    "model": "FDD355LSH",
+    "year": 2020,
+    "engineVolume": 1995,
+    "engineModel": "YMR6",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "דיזל",
+    "color": "",
+    "weight": 3550,
+    "towTypes": [
+      "רמ-סע",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T12:57:02.200Z"
+  },
+  "HELI_CDD14_2017": {
+    "manufacturer": "HELI",
+    "model": "CDD14.",
+    "year": 2017,
+    "engineVolume": "",
+    "engineModel": "",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "",
+    "color": "",
+    "weight": "",
+    "towTypes": [
+      "רמ-סע"
+    ],
+    "lastUpdated": "2025-06-11T13:40:40.919Z"
+  },
+  "קיה_קוריאה_NIRO_PLUS_PHEV_2024_emG4LE_tlLX_mc570_ftחשמלבנזין": {
+    "manufacturer": "קיה קוריאה",
+    "model": "NIRO PLUS PHEV",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "G4LE",
+    "trimLevel": "LX",
+    "modelCode": 570,
+    "fuelType": "חשמל/בנזין",
+    "color": "אפור",
+    "weight": 2000,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T13:47:43.451Z"
+  },
+  "סקודה_צ'כיה_KODIAQ_FL_2024_emDPC_tlAMBITION_mc1597_ftבנזין": {
+    "manufacturer": "סקודה צ'כיה",
+    "model": "KODIAQ FL",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "DPC",
+    "trimLevel": "AMBITION",
+    "modelCode": 1597,
+    "fuelType": "בנזין",
+    "color": "שחור מטלי",
+    "weight": 2275,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T15:45:56.665Z"
+  },
+  "סקודה_צ'כיה_KODIAQ_2024_emDXD_tlADVANCE_mc1655_ftבנזין": {
+    "manufacturer": "סקודה צ'כיה",
+    "model": "KODIAQ",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "DXD",
+    "trimLevel": "ADVANCE",
+    "modelCode": 1655,
+    "fuelType": "בנזין",
+    "color": "אפור כהה",
+    "weight": 2342,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T15:48:35.487Z"
+  },
+  "קיה_קוריאה_PICANTO_2014_emG4LA_tlLX_mc117_ftבנזין": {
+    "manufacturer": "קיה קוריאה",
+    "model": "PICANTO",
+    "year": 2014,
+    "engineVolume": "",
+    "engineModel": "G4LA",
+    "trimLevel": "LX",
+    "modelCode": 117,
+    "fuelType": "בנזין",
+    "color": "שחור",
+    "weight": 1370,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-11T16:02:54.426Z"
+  },
+  "סקודה_צ'כיה_OCTAVIA_2021_emDFY_tlAMBITION_mc1213_ftבנזין": {
+    "manufacturer": "סקודה צ'כיה",
+    "model": "OCTAVIA",
+    "year": 2021,
+    "engineVolume": "",
+    "engineModel": "DFY",
+    "trimLevel": "AMBITION",
+    "modelCode": 1213,
+    "fuelType": "בנזין",
+    "color": "אפור כהה",
+    "weight": 1930,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T05:32:31.329Z"
+  },
+  "רנו_דקוריאה_ARKANA_2023_emH5H_tlICONIC_mc29_ftבנזין": {
+    "manufacturer": "רנו ד.קוריאה",
+    "model": "ARKANA",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "H5H",
+    "trimLevel": "ICONIC",
+    "modelCode": 29,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1876,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T07:57:27.492Z"
+  },
+  "DULEVO_850MINI_2020": {
+    "manufacturer": "DULEVO",
+    "model": "850MINI",
+    "year": 2020,
+    "engineVolume": "",
+    "engineModel": "",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "",
+    "color": "",
+    "weight": "",
+    "towTypes": [
+      "רמ-סע",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T08:06:54.256Z"
+  },
+  "HAKO_CM1650_2022": {
+    "manufacturer": "HAKO",
+    "model": "CM1650",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "",
+    "color": "",
+    "weight": "",
+    "towTypes": [
+      "רמ-סע",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T08:07:43.057Z"
+  },
+  "CMAR_R2500_2023": {
+    "manufacturer": "CMAR",
+    "model": "R2500",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "",
+    "color": "",
+    "weight": "",
+    "towTypes": [
+      "רמ-סע",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T09:34:49.017Z"
+  },
+  "HAKO_TREMO_2014": {
+    "manufacturer": "HAKO",
+    "model": "TREMO",
+    "year": 2014,
+    "engineVolume": "",
+    "engineModel": "",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "",
+    "color": "",
+    "weight": "",
+    "towTypes": [
+      "רמ-סע",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T09:36:37.454Z"
+  },
+  "סיטרואן_צרפת_C5_2014_em5F02_tlCOMFORT_mc48_ftבנזין": {
+    "manufacturer": "סיטרואן צרפת",
+    "model": "C5",
+    "year": 2014,
+    "engineVolume": "",
+    "engineModel": "5F02",
+    "trimLevel": "COMFORT",
+    "modelCode": 48,
+    "fuelType": "בנזין",
+    "color": "אפור",
+    "weight": 2026,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T10:14:34.777Z"
+  },
+  "איסוזו_תאילנד_PICK-UP_2018_emRZ4E_tlS_mc108_ftדיזל": {
+    "manufacturer": "איסוזו תאילנד",
+    "model": "PICK-UP",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "RZ4E",
+    "trimLevel": "S",
+    "modelCode": 108,
+    "fuelType": "דיזל",
+    "color": "כסף",
+    "weight": 3000,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T11:08:22.080Z"
+  },
+  "רנו_טורקיה_MEGANE_2021_emK9K_tlINTENSE_mc250_ftדיזל": {
+    "manufacturer": "רנו טורקיה",
+    "model": "MEGANE",
+    "year": 2021,
+    "engineVolume": "",
+    "engineModel": "K9K",
+    "trimLevel": "INTENSE",
+    "modelCode": 250,
+    "fuelType": "דיזל",
+    "color": "אפור כהה מטלי",
+    "weight": 1955,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T12:23:53.183Z"
+  },
+  "יונדאי_קוריאה_VENUE_2021_emG4FM_tlINTENSE_mc273_ftבנזין": {
+    "manufacturer": "יונדאי קוריאה",
+    "model": "VENUE",
+    "year": 2021,
+    "engineVolume": "",
+    "engineModel": "G4FM",
+    "trimLevel": "INTENSE",
+    "modelCode": 273,
+    "fuelType": "בנזין",
+    "color": "אפור מטל",
+    "weight": 1700,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T12:33:19.902Z"
+  },
+  "פיג'ו_צרפת_5008_2023_emHN05_tlACTIVE_PACK_mc328_ftבנזין": {
+    "manufacturer": "פיג'ו צרפת",
+    "model": "5008",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "HN05",
+    "trimLevel": "ACTIVE PACK",
+    "modelCode": 328,
+    "fuelType": "בנזין",
+    "color": "אפור כהה",
+    "weight": 2160,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T12:47:43.168Z"
+  },
+  "סקודה_צ'כיה_OCTAVIA_2024_emDFY_tlAMBITION_mc1486_ftבנזין": {
+    "manufacturer": "סקודה צ'כיה",
+    "model": "OCTAVIA",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "DFY",
+    "trimLevel": "AMBITION",
+    "modelCode": 1486,
+    "fuelType": "בנזין",
+    "color": "אפור כהה",
+    "weight": 1920,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T13:47:38.357Z"
+  },
+  "קיה_קוריאה_SELTOS_2024_emG4NH_tlURBAN_mc609_ftבנזין": {
+    "manufacturer": "קיה קוריאה",
+    "model": "SELTOS",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "G4NH",
+    "trimLevel": "URBAN",
+    "modelCode": 609,
+    "fuelType": "בנזין",
+    "color": "אפור בהיר",
+    "weight": 1760,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T14:35:42.772Z"
+  },
+  "סקודה_צ'כיה_OCTAVIA_2023_emDFY_tlAMBITION_mc1486_ftבנזין": {
+    "manufacturer": "סקודה צ'כיה",
+    "model": "OCTAVIA",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "DFY",
+    "trimLevel": "AMBITION",
+    "modelCode": 1486,
+    "fuelType": "בנזין",
+    "color": "כסף מטלי",
+    "weight": 1920,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-12T14:36:45.552Z"
+  },
+  "יונדאי_קוריאה_IONIQ5_2023_emEM17_tlSUPREME_mc303_ftחשמל": {
+    "manufacturer": "יונדאי קוריאה",
+    "model": "IONIQ5",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "EM17",
+    "trimLevel": "SUPREME",
+    "modelCode": 303,
+    "fuelType": "חשמל",
+    "color": "שחור מטלי",
+    "weight": 2430,
+    "towTypes": [
+      "רמ-סע",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-13T03:59:48.226Z"
+  },
+  "יונדאי_הודו_I10_2011_emG4HG_tlINSPIRE_mc3_ftבנזין": {
+    "manufacturer": "יונדאי הודו",
+    "model": "I10",
+    "year": 2011,
+    "engineVolume": "",
+    "engineModel": "G4HG",
+    "trimLevel": "INSPIRE",
+    "modelCode": 3,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1405,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-13T06:42:24.318Z"
+  },
+  "טויוטה_טורקיה_COROLLA_SDN_HSD_2024_em2ZR_tlSENSE_HSD_mc349_ftבנזין": {
+    "manufacturer": "טויוטה טורקיה",
+    "model": "COROLLA SDN HSD",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "2ZR",
+    "trimLevel": "SENSE HSD",
+    "modelCode": 349,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1835,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-13T07:09:53.509Z"
+  },
+  "קיה_סלובקיה_CEED_2023_emG4LK_tlLX_mc270_ftבנזין": {
+    "manufacturer": "קיה סלובקיה",
+    "model": "CEED",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "G4LK",
+    "trimLevel": "LX",
+    "modelCode": 270,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1900,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-13T07:10:53.448Z"
+  },
+  "פיג'ו_ספרד_2008_2022_emHN05_tlACTIVE_mc65_ftבנזין": {
+    "manufacturer": "פיג'ו ספרד",
+    "model": "2008",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "HN05",
+    "trimLevel": "ACTIVE",
+    "modelCode": 65,
+    "fuelType": "בנזין",
+    "color": "אפור פלדה",
+    "weight": 1740,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-13T08:42:27.356Z"
+  },
+  "SCHMIDT_CLEANGO500_2023": {
+    "manufacturer": "SCHMIDT",
+    "model": "CLEANGO500",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "",
+    "color": "",
+    "weight": "",
+    "towTypes": [
+      "רמ-סע",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-13T08:51:52.467Z"
+  },
+  "מזדה_יפן_MAZDA_CX-5_2023_emPE_tlEXECUTIVE_TE_mc406_ftבנזין": {
+    "manufacturer": "מזדה יפן",
+    "model": "MAZDA CX-5",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "PE",
+    "trimLevel": "EXECUTIVE TE",
+    "modelCode": 406,
+    "fuelType": "בנזין",
+    "color": "כסף",
+    "weight": 2060,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T06:45:15.474Z"
+  },
+  "סיטרואן_פורטוג_BERLINGO_2023_emYH01_tlSHINE_PACK_mc33_ftדיזל": {
+    "manufacturer": "סיטרואן פורטוג",
+    "model": "BERLINGO",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "YH01",
+    "trimLevel": "SHINE PACK",
+    "modelCode": 33,
+    "fuelType": "דיזל",
+    "color": "שנהב לבן",
+    "weight": 2365,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T06:46:55.366Z"
+  },
+  "שברולט_מקסיקו_EQUINOX_2022_emLYX_tlLT_PLUS_mc70_ftבנזין": {
+    "manufacturer": "שברולט מקסיקו",
+    "model": "EQUINOX",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "LYX",
+    "trimLevel": "LT PLUS",
+    "modelCode": 70,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 2025,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T07:50:51.546Z"
+  },
+  "סיטרואן_ספרד_BERLINGO_2023_emYH01_tlSHINE_PACK_mc88_ftדיזל": {
+    "manufacturer": "סיטרואן ספרד",
+    "model": "BERLINGO",
+    "year": 2023,
+    "engineVolume": "",
+    "engineModel": "YH01",
+    "trimLevel": "SHINE PACK",
+    "modelCode": 88,
+    "fuelType": "דיזל",
+    "color": "שנהב לבן",
+    "weight": 2365,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T07:52:07.527Z"
+  },
+  "הינו_XJC710L_2020_ev5123_emJ05EUL_ftדיזל": {
+    "manufacturer": "הינו",
+    "model": "XJC710L",
+    "year": 2020,
+    "engineVolume": 5123,
+    "engineModel": "J05EUL",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "דיזל",
+    "color": "",
+    "weight": 7500,
+    "towTypes": [
+      "רמ-סע",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T07:56:01.900Z"
+  },
+  "SCHMIDT_SWINGO200+_2024": {
+    "manufacturer": "SCHMIDT",
+    "model": "SWINGO200+",
+    "year": 2024,
+    "engineVolume": "",
+    "engineModel": "",
+    "trimLevel": "",
+    "modelCode": "",
+    "fuelType": "",
+    "color": "",
+    "weight": "",
+    "towTypes": [
+      "רמ-סע",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T09:29:50.473Z"
+  },
+  "סיאט_ספרד_IBIZA_2018_emDKJ_tlSTYLE_mc322_ftבנזין": {
+    "manufacturer": "סיאט ספרד",
+    "model": "IBIZA",
+    "year": 2018,
+    "engineVolume": "",
+    "engineModel": "DKJ",
+    "trimLevel": "STYLE",
+    "modelCode": 322,
+    "fuelType": "בנזין",
+    "color": "שן פיל",
+    "weight": 1600,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T09:46:51.004Z"
+  },
+  "יונדאי_הודו_ACCENT_2022_emG4LC_tlINSPIRE_mc15_ftבנזין": {
+    "manufacturer": "יונדאי הודו",
+    "model": "ACCENT",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "G4LC",
+    "trimLevel": "INSPIRE",
+    "modelCode": 15,
+    "fuelType": "בנזין",
+    "color": "אפור מטל",
+    "weight": 1580,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T10:12:35.461Z"
+  },
+  "קיה_קוריאה_SELTOS_2025_emG4NH_tlLX_PLUS_mc637_ftבנזין": {
+    "manufacturer": "קיה קוריאה",
+    "model": "SELTOS",
+    "year": 2025,
+    "engineVolume": "",
+    "engineModel": "G4NH",
+    "trimLevel": "LX PLUS",
+    "modelCode": 637,
+    "fuelType": "בנזין",
+    "color": "שחור",
+    "weight": 1760,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T10:13:33.468Z"
+  },
+  "פורד_גרמניה_FOCUS_2012_emPNDA_tlTREND_mc8_ftבנזין": {
+    "manufacturer": "פורד גרמניה",
+    "model": "FOCUS",
+    "year": 2012,
+    "engineVolume": "",
+    "engineModel": "PNDA",
+    "trimLevel": "TREND",
+    "modelCode": 8,
+    "fuelType": "בנזין",
+    "color": "כסף מטלי",
+    "weight": 1312,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T11:22:33.706Z"
+  },
+  "סיאט_צ'כיה_TOLEDO_2014_emCAX_tlSTYLE_mc1_ftבנזין": {
+    "manufacturer": "סיאט צ'כיה",
+    "model": "TOLEDO",
+    "year": 2014,
+    "engineVolume": "",
+    "engineModel": "CAX",
+    "trimLevel": "STYLE",
+    "modelCode": 1,
+    "fuelType": "בנזין",
+    "color": "בז",
+    "weight": 1690,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T12:31:16.003Z"
+  },
+  "מיצובישי_יפן_ECLIPSE_CROSS_2022_em4B40_tlINSTYLE_mc227_ftבנזין": {
+    "manufacturer": "מיצובישי יפן",
+    "model": "ECLIPSE CROSS",
+    "year": 2022,
+    "engineVolume": "",
+    "engineModel": "4B40",
+    "trimLevel": "INSTYLE",
+    "modelCode": 227,
+    "fuelType": "בנזין",
+    "color": "שחור",
+    "weight": 2100,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T12:55:00.906Z"
+  },
+  "פיג'ו_צרפת_3008_2021_em5G06_tlACTIVE_PACK_mc275_ftבנזין": {
+    "manufacturer": "פיג'ו צרפת",
+    "model": "3008",
+    "year": 2021,
+    "engineVolume": "",
+    "engineModel": "5G06",
+    "trimLevel": "ACTIVE PACK",
+    "modelCode": 275,
+    "fuelType": "בנזין",
+    "color": "שנהב לבן",
+    "weight": 1970,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T13:40:05.075Z"
+  },
+  "מיצובישי_יפן_OUTLANDER_2025_emPR25_tlEXECUTIVE_mc263_ftבנזין": {
+    "manufacturer": "מיצובישי יפן",
+    "model": "OUTLANDER",
+    "year": 2025,
+    "engineVolume": "",
+    "engineModel": "PR25",
+    "trimLevel": "EXECUTIVE",
+    "modelCode": 263,
+    "fuelType": "בנזין",
+    "color": "אפור כהה",
+    "weight": 2355,
+    "towTypes": [
+      "רמ-סע",
+      "משקפיים",
+      "דולי",
+      "מובילית"
+    ],
+    "lastUpdated": "2025-06-16T13:41:18.972Z"
+  }
+}
