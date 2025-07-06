@@ -550,6 +550,27 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 }
 
+function setupLicenseNumberSanitization() {
+    const licenseInputs = [
+        'defectiveCarNumber',
+        'defectiveCarNumber2',
+        'workingCarNumber',
+        'exchangeDefectiveNumber'
+    ];
+
+    licenseInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', function () {
+                const cursorPos = input.selectionStart;
+                const cleanValue = input.value.replace(/[^0-9]/g, '');
+                input.value = cleanValue;
+                input.setSelectionRange(cursorPos, cursorPos); // שמירה על מיקום הסמן
+            });
+        }
+    });
+}
+
 function getCarNumberFieldId(context) {
     const fieldMap = {
         'defective': 'defectiveCarNumber',
@@ -815,6 +836,7 @@ function getCarNumberFieldId(context) {
 
     // הפעלת פונקציונליות מילוי אוטומטי
     setupVehicleLookup();
+    setupLicenseNumberSanitization();
 });
 
 // פונקציות להצגה/הסתרה של שדות סוג רכב
