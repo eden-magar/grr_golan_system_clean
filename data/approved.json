@@ -1,0 +1,17 @@
+[
+  {
+    "email": "leon9548@gmail.com",
+    "fullName": "מנהל מערכת",
+    "company": "גרר גולן",
+    "role": "מנהל",
+    "isAdmin": true
+  },
+  {
+    "email": "eden.magar.91@gmail.com",
+    "fullName": "עדן מגר",
+    "company": "לושה",
+    "role": "מנהלת העולם",
+    "requestedAt": "2025-07-19T11:18:56.484Z",
+    "approvedAt": "2025-07-19T11:25:47.593Z"
+  }
+]

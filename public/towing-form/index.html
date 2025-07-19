@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <script>
-    const AUTH_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxH41V-wcy_VRLahzZfKPjSFsWISa8u7SnjDgmspvFUcvPBEAfC0XSgz-IvsKXYfnJ2/exec";
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>כניסה למערכת - גרר גולן</title>
@@ -59,7 +56,6 @@
         </div>
 
         <!-- טופס בקשת רישום -->
-        <!-- טופס בקשת רישום -->
 <div id="registerForm" class="register-form">
     <h1>בקשת רישום</h1>
     <div class="form-group">
@@ -81,13 +77,6 @@
         <div class="icon-input">
             <i class="fas fa-building"></i>
             <input type="text" id="registerCompany" placeholder="הכנס את שם החברה" required>
-        </div>
-    </div>
-    <div class="form-group">
-        <label>מחלקה</label>
-        <div class="icon-input">
-            <i class="fas fa-sitemap"></i>
-            <input type="text" id="registerDepartment" placeholder="הכנס את שם המחלקה (לא חובה)">
         </div>
     </div>
     <div class="form-group">
@@ -141,7 +130,7 @@
         formData.append('action', 'login');
         formData.append('data', JSON.stringify({ email: email }));
 
-        const response = await fetch(AUTH_SCRIPT_URL, {
+        const response = await fetch('../login-user', {
             method: 'POST',
             body: formData
         });
@@ -152,7 +141,6 @@
             localStorage.setItem('userEmail', email);
             if (result.userData) {
                 localStorage.setItem('userCompany', result.userData.company || '');
-                localStorage.setItem('userDepartment', result.userData.department || '');
             }
             window.location.href = 'form.html';
         } else {
@@ -169,11 +157,10 @@
     
         // רישום
         document.getElementById('registerButton').addEventListener('click', async function() {
-            const email = document.getElementById('registerEmail').value;
-            const fullName = document.getElementById('registerName').value;
-            const company = document.getElementById('registerCompany').value;
-            const department = document.getElementById('registerDepartment').value;
-            const role = document.getElementById('registerRole').value;
+            const email = document.getElementById('registerEmail').value.trim();
+            const fullName = document.getElementById('registerName').value.trim();
+            const company = document.getElementById('registerCompany').value.trim();
+            const role = document.getElementById('registerRole').value.trim();
             const errorDiv = document.getElementById('registerError');
     
             if (!email || !fullName || !company || !role) {
@@ -189,11 +176,10 @@
                     email: email,
                     fullName: fullName,
                     company: company,
-                    department: department,
                     role: role
                 }));
     
-                const response = await fetch(AUTH_SCRIPT_URL, {
+                const response = await fetch('../api/register', {
                     method: 'POST',
                     body: formData
                 });

@@ -1,9 +1,11 @@
 const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
+const lockfile = require('proper-lockfile');
 const path = require('path');
 const fs = require('fs').promises;
-const lockfile = require('proper-lockfile');
+const multer = require('multer');
+const upload = multer();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,6 +19,8 @@ app.use(cors({
 
 // Middleware לפענוח JSON
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 
 // הגשת קבצים סטטיים מתיקיית public
 app.use(express.static('public'));
@@ -60,6 +64,231 @@ app.post('/api/admin/check', async (req, res) => {
             error: 'שגיאה בבדיקת הרשאות'
         });
     }
+});
+
+app.post('/api/check-auth', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+
+        const approvedPath = path.join(__dirname, 'data', 'approved.json');
+        const fileExists = await fs.access(approvedPath).then(() => true).catch(() => false);
+        if (!fileExists) {
+            return res.status(500).json({ success: false, message: 'approved.json not found' });
+        }
+
+        const content = await fs.readFile(approvedPath, 'utf-8');
+        const users = JSON.parse(content);
+
+        const user = users.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
+
+        if (user) {
+            res.json({ success: true, isAdmin: !!user.isAdmin });
+        } else {
+            res.json({ success: false });
+        }
+
+    } catch (err) {
+        console.error('Error checking user auth:', err);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.post('/api/register', upload.none(), async (req, res) => {
+    try {
+        let data = req.body;
+        if (req.body.data) {
+            data = JSON.parse(req.body.data);
+        }
+        const { email, fullName, company = '', role } = data;
+
+        // שדות חובה בלבד: מייל, שם מלא, שם חברה, תפקיד
+        if (!email || !fullName || !company || !role) {
+            return res.status(400).json({ success: false, message: 'Missing required fields' });
+        }
+
+        const approvedPath = path.join(__dirname, 'data', 'approved.json');
+        const pendingPath = path.join(__dirname, 'data', 'pending.json');
+
+        const approved = await fs.readFile(approvedPath, 'utf-8').then(data => JSON.parse(data)).catch(() => []);
+        const pending = await fs.readFile(pendingPath, 'utf-8').then(data => JSON.parse(data)).catch(() => []);
+
+        const emailClean = email.trim().toLowerCase();
+
+        const alreadyApproved = approved.find(u => u.email?.toLowerCase() === emailClean);
+        const alreadyPending = pending.find(u => u.email?.toLowerCase() === emailClean);
+
+        if (alreadyApproved) {
+            return res.json({ success: false, message: 'המשתמש כבר מאושר' });
+        }
+
+        if (alreadyPending) {
+            return res.json({ success: false, message: 'הבקשה כבר קיימת וממתינה לאישור' });
+        }
+
+        // שמירת כל השדות, כולל מחלקה אם קיימת
+        pending.push({
+            email: emailClean,
+            fullName,
+            company,
+            role,
+            requestedAt: new Date().toISOString()
+        });
+
+        await fs.writeFile(pendingPath, JSON.stringify(pending, null, 2));
+
+        res.json({ success: true, message: 'הבקשה נשלחה בהצלחה וממתינה לאישור' });
+
+    } catch (err) {
+        console.error('Error in register route:', err);
+        res.status(500).json({ success: false, message: 'שגיאה בשרת' });
+    }
+});
+
+
+app.get('/api/pending-users', async (req, res) => {
+    try {
+        const pendingPath = path.join(__dirname, 'data', 'pending.json');
+
+        const pending = await fs.readFile(pendingPath, 'utf-8').then(data => JSON.parse(data)).catch(() => []);
+
+        res.json({ success: true, users: pending });
+
+    } catch (err) {
+        console.error('Error reading pending users:', err);
+        res.status(500).json({ success: false, message: 'שגיאה בקריאת בקשות ההרשמה' });
+    }
+});
+
+app.post('/api/approve-user', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+
+        const emailClean = email.trim().toLowerCase();
+
+        const pendingPath = path.join(__dirname, 'data', 'pending.json');
+        const approvedPath = path.join(__dirname, 'data', 'approved.json');
+
+        // קריאת הקבצים
+        const pending = await fs.readFile(pendingPath, 'utf-8').then(data => JSON.parse(data)).catch(() => []);
+        const approved = await fs.readFile(approvedPath, 'utf-8').then(data => JSON.parse(data)).catch(() => []);
+
+        const userIndex = pending.findIndex(u => u.email?.toLowerCase() === emailClean);
+        if (userIndex === -1) {
+            return res.json({ success: false, message: 'המשתמש לא נמצא ברשימת ההמתנה' });
+        }
+
+        const userToApprove = pending[userIndex];
+
+        // הסרתו מההמתנה והוספתו לאושרים
+        pending.splice(userIndex, 1);
+        approved.push({ ...userToApprove, approvedAt: new Date().toISOString() });
+
+        // כתיבה חזרה לקבצים
+        await fs.writeFile(pendingPath, JSON.stringify(pending, null, 2));
+        await fs.writeFile(approvedPath, JSON.stringify(approved, null, 2));
+
+        res.json({ success: true, message: 'המשתמש אושר בהצלחה' });
+
+    } catch (err) {
+        console.error('Error approving user:', err);
+        res.status(500).json({ success: false, message: 'שגיאה באישור המשתמש' });
+    }
+});
+
+// הוסף את זה אחרי הroute הקיים של /api/approve-user
+
+// API route לקבלת משתמשים מאושרים
+app.get('/api/approved-users', async (req, res) => {
+    try {
+        const approvedPath = path.join(__dirname, 'data', 'approved.json');
+        const approved = await fs.readFile(approvedPath, 'utf-8').then(data => JSON.parse(data)).catch(() => []);
+        
+        res.json({ success: true, users: approved });
+    } catch (err) {
+        console.error('Error reading approved users:', err);
+        res.status(500).json({ success: false, message: 'שגיאה בקריאת משתמשים מאושרים' });
+    }
+});
+
+// API route לדחיית בקשת רישום
+app.post('/api/reject-user', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+
+        const emailClean = email.trim().toLowerCase();
+        const pendingPath = path.join(__dirname, 'data', 'pending.json');
+
+        // קריאת קובץ הממתינים
+        const pending = await fs.readFile(pendingPath, 'utf-8').then(data => JSON.parse(data)).catch(() => []);
+
+        const userIndex = pending.findIndex(u => u.email?.toLowerCase() === emailClean);
+        if (userIndex === -1) {
+            return res.json({ success: false, message: 'המשתמש לא נמצא ברשימת ההמתנה' });
+        }
+
+        // הסרת המשתמש מהרשימה
+        pending.splice(userIndex, 1);
+
+        // שמירה חזרה לקובץ
+        await fs.writeFile(pendingPath, JSON.stringify(pending, null, 2));
+
+        res.json({ success: true, message: 'הבקשה נדחתה בהצלחה' });
+
+    } catch (err) {
+        console.error('Error rejecting user:', err);
+        res.status(500).json({ success: false, message: 'שגיאה בדחיית הבקשה' });
+    }
+});
+
+// API route למחיקת משתמש מאושר
+app.post('/api/delete-user', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+
+        const emailClean = email.trim().toLowerCase();
+        const approvedPath = path.join(__dirname, 'data', 'approved.json');
+
+        // קריאת קובץ המאושרים
+        const approved = await fs.readFile(approvedPath, 'utf-8').then(data => JSON.parse(data)).catch(() => []);
+
+        const userIndex = approved.findIndex(u => u.email?.toLowerCase() === emailClean);
+        if (userIndex === -1) {
+            return res.json({ success: false, message: 'המשתמש לא נמצא ברשימת המאושרים' });
+        }
+
+        // הסרת המשתמש מהרשימה
+        approved.splice(userIndex, 1);
+
+        // שמירה חזרה לקובץ
+        await fs.writeFile(approvedPath, JSON.stringify(approved, null, 2));
+
+        res.json({ success: true, message: 'המשתמש נמחק בהצלחה' });
+
+    } catch (err) {
+        console.error('Error deleting user:', err);
+        res.status(500).json({ success: false, message: 'שגיאה במחיקת המשתמש' });
+    }
+});
+
+// נתיב לדף האדמין
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 // API route for saving vehicle data - המרה של save-vehicle-data.php
@@ -169,20 +398,8 @@ app.post('/api/vehicles/save', async (req, res) => {
         } else {
             console.log('File does not exist, creating new one');
         }
-
-        // debug - בדיקת תוכן קיים
-        console.log('=== BEFORE ADDING NEW DATA ===');
-        console.log('Existing keys in file:', Object.keys(vehicleData).join(', '));
-        console.log('Total existing records:', Object.keys(vehicleData).length);
-        console.log('New key being added:', key);
-
         // הוספת הנתונים החדשים
         vehicleData[key] = data;
-
-        // debug - בדיקה אחרי הוספה
-        console.log('=== AFTER ADDING NEW DATA ===');
-        console.log('All keys now:', Object.keys(vehicleData).join(', '));
-        console.log('Total records now:', Object.keys(vehicleData).length);
 
         // הכנת נתונים לשמירה
         const jsonData = JSON.stringify(vehicleData, null, 2);
@@ -263,6 +480,76 @@ app.get('/api/vehicles/data', async (req, res) => {
     } catch (error) {
         console.error('Error reading vehicle data:', error);
         res.json({});
+    }
+});
+
+
+// API לבדיקת הרשאות אדמין
+app.post('/api/check-admin', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.json({ success: false, isAdmin: false });
+        }
+
+        const approvedPath = path.join(__dirname, 'data', 'approved.json');
+        const approved = await fs.readFile(approvedPath, 'utf-8').then(data => JSON.parse(data)).catch(() => []);
+
+        const user = approved.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
+
+        if (user && user.isAdmin === true) {
+            res.json({ success: true, isAdmin: true });
+        } else {
+            res.json({ success: false, isAdmin: false });
+        }
+
+    } catch (err) {
+        console.error('Error checking admin status:', err);
+        res.json({ success: false, isAdmin: false });
+    }
+});
+
+// API route לכניסת משתמשים - הוסף לפני הroutes של vehicles
+app.post('/login-user', upload.none(), async (req, res) => {
+    try {
+        let data = req.body;
+        if (req.body.data) {
+            data = JSON.parse(req.body.data);
+        }
+        
+        const { email } = data;
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+
+        const approvedPath = path.join(__dirname, 'data', 'approved.json');
+        const approved = await fs.readFile(approvedPath, 'utf-8').then(data => JSON.parse(data)).catch(() => []);
+
+        const emailClean = email.trim().toLowerCase();
+        const user = approved.find(u => u.email?.toLowerCase() === emailClean);
+
+        if (user) {
+            res.json({ 
+                success: true, 
+                message: 'התחברות הצליחה',
+                userData: {
+                    company: user.company,
+                    fullName: user.fullName,
+                    isAdmin: !!user.isAdmin
+                }
+            });
+        } else {
+            res.json({ 
+                success: false, 
+                message: 'המייל אינו מורשה במערכת' 
+            });
+        }
+
+    } catch (err) {
+        console.error('Error in login route:', err);
+        res.status(500).json({ success: false, message: 'שגיאה בשרת' });
     }
 });
 

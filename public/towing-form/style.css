@@ -796,3 +796,24 @@ textarea {
     }
 }
 
+#adminDashboard {
+    background: #e53e3e;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    margin-left: 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+#adminDashboard:hover {
+    background: #c53030;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+#adminDashboard i {
+    margin-left: 0.5rem;
+}

@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניהול המערכת - גרר גולן</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f5f7fa;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: #3182ce;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            background: #e2e8f0;
+            color: #64748b;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .tab.active {
+            background: white;
+            color: #3182ce;
+            border-bottom: 2px solid #3182ce;
+        }
+
+        .tab:hover:not(.active) {
+            background: #cbd5e0;
+        }
+
+        .content {
+            background: white;
+            padding: 2rem;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            min-height: 500px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .users-table th,
+        .users-table td {
+            text-align: right;
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .users-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .users-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            margin: 0 0.25rem;
+        }
+
+        .btn-primary {
+            background: #3182ce;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2c5282;
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c53030;
+        }
+
+        .btn-success {
+            background: #38a169;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #2f855a;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.1);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .alert-error {
+            background: #fff5f5;
+            color: #742a2a;
+            border: 1px solid #fed7d7;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 0.5rem;
+            }
+
+            .header {
+                padding: 1rem;
+            }
+
+            .content {
+                padding: 1rem;
+            }
+
+            .users-table {
+                font-size: 0.9rem;
+            }
+
+            .users-table th,
+            .users-table td {
+                padding: 0.5rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-cogs"></i> ניהול המערכת - גרר גולן</h1>
+        <button class="logout-btn" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> התנתק
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('pending')">
+                <i class="fas fa-clock"></i> בקשות ממתינות
+            </button>
+            <button class="tab" onclick="showTab('approved')">
+                <i class="fas fa-users"></i> משתמשים מאושרים
+            </button>
+            <button class="tab" onclick="showTab('stats')">
+                <i class="fas fa-chart-bar"></i> סטטיסטיקות
+            </button>
+        </div>
+
+        <div class="content">
+            <div id="alert-container"></div>
+
+            <!-- טאב בקשות ממתינות -->
+            <div id="pending-tab" class="tab-content active">
+                <h2><i class="fas fa-clock"></i> בקשות רישום ממתינות לאישור</h2>
+                <input type="text" class="search-box" placeholder="חיפוש לפי מייל או שם..." onkeyup="filterTable('pending-table', this.value)">
+                <div id="pending-loading" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> טוען בקשות...
+                </div>
+                <div id="pending-content"></div>
+            </div>
+
+            <!-- טאב משתמשים מאושרים -->
+            <div id="approved-tab" class="tab-content">
+                <h2><i class="fas fa-users"></i> משתמשים מאושרים</h2>
+                <input type="text" class="search-box" placeholder="חיפוש לפי מייל או שם..." onkeyup="filterTable('approved-table', this.value)">
+                <div id="approved-loading" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> טוען משתמשים...
+                </div>
+                <div id="approved-content"></div>
+            </div>
+
+            <!-- טאב סטטיסטיקות -->
+            <div id="stats-tab" class="tab-content">
+                <h2><i class="fas fa-chart-bar"></i> סטטיסטיקות המערכת</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3 id="pending-count">0</h3>
+                        <p>בקשות ממתינות</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="approved-count">0</h3>
+                        <p>משתמשים מאושרים</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="total-count">0</h3>
+                        <p>סה"כ בקשות</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pendingUsers = [];
+        let approvedUsers = [];
+
+        // טעינת הדף
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPendingUsers();
+            loadApprovedUsers();
+        });
+
+        // החלפת טאבים
+        function showTab(tabName) {
+            // הסתרת כל הטאבים
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // הצגת הטאב הנבחר
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            document.querySelector(`[onclick="showTab('${tabName}')"]`).classList.add('active');
+
+            // טעינת נתונים אם נדרש
+            if (tabName === 'pending') {
+                loadPendingUsers();
+            } else if (tabName === 'approved') {
+                loadApprovedUsers();
+            } else if (tabName === 'stats') {
+                updateStats();
+            }
+        }
+
+        // טעינת בקשות ממתינות
+        async function loadPendingUsers() {
+            try {
+                document.getElementById('pending-loading').style.display = 'block';
+                const response = await fetch('/api/pending-users');
+                const result = await response.json();
+
+                if (result.success) {
+                    pendingUsers = result.users;
+                    displayPendingUsers(pendingUsers);
+                } else {
+                    showAlert('שגיאה בטעינת בקשות ממתינות', 'error');
+                }
+            } catch (error) {
+                showAlert('שגיאה בחיבור לשרת', 'error');
+            } finally {
+                document.getElementById('pending-loading').style.display = 'none';
+            }
+        }
+
+        // טעינת משתמשים מאושרים
+        async function loadApprovedUsers() {
+            try {
+                document.getElementById('approved-loading').style.display = 'block';
+                const response = await fetch('/api/approved-users');
+                const result = await response.json();
+
+                if (result.success) {
+                    approvedUsers = result.users;
+                    displayApprovedUsers(approvedUsers);
+                } else {
+                    showAlert('שגיאה בטעינת משתמשים מאושרים', 'error');
+                }
+            } catch (error) {
+                showAlert('שגיאה בחיבור לשרת', 'error');
+            } finally {
+                document.getElementById('approved-loading').style.display = 'none';
+            }
+        }
+
+        // הצגת בקשות ממתינות
+        function displayPendingUsers(users) {
+            const container = document.getElementById('pending-content');
+            
+            if (users.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h3>אין בקשות ממתינות</h3>
+                        <p>כל הבקשות טופלו</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const table = `
+                <table class="users-table" id="pending-table">
+                    <thead>
+                        <tr>
+                            <th>מייל</th>
+                            <th>שם מלא</th>
+                            <th>חברה</th>
+                            <th>תפקיד</th>
+                            <th>תאריך בקשה</th>
+                            <th>פעולות</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => `
+                            <tr>
+                                <td>${user.email}</td>
+                                <td>${user.fullName}</td>
+                                <td>${user.company}</td>
+                                <td>${user.role}</td>
+                                <td>${formatDate(user.requestedAt)}</td>
+                                <td>
+                                    <button class="btn btn-success" onclick="approveUser('${user.email}')">
+                                        <i class="fas fa-check"></i> אשר
+                                    </button>
+                                    <button class="btn btn-danger" onclick="rejectUser('${user.email}')">
+                                        <i class="fas fa-times"></i> דחה
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            container.innerHTML = table;
+        }
+
+        // הצגת משתמשים מאושרים
+        function displayApprovedUsers(users) {
+            const container = document.getElementById('approved-content');
+            
+            if (users.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h3>אין משתמשים מאושרים</h3>
+                        <p>טרם אושרו משתמשים במערכת</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const table = `
+                <table class="users-table" id="approved-table">
+                    <thead>
+                        <tr>
+                            <th>מייל</th>
+                            <th>שם מלא</th>
+                            <th>חברה</th>
+                            <th>תפקיד</th>
+                            <th>תאריך אישור</th>
+                            <th>פעולות</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => `
+                            <tr>
+                                <td>${user.email}</td>
+                                <td>${user.fullName}</td>
+                                <td>${user.company}</td>
+                                <td>${user.role}</td>
+                                <td>${formatDate(user.approvedAt)}</td>
+                                <td>
+                                    <button class="btn btn-danger" onclick="deleteUser('${user.email}')">
+                                        <i class="fas fa-trash"></i> מחק
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            container.innerHTML = table;
+        }
+
+        // אישור משתמש
+        async function approveUser(email) {
+            if (!confirm(`האם אתה בטוח שברצונך לאשר את המשתמש ${email}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/approve-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('המשתמש אושר בהצלחה!', 'success');
+                    loadPendingUsers();
+                    loadApprovedUsers();
+                    updateStats();
+                } else {
+                    showAlert(result.message || 'שגיאה באישור המשתמש', 'error');
+                }
+            } catch (error) {
+                showAlert('שגיאה בחיבור לשרת', 'error');
+            }
+        }
+
+        // דחיית/מחיקת בקשה
+        async function rejectUser(email) {
+            if (!confirm(`האם אתה בטוח שברצונך לדחות את הבקשה של ${email}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/reject-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('הבקשה נדחתה בהצלחה', 'success');
+                    loadPendingUsers();
+                    updateStats();
+                } else {
+                    showAlert(result.message || 'שגיאה בדחיית הבקשה', 'error');
+                }
+            } catch (error) {
+                showAlert('שגיאה בחיבור לשרת', 'error');
+            }
+        }
+
+        // מחיקת משתמש מאושר
+        async function deleteUser(email) {
+            if (!confirm(`האם אתה בטוח שברצונך למחוק את המשתמש ${email}?\nפעולה זו בלתי הפיכה!`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/delete-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('המשתמש נמחק בהצלחה', 'success');
+                    loadApprovedUsers();
+                    updateStats();
+                } else {
+                    showAlert(result.message || 'שגיאה במחיקת המשתמש', 'error');
+                }
+            } catch (error) {
+                showAlert('שגיאה בחיבור לשרת', 'error');
+            }
+        }
+
+        // חיפוש בטבלה
+        function filterTable(tableId, searchTerm) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+
+            const rows = table.getElementsByTagName('tr');
+            searchTerm = searchTerm.toLowerCase();
+
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                let found = false;
+
+                for (let j = 0; j < cells.length - 1; j++) { // לא מחפשים בעמודת הפעולות
+                    if (cells[j].textContent.toLowerCase().includes(searchTerm)) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                row.style.display = found ? '' : 'none';
+            }
+        }
+
+        // עדכון סטטיסטיקות
+        function updateStats() {
+            document.getElementById('pending-count').textContent = pendingUsers.length;
+            document.getElementById('approved-count').textContent = approvedUsers.length;
+            document.getElementById('total-count').textContent = pendingUsers.length + approvedUsers.length;
+        }
+
+        // הצגת התראות
+        function showAlert(message, type) {
+            const container = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // עיצוב תאריך
+        function formatDate(dateString) {
+            if (!dateString) return 'לא ידוע';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('he-IL') + ' ' + date.toLocaleTimeString('he-IL', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        // התנתקות
+        function logout() {
+            if (confirm('האם אתה בטוח שברצונך להתנתק?')) {
+                localStorage.clear();
+                window.location.href = '/';
+            }
+        }
+
+        // טעינה מחדש כל 30 שניות
+        setInterval(() => {
+            const activeTab = document.querySelector('.tab.active').textContent;
+            if (activeTab.includes('ממתינות')) {
+                loadPendingUsers();
+            } else if (activeTab.includes('מאושרים')) {
+                loadApprovedUsers();
+            }
+            updateStats();
+        }, 30000);
+    </script>
+</body>
+</html>

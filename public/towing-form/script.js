@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() { 
     // אלמנטים ראשיים
     const mainForm = document.getElementById('towingForm');
     const summaryPage = document.getElementById('summaryPage');
@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // אתחול תאריך ושעה
     initDateTime();
+
+    checkAdminStatus();
     
     // הגדרת אירועים
     setupDateButtons();
@@ -879,4 +881,38 @@ function getCarTypeFieldId(context) {
         'exchangeDefective': 'exchangeDefectiveType'
     };
     return fieldMap[context];
+}
+
+// פונקציה לבדיקת סטטוס אדמין
+async function checkAdminStatus() {
+    const userEmail = localStorage.getItem('userEmail');
+    
+    if (!userEmail) return;
+
+    try {
+        const response = await fetch('../api/check-admin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: userEmail })
+        });
+
+        const result = await response.json();
+        
+        if (result.success && result.isAdmin) {
+            // המשתמש הוא אדמין - הצג את כפתור הדשבורד
+            const adminButton = document.getElementById('adminDashboard');
+            if (adminButton) {
+                adminButton.style.display = 'inline-block';
+            }
+        }
+    } catch (error) {
+        console.error('Error checking admin status:', error);
+    }
+}
+
+// פונקציה לפתיחת דשבורד האדמין
+function openAdminDashboard() {
+    window.open('/admin', '_blank');
 }

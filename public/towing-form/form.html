@@ -10,14 +10,53 @@
     <script src="https://accounts.google.com/gsi/client"></script>
 </head>
 <body>
+<script>
+        // בדיקת הרשאות - חובה להיות מתחבר
+        (function() {
+            const userEmail = localStorage.getItem('userEmail');
+            
+            if (!userEmail) {
+                alert('נדרשת התחברות למערכת');
+                window.location.href = '../index.html';
+                return;
+            }
+
+            // בדיקה שהמשתמש מאושר במערכת
+            fetch('../api/check-auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: userEmail })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (!result.success) {
+                    alert('המשתמש אינו מורשה במערכת');
+                    localStorage.clear();
+                    window.location.href = '../index.html';
+                }
+            })
+            .catch(error => {
+                console.error('Error checking auth:', error);
+                alert('שגיאה בבדיקת הרשאות');
+                window.location.href = '../index.html';
+            });
+        })();
+    </script>
+
     <div id="formError" class="error-message" style="display: none;"></div>
     <header class="main-header">
         <div class="logo">
-            <h1 id="companyName"></h1>
-            <button id="logoutBtn" onclick="logout()">
-                התנתק
-            </button>
-        </div>
+        <h1 id="companyName"></h1>
+        <!-- כפתור דשבורד אדמין - יוצג רק לאדמינים -->
+        <button id="adminDashboard" style="display: none;" onclick="openAdminDashboard()">
+            <i class="fas fa-cogs"></i> דשבורד אדמין
+        </button>
+        <button id="logoutBtn" onclick="logout()">
+            התנתק
+        </button>
+    </div>
     </header>
 
     <div class="main-container">
