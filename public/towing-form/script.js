@@ -110,6 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (exchangeForm) exchangeForm.classList.remove('hidden');
             }
             updateRequiredFieldsVisibility();
+            setTimeout(() => setupPhoneSanitization(), 100);
         });
     }
     
@@ -124,6 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 updateShareOptions();
                 updateRequiredFieldsVisibility();
+                setTimeout(() => setupPhoneSanitization(), 100);
             });
 
         }
@@ -162,6 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (sourcePreview) sourcePreview.style.display = 'none';
                 if (destinationPreview) destinationPreview.style.display = 'none';
                 updateRequiredFieldsVisibility();
+                setTimeout(() => setupPhoneSanitization(), 100);
             });
         }
         updateRequiredFieldsVisibility();
@@ -573,6 +576,44 @@ function setupLicenseNumberSanitization() {
     });
 }
 
+function setupPhoneSanitization() {
+    const phoneFields = [
+        'contactPhone1',
+        'destContactPhone',
+        'contactPhone2',
+        'destContactPhone2',
+        'workingSourcePhone',
+        'workingDestPhone',
+        'garagePhone'
+    ];
+
+    phoneFields.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            // הסרת כל המאזינים הקודמים - כולל אלה של סקריפטים חיצוניים
+            const newInput = input.cloneNode(true);
+            input.parentNode.replaceChild(newInput, input);
+            
+            // הוספת המאזין החדש שלנו
+            newInput.addEventListener('input', function(e) {
+                const cursorPos = e.target.selectionStart;
+                const cleanValue = e.target.value.replace(/[^0-9]/g, '');
+                e.target.value = cleanValue.slice(0, 10);
+                e.target.setSelectionRange(cursorPos, cursorPos);
+            });
+            
+            // הוספת מאזין נוסף ל-paste (הדבקה)
+            newInput.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+                const cleanValue = pasteData.replace(/[^0-9]/g, '');
+                e.target.value = cleanValue.slice(0, 10);
+            });
+        }
+    });
+}
+
+
 function getCarNumberFieldId(context) {
     const fieldMap = {
         'defective': 'defectiveCarNumber',
@@ -839,6 +880,10 @@ function getCarNumberFieldId(context) {
     // הפעלת פונקציונליות מילוי אוטומטי
     setupVehicleLookup();
     setupLicenseNumberSanitization();
+    setupPhoneSanitization()
+    setTimeout(() => {
+    setupPhoneSanitization();
+}, 2000);
 });
 
 // פונקציות להצגה/הסתרה של שדות סוג רכב
