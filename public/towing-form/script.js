@@ -725,40 +725,46 @@ function getCarNumberFieldId(context) {
 
     // פונקציה למילוי הנתונים בטופס
     function fillVehicleData(vehicle, status, towTypes, context) {
-        const typeFieldMap = {
-            'defective': 'defectiveCarType',
-            'defective2': 'defectiveCarType2', 
-            'working': 'workingCarType',
-            'exchangeDefective': 'exchangeDefectiveType'
-        };
+    const typeFieldMap = {
+        'defective': 'defectiveCarType',
+        'defective2': 'defectiveCarType2', 
+        'working': 'workingCarType',
+        'exchangeDefective': 'exchangeDefectiveType'
+    };
 
-        const typeFieldId = typeFieldMap[context];
-        if (typeFieldId) {
-            const typeField = document.getElementById(typeFieldId);
-            if (typeField) {
-                // יצירת תיאור מקוצר לשדה סוג רכב
-                let vehicleDescription = '';
-                if (vehicle.manufacturer) vehicleDescription += vehicle.manufacturer;
-                if (vehicle.model) vehicleDescription += (vehicleDescription ? ' ' : '') + vehicle.model;
-                if (vehicle.year) vehicleDescription += (vehicleDescription ? ' ' : '') + vehicle.year;
-                
-                typeField.value = vehicleDescription;
-                // הצגת שדה סוג רכב כשמצאנו מידע
-                showVehicleTypeField(typeFieldId);
-                
-                // הוספת סגנון ויזואלי להראות שהמידע התמלא אוטומטית
-                typeField.style.backgroundColor = '#e8f5e8';
-                typeField.style.border = '2px solid #4caf50';
-                
-                // הסרת הסגנון לאחר 3 שניות
-                setTimeout(() => {
-                    typeField.style.backgroundColor = '';
-                    typeField.style.border = '';
-                }, 2000);
-            }
+    const typeFieldId = typeFieldMap[context];
+    if (typeFieldId) {
+        console.log('🚗 כל נתוני הרכב:', vehicle);
+        const typeField = document.getElementById(typeFieldId);
+        if (typeField) {
+            // יצירת תיאור מקוצר לשדה סוג רכב
+            let vehicleDescription = '';
+            if (vehicle.manufacturer) vehicleDescription += vehicle.manufacturer;
+            if (vehicle.model) vehicleDescription += (vehicleDescription ? ' ' : '') + vehicle.model;
+            if (vehicle.year) vehicleDescription += (vehicleDescription ? ' ' : '') + vehicle.year;
+            
+            typeField.value = vehicleDescription;
+            
+            // ✨ שמירת צבע וגיר ב-data attributes ✨
+            typeField.dataset.color = vehicle.color || '';
+            typeField.dataset.gear = vehicle.gear || vehicle.transmission || '';
+            console.log(`נשמר מידע עבור ${context}: צבע=${vehicle.color}, גיר=${vehicle.gear || vehicle.transmission}`);
+            
+            // הצגת שדה סוג רכב כשמצאנו מידע
+            showVehicleTypeField(typeFieldId);
+            
+            // הוספת סגנון ויזואלי להראות שהמידע התמלא אוטומטית
+            typeField.style.backgroundColor = '#e8f5e8';
+            typeField.style.border = '2px solid #4caf50';
+            
+            // הסרת הסגנון לאחר 3 שניות
+            setTimeout(() => {
+                typeField.style.backgroundColor = '';
+                typeField.style.border = '';
+            }, 2000);
         }
-
     }
+}
 
     // פונקציה להצגת מידע נוסף על הרכב
     function showVehicleInfo(vehicle, status, towTypes, context) {

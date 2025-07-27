@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxaArsP-ecC8jxVxTBBAKtF972fZv8GXRdJaHYXVUPkg9MSyUyyUe6SRfWghsQ2NWCM/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJo_k65KyT8o0JomtynBFselZP_uh2znZJQBssHbC9VbztK2Ud8LLAay_DE_9fFlbZ/exec";
 // מאזין לכפתור השליחה הסופי
 document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
     e.preventDefault();
@@ -30,6 +30,8 @@ document.getElementById('confirmSubmit').addEventListener('click', async functio
 });
 
 // פונקציה לאיסוף הנתונים מהטופס
+// מצאי את הפונקציה collectFormData והחליפי אותה בזו המעודכנת:
+
 function collectFormData() {
     // קבלת זמן נוכחי
     const now = new Date();
@@ -61,10 +63,16 @@ function collectFormData() {
 
     if (formData.towingType === 'defective') {
         formData.location = document.getElementById('defectiveSource').value;
+        
+        // ✨ קבלת צבע וגיר מה-data attributes ✨
+        const defectiveCarTypeField = document.getElementById('defectiveCarType');
+        
         formData.defectiveCar = {
             carNumber: document.getElementById('defectiveCarNumber').value,
             carType: document.getElementById('defectiveCarType').value,
             carCode: document.getElementById('defectiveCarCode').value,
+            color: defectiveCarTypeField?.dataset.color || '', // ✨ הוספת צבע ✨
+            gear: defectiveCarTypeField?.dataset.gear || '',   // ✨ הוספת גיר ✨
             defectDetails: document.getElementById('defectDetails').value,
             source: document.getElementById('defectiveSource').value,
             destination: document.getElementById('defectiveDestination').value,
@@ -83,10 +91,15 @@ function collectFormData() {
             const shareSource = document.querySelector('.choice-btn[data-target="same-source"]').classList.contains('selected');
             const shareDestination = document.querySelector('.choice-btn[data-target="same-destination"]').classList.contains('selected');
             
+            // ✨ קבלת צבע וגיר של רכב שני ✨
+            const defectiveCarType2Field = document.getElementById('defectiveCarType2');
+            
             formData.secondDefectiveCar = {
                 carNumber: document.getElementById('defectiveCarNumber2').value,
                 carType: document.getElementById('defectiveCarType2').value,
                 carCode: document.getElementById('defectiveCarCode2').value,
+                color: defectiveCarType2Field?.dataset.color || '', // ✨ הוספת צבע ✨
+                gear: defectiveCarType2Field?.dataset.gear || '',   // ✨ הוספת גיר ✨
                 defectDetails: document.getElementById('defectDetails2').value,
                 shareSource: shareSource,
                 shareDestination: shareDestination
@@ -120,10 +133,16 @@ function collectFormData() {
         }
     } else if (formData.towingType === 'exchange') {
         formData.location = document.getElementById('workingCarSource').value;
+        
+        // ✨ קבלת צבע וגיר של רכב תקין ✨
+        const workingCarTypeField = document.getElementById('workingCarType');
+        
         formData.workingCar = {
             carType: document.getElementById('workingCarType').value,
             carNumber: document.getElementById('workingCarNumber').value,
             carCode: document.getElementById('workingCarCode').value,
+            color: workingCarTypeField?.dataset.color || '', // ✨ הוספת צבע ✨
+            gear: workingCarTypeField?.dataset.gear || '',   // ✨ הוספת גיר ✨
             source: document.getElementById('workingCarSource').value,
             destination: document.getElementById('workingCarDestination').value,
             sourceContact: {
@@ -136,10 +155,15 @@ function collectFormData() {
             }
         };
 
+        // ✨ קבלת צבע וגיר של רכב תקול לאיסוף ✨
+        const exchangeDefectiveTypeField = document.getElementById('exchangeDefectiveType');
+
         formData.defectivePickup = {
             carType: document.getElementById('exchangeDefectiveType').value,
             carNumber: document.getElementById('exchangeDefectiveNumber').value,
             carCode: document.getElementById('exchangeDefectiveCode').value,
+            color: exchangeDefectiveTypeField?.dataset.color || '', // ✨ הוספת צבע ✨
+            gear: exchangeDefectiveTypeField?.dataset.gear || '',   // ✨ הוספת גיר ✨
             defectDetails: document.getElementById('exchangeDefectiveDetails').value,
             destination: document.getElementById('exchangeDefectiveDestination').value,
             garageContact: {
