@@ -35,6 +35,41 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentDate = now.toISOString().split('T')[0];
         document.getElementById('executionDate').value = currentDate;
     }
+
+    function generateOrderNumber() {
+    const now = new Date();
+    
+    // קבלת התאריך בפורמט DDMMYY
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // חודשים מתחילים מ-0
+    const year = String(now.getFullYear()).slice(-2); // שנתיים אחרונות
+    
+    // קבלת השעה בפורמט HHMMSS
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    
+    // יצירת מספר ההזמנה: DDMMYYHHMMSS
+    return day + month + year + hours + minutes + seconds;
+}
+
+function setDefaultOrderNumber() {
+    const orderNumberField = document.getElementById('orderNumber');
+    
+    if (orderNumberField && !orderNumberField.value.trim()) {
+        orderNumberField.value = generateOrderNumber();
+        
+        // הוספת סגנון ויזואלי להראות שהמספר נוצר אוטומטית
+        orderNumberField.style.backgroundColor = '#e8f5e8';
+        orderNumberField.style.border = '2px solid #4caf50';
+        
+        // הסרת הסגנון לאחר 2 שניות
+        setTimeout(() => {
+            orderNumberField.style.backgroundColor = '';
+            orderNumberField.style.border = '';
+        }, 2000);
+    }
+}
     
     function setupDateButtons() {
         // מניעת התנהגות ברירת מחדל של כפתורים בטופס
@@ -272,6 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // בדיקת חובת בחירה לפני הצגת עמוד הסיכום
         if (mainForm) {
             mainForm.addEventListener('submit', function(e) {
+                setDefaultOrderNumber();
                 e.preventDefault(); // עצור תמיד את שליחת הטופס הרגילה
                 
                 const towingType = document.getElementById('towingType').value;
@@ -351,6 +387,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('towingType').value = '';
             });
         }
+        document.querySelectorAll('input, select, textarea').forEach(element => {
+            if (element.id !== 'orderNumber') {
+                element.addEventListener('focus', function() {
+                    setDefaultOrderNumber();
+                });
+            }
+        });
     }
     
     // פונקציות הנוגעות לעמוד הסיכום
