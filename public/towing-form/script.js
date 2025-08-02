@@ -18,6 +18,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const companyName = localStorage.getItem('userCompany') || 'חברה לא מזוהה';
     document.getElementById('companyName').textContent = companyName;
 
+    // בדיקה אם זה גרר גולן
+    const isGrerGolan = companyName === 'גרר גולן';
+
+    // הצגת שדה שם לקוח רק עבור גרר גולן
+    if (isGrerGolan) {
+        const clientNameGroup = document.getElementById('clientNameGroup');
+        if (clientNameGroup) {
+            clientNameGroup.style.display = 'block';
+        }
+    }
+
     // אתחול תאריך ושעה
     initDateTime();
 

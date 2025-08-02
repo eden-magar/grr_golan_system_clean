@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzmh6_VfKa8dhYCJdzDv6TOi9rBNr7NjDY-SeEHKU9vzOEtJGeG9acDkQeiZuwXnTOq/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwfgqtfz2SgefYRYRG_M25mDcjK3CHHKJmIxdRuMiT59g8E1ORv2l2UhFgFXcnE9hCo/exec";
 // מאזין לכפתור השליחה הסופי
 document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
     e.preventDefault();
@@ -53,6 +53,7 @@ function collectFormData() {
         notes: document.getElementById('notes').value,
         submittedBy: localStorage.getItem('userEmail') || 'לא ידוע',
         company: localStorage.getItem('userCompany') || 'לא ידוע', // הוספת שם החברה
+        clientName: document.getElementById('clientName').value || '',
         department: localStorage.getItem('userDepartment') || '' // הוספת שם המחלקה
     };
 
