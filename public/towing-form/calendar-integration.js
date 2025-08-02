@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwgOHwdsohJhwZfAcz5oPz3ROC1RgxsaVVrQhF6RxUaLndCkexQury0Hy2vxoAsHyav/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx19ZVGQMCy2lK2ZQBp--2ZsEQIt5icnq808eFIy-I5VU5yy4N8aody0gsTzoV8MY5R/exec";
 // מאזין לכפתור השליחה הסופי
 document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
     e.preventDefault();
