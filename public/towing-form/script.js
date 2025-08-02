@@ -582,17 +582,57 @@ function setDefaultOrderNumber() {
     // ===== הוספת פונקציונליות מילוי אוטומטי של רכבים =====
     
     // מאזינים לשינויים בשדות מספר רכב
-    function setupVehicleLookup() {
-    // מאזינים לכפתורי "הזן"
-    document.querySelectorAll('.lookup-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const context = this.dataset.target;
-            const licenseField = document.getElementById(getCarNumberFieldId(context));
-            
-            if (licenseField && licenseField.value.length >= 6) {
-                lookupVehicleData(licenseField.value, context);
-            } else {
-                showVehicleWarning('אנא הזן מספר רכב תקין (לפחות 6 ספרות)', 'warning');
+// מאזינים לשדות מספר רכב לחיפוש אוטומטי
+function setupVehicleLookup() {
+    const vehicleFields = [
+        { id: 'defectiveCarNumber', context: 'defective' },
+        { id: 'defectiveCarNumber2', context: 'defective2' },
+        { id: 'workingCarNumber', context: 'working' },
+        { id: 'exchangeDefectiveNumber', context: 'exchangeDefective' }
+    ];
+
+    vehicleFields.forEach(({ id, context }) => {
+        const field = document.getElementById(id);
+        if (!field) return;
+
+        // משתנה לעקיבה אחר חיפושים
+        let lastSearchedValue = '';
+        let hasSearched = false;
+
+        // חיפוש מיידי אחרי הדבקה
+        field.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                const cleanValue = this.value.replace(/[^0-9]/g, '');
+                if (cleanValue.length >= 6 && cleanValue !== lastSearchedValue) {
+                    lookupVehicleData(cleanValue, context);
+                    lastSearchedValue = cleanValue;
+                    hasSearched = true;
+                }
+            }, 10); // השהיה קטנה כדי לתת לערך להתעדכן
+        });
+
+        // חיפוש כשעוזבים את השדה (אם עדיין לא חיפשנו)
+        field.addEventListener('blur', function() {
+            const cleanValue = this.value.replace(/[^0-9]/g, '');
+            if (cleanValue.length >= 6 && cleanValue !== lastSearchedValue && !hasSearched) {
+                lookupVehicleData(cleanValue, context);
+                lastSearchedValue = cleanValue;
+                hasSearched = true;
+            }
+        });
+
+        // איפוס מצב החיפוש כשמשנים את הערך
+        field.addEventListener('input', function() {
+            const cleanValue = this.value.replace(/[^0-9]/g, '');
+            if (cleanValue !== lastSearchedValue) {
+                hasSearched = false;
+                // הסתרת שדה סוג רכב אם משנים את המספר
+                if (cleanValue.length < 6) {
+                    const typeFieldId = getCarTypeFieldId(context);
+                    hideVehicleTypeField(typeFieldId);
+                    const typeField = document.getElementById(typeFieldId);
+                    if (typeField) typeField.value = '';
+                }
             }
         });
     });
