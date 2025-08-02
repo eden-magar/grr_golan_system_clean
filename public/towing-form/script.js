@@ -969,7 +969,8 @@ function getCarNumberFieldId(context) {
     // הפעלת פונקציונליות מילוי אוטומטי
     setupVehicleLookup();
     setupLicenseNumberSanitization();
-    setupPhoneSanitization()
+    setupPhoneSanitization();
+    setupAddressTracking(); 
     setTimeout(() => {
     setupPhoneSanitization();
 }, 2000);
@@ -1044,6 +1045,32 @@ async function checkAdminStatus() {
     } catch (error) {
         console.error('Error checking admin status:', error);
     }
+}
+
+// מעקב אחר סוג כתובות (גוגל vs טקסט חופשי)
+function setupAddressTracking() {
+    const addressFields = [
+        'defectiveSource',
+        'defectiveDestination', 
+        'defectiveSource2',
+        'defectiveDestination2',
+        'workingCarSource',
+        'workingCarDestination',
+        'exchangeDefectiveDestination'
+    ];
+
+    addressFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+
+        // ברירת מחדל - טקסט חופשי
+        field.dataset.isGoogleAddress = 'false';
+
+        // כשמשתמש מקליד ידנית - זה טקסט חופשי
+        field.addEventListener('input', function() {
+            this.dataset.isGoogleAddress = 'false';
+        });
+    });
 }
 
 // פונקציה לפתיחת דשבורד האדמין

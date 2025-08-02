@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJo_k65KyT8o0JomtynBFselZP_uh2znZJQBssHbC9VbztK2Ud8LLAay_DE_9fFlbZ/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzmh6_VfKa8dhYCJdzDv6TOi9rBNr7NjDY-SeEHKU9vzOEtJGeG9acDkQeiZuwXnTOq/exec";
 // מאזין לכפתור השליחה הסופי
 document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
     e.preventDefault();
@@ -74,8 +74,14 @@ function collectFormData() {
             color: defectiveCarTypeField?.dataset.color || '', // ✨ הוספת צבע ✨
             gear: defectiveCarTypeField?.dataset.gear || '',   // ✨ הוספת גיר ✨
             defectDetails: document.getElementById('defectDetails').value,
-            source: document.getElementById('defectiveSource').value,
-            destination: document.getElementById('defectiveDestination').value,
+            source: {
+                address: document.getElementById('defectiveSource').value,
+                isGoogleAddress: document.getElementById('defectiveSource').dataset.isGoogleAddress === 'true'
+            },
+            destination: {
+                address: document.getElementById('defectiveDestination').value,
+                isGoogleAddress: document.getElementById('defectiveDestination').dataset.isGoogleAddress === 'true'
+            },
             primaryContact: {
                 name: document.getElementById('contactName1').value,
                 phone: document.getElementById('contactPhone1').value
@@ -107,7 +113,10 @@ function collectFormData() {
             
             // אם לא משתפים את המוצא, השתמש בערכים שהוזנו
             if (!shareSource) {
-                formData.secondDefectiveCar.source = document.getElementById('defectiveSource2').value;
+                formData.secondDefectiveCar.source = {
+                    address: document.getElementById('defectiveSource2').value,
+                    isGoogleAddress: document.getElementById('defectiveSource2').dataset.isGoogleAddress === 'true'
+                };
                 formData.secondDefectiveCar.primaryContact = {
                     name: document.getElementById('contactName2').value,
                     phone: document.getElementById('contactPhone2').value
@@ -120,7 +129,10 @@ function collectFormData() {
             
             // אם לא משתפים את היעד, השתמש בערכים שהוזנו
             if (!shareDestination) {
-                formData.secondDefectiveCar.destination = document.getElementById('defectiveDestination2').value;
+                formData.secondDefectiveCar.destination = {
+                address: document.getElementById('defectiveDestination2').value,
+                isGoogleAddress: document.getElementById('defectiveDestination2').dataset.isGoogleAddress === 'true'
+            };
                 formData.secondDefectiveCar.destinationContact = {
                     name: document.getElementById('destContactName2').value,
                     phone: document.getElementById('destContactPhone2').value
@@ -143,8 +155,14 @@ function collectFormData() {
             carCode: document.getElementById('workingCarCode').value,
             color: workingCarTypeField?.dataset.color || '', // ✨ הוספת צבע ✨
             gear: workingCarTypeField?.dataset.gear || '',   // ✨ הוספת גיר ✨
-            source: document.getElementById('workingCarSource').value,
-            destination: document.getElementById('workingCarDestination').value,
+            source: {
+                address: document.getElementById('workingCarSource').value,
+                isGoogleAddress: document.getElementById('workingCarSource').dataset.isGoogleAddress === 'true'
+            },
+            destination: {
+                address: document.getElementById('workingCarDestination').value,
+                isGoogleAddress: document.getElementById('workingCarDestination').dataset.isGoogleAddress === 'true'
+            },
             sourceContact: {
                 name: document.getElementById('workingSourceContact').value,
                 phone: document.getElementById('workingSourcePhone').value
@@ -165,7 +183,10 @@ function collectFormData() {
             color: exchangeDefectiveTypeField?.dataset.color || '', // ✨ הוספת צבע ✨
             gear: exchangeDefectiveTypeField?.dataset.gear || '',   // ✨ הוספת גיר ✨
             defectDetails: document.getElementById('exchangeDefectiveDetails').value,
-            destination: document.getElementById('exchangeDefectiveDestination').value,
+            destination: {
+                address: document.getElementById('exchangeDefectiveDestination').value,
+                isGoogleAddress: document.getElementById('exchangeDefectiveDestination').dataset.isGoogleAddress === 'true'
+            },
             garageContact: {
                 name: document.getElementById('garageContact').value,
                 phone: document.getElementById('garagePhone').value

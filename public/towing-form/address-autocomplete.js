@@ -183,6 +183,7 @@ class AddressAutocomplete {
         
         // מילוי השדה
         input.value = selectedAddress;
+        input.dataset.isGoogleAddress = 'true';
         
         // אירוע שינוי לטופס
         input.dispatchEvent(new Event('change', { bubbles: true }));
