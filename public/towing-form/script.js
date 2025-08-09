@@ -842,67 +842,69 @@ function getCarNumberFieldId(context) {
             }, 2000);
         }
     }
+    showVehicleInfo(vehicle, status, towTypes, context);
+
 }
 
     // פונקציה להצגת מידע נוסף על הרכב
     function showVehicleInfo(vehicle, status, towTypes, context) {
-        const fieldMap = {
-            'defective': 'defectiveCarType',
-            'defective2': 'defectiveCarType2',
-            'working': 'workingCarType', 
-            'exchangeDefective': 'exchangeDefectiveType'
-        };
+    const fieldMap = {
+        'defective': 'defectiveCarType',
+        'defective2': 'defectiveCarType2',
+        'working': 'workingCarType', 
+        'exchangeDefective': 'exchangeDefectiveType'
+    };
 
-        const fieldId = fieldMap[context];
-        const field = document.getElementById(fieldId);
-        if (!field) return;
+    const fieldId = fieldMap[context];
+    const field = document.getElementById(fieldId);
+    if (!field) return;
 
-        // הסרת הודעה קיימת אם יש
-        const existingInfo = field.parentNode.querySelector('.vehicle-info-display');
-        if (existingInfo) {
-            existingInfo.remove();
-        }
-
-        // יצירת אלמנט מידע
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'vehicle-info-display';
-        infoDiv.style.cssText = `
-            margin-top: 8px;
-            padding: 10px;
-            background: #f0f9ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 6px;
-            font-size: 13px;
-            line-height: 1.4;
-        `;
-
-        let infoHTML = `
-            <div style="font-weight: bold; color: #1e40af; margin-bottom: 6px;">
-                🚗 ${vehicle.fullDescription}
-            </div>
-        `;
-
-        // הוספת מידע נוסף
-        const details = [];
-        if (vehicle.color) details.push(`צבע: ${vehicle.color}`);
-        if (vehicle.fuelType) details.push(`דלק: ${vehicle.fuelType}`);
-        if (vehicle.weight) details.push(`משקל: ${vehicle.weight}`);
-        
-        if (details.length > 0) {
-            infoHTML += `<div style="color: #64748b;">${details.join(' • ')}</div>`;
-        }
-
-
-        // סטטוס הרכב
-        if (status.isCanceled) {
-            infoHTML += `<div style="color: #dc2626; font-weight: bold; margin-top: 6px;">⚠️ רכב מבוטל</div>`;
-        } else if (status.isInactive) {
-            infoHTML += `<div style="color: #d97706; font-weight: bold; margin-top: 6px;">⚠️ רכב לא פעיל</div>`;
-        }
-
-        infoDiv.innerHTML = infoHTML;
-        field.parentNode.appendChild(infoDiv);
+    // הסרת הודעה קיימת אם יש
+    const existingInfo = field.parentNode.querySelector('.vehicle-info-display');
+    if (existingInfo) {
+        existingInfo.remove();
     }
+
+    // יצירת מידע על המאגר בלבד
+    const source = vehicle.source;
+    let sourceText = 'מאגר ממשלתי';
+    
+    if (source) {
+        const typeMap = {
+            private: 'רכב פרטי',
+            motorcycle: 'דו-גלגלי',
+            heavy: 'מעל 3.5 טון',
+            machinery: 'צמ״ה'
+        };
+        
+        const statusMap = {
+            regular: 'פעיל',
+            canceled: 'מבוטל',
+            inactive: 'לא פעיל'
+        };
+        
+        const vehicleType = typeMap[source.type] || '';
+        const vehicleStatus = statusMap[source.category] || '';
+        
+        sourceText = [vehicleType, vehicleStatus].filter(Boolean).join(' • ');
+    }
+
+    // יצירת אלמנט מידע קטן
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'vehicle-info-display';
+    infoDiv.style.cssText = `
+        margin-top: 5px;
+        padding: 5px 8px;
+        background: #f0f9ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #1e40af;
+    `;
+    infoDiv.textContent = `מקור: ${sourceText}`;
+
+    field.parentNode.appendChild(infoDiv);
+}
 
     // פונקציה להצגת אינדיקטור טעינה
     function showLoadingIndicator(context, show) {
