@@ -397,6 +397,8 @@ function setDefaultOrderNumber() {
                 });
             }
         });
+
+        setupCreditCardFormatting();
     }
     
     // פונקציות הנוגעות לעמוד הסיכום
@@ -736,6 +738,147 @@ function setupPhoneSanitization() {
     });
 }
 
+
+// פונקציה לעיצוב מספר כרטיס אשראי
+function formatCardNumber(value) {
+    // הסרת כל מה שאינו ספרה
+    const numbers = value.replace(/\D/g, '');
+    
+    // הוספת מקפים כל 4 ספרות
+    const formatted = numbers.replace(/(\d{4})(?=\d)/g, '$1-');
+    
+    // הגבלה ל-16 ספרות (19 תווים עם מקפים)
+    return formatted.slice(0, 19);
+}
+
+// פונקציה לעיצוב תאריך תוקף
+function formatExpiryDate(value) {
+    // הסרת כל מה שאינו ספרה
+    const numbers = value.replace(/\D/g, '');
+    
+    // הוספת / אחרי 2 ספרות
+    if (numbers.length >= 2) {
+        return numbers.slice(0, 2) + '/' + numbers.slice(2, 4);
+    }
+    
+    return numbers;
+}
+
+// פונקציה לעיצוב CVV
+function formatCVV(value) {
+    // רק ספרות, מקסימום 4
+    return value.replace(/\D/g, '').slice(0, 4);
+}
+
+// הגדרת מאזינים לשדות כרטיס האשראי
+// החלף את הפונקציה setupCreditCardFormatting בזו:
+
+// מחזיר רק ספרות
+function onlyDigits(str) {
+  return (str || "").replace(/\D+/g, "");
+}
+
+// מחזיר את המיקום בפורמט לאחר N ספרות (מדלג על מפרידים)
+function indexAfterNDigits(formatted, n) {
+  if (n <= 0) return 0;
+  let count = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (/\d/.test(formatted[i])) {
+      count++;
+      if (count === n) return i + 1;
+    }
+  }
+  return formatted.length;
+}
+
+// סופר כמה ספרות יש עד מיקום caret במחרוזת מקורית (לא-פורמט)
+function countDigitsToIndex(str, idx) {
+  return (str.slice(0, idx).match(/\d/g) || []).length;
+}
+
+// ---------- פורמטים בטוחים שלא משנים סדר ספרות ----------
+
+// מספר כרטיס: קבוצות של 4 עם '-' ביניהן, עד 19 ספרות
+function formatCardNumber(value) {
+  const digits = onlyDigits(value).slice(0, 19);
+  const parts = [];
+  for (let i = 0; i < digits.length; i += 4) {
+    parts.push(digits.slice(i, i + 4));
+  }
+  return parts.join("-");
+}
+
+// תוקף: MM/YY (עד 4 ספרות, בלי "תיקון חכם")
+function formatExpiryDate(value) {
+  const digits = onlyDigits(value).slice(0, 4); // MMYY
+  if (digits.length <= 2) return digits;
+  return digits.slice(0, 2) + "/" + digits.slice(2);
+}
+
+// CVV: עד 4 ספרות (לתמיכה ב-AMEX)
+function formatCVV(value) {
+  return onlyDigits(value).slice(0, 4);
+}
+
+// ---------- מאזינים עם שימור מדויק של מיקום הסמן ----------
+function setupCreditCardFormatting() {
+  // מספר כרטיס
+  const cardNumberField = document.getElementById('cardNumber');
+  if (cardNumberField) {
+    cardNumberField.addEventListener('input', function (e) {
+      const input = e.target;
+      const oldRaw = input.value;
+      const oldCursor = input.selectionStart || 0;
+
+      // כמה ספרות היו לפני הסמן בגרסה הישנה
+      const digitsBefore = countDigitsToIndex(oldRaw, oldCursor);
+
+      // פורמט חדש
+      const formatted = formatCardNumber(oldRaw);
+      input.value = formatted;
+
+      // מציב סמן אחרי אותה כמות ספרות (מתעלם ממקפים)
+      const newCursor = indexAfterNDigits(formatted, digitsBefore);
+      input.setSelectionRange(newCursor, newCursor);
+    }, { passive: true });
+  }
+
+  // תאריך תוקף
+  const cardExpiryField = document.getElementById('cardExpiry');
+  if (cardExpiryField) {
+    cardExpiryField.addEventListener('input', function (e) {
+      const input = e.target;
+      const oldRaw = input.value;
+      const oldCursor = input.selectionStart || 0;
+
+      const digitsBefore = countDigitsToIndex(oldRaw, oldCursor);
+
+      const formatted = formatExpiryDate(oldRaw);
+      input.value = formatted;
+
+      const newCursor = indexAfterNDigits(formatted, digitsBefore);
+      input.setSelectionRange(newCursor, newCursor);
+    }, { passive: true });
+  }
+
+  // CVV
+  const cardCvvField = document.getElementById('cardCvv');
+  if (cardCvvField) {
+    cardCvvField.addEventListener('input', function (e) {
+      const input = e.target;
+      const oldRaw = input.value;
+      const oldCursor = input.selectionStart || 0;
+
+      const digitsBefore = countDigitsToIndex(oldRaw, oldCursor);
+
+      const formatted = formatCVV(oldRaw);
+      input.value = formatted;
+
+      const newCursor = indexAfterNDigits(formatted, digitsBefore);
+      input.setSelectionRange(newCursor, newCursor);
+    }, { passive: true });
+  }
+}
 
 function getCarNumberFieldId(context) {
     const fieldMap = {
