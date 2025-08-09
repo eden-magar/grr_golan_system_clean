@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqXJLLUBXk2atEV0KrsxV8K4CFox6f8F_IAH3LdAEiZLoQJKPG27iGfMgdTtRJSbFK/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTXl8nPODVFlvJN7xvgo7bo2BSuQBDpHysRE5mjj2CzVEt-bjGeRDcjfXoMqWV1bky/exec";
 // מאזין לכפתור השליחה הסופי
 document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
     e.preventDefault();
@@ -29,8 +29,37 @@ document.getElementById('confirmSubmit').addEventListener('click', async functio
     }
 });
 
-// פונקציה לאיסוף הנתונים מהטופס
+// ✨ פונקציה חדשה לטיפול בכתובות עם טקסט מקורי
+function processAddress(fieldId) {
+    const field = document.getElementById(fieldId);
+    if (!field) return { address: '', isGoogleAddress: false };
+    
+    const hasChanged = field.dataset.hasChanged === 'true';
+    const originalText = field.dataset.originalText;
+    const physicalAddress = field.dataset.physicalAddress;
+    const currentValue = field.value;
+    
+    let displayAddress;
+    let addressForWaze;
+    
+    if (hasChanged && originalText && physicalAddress) {
+        // אם היה שינוי, הצג: "טקסט מקורי - כתובת פיזית"
+        displayAddress = `${originalText} - ${physicalAddress}`;
+        addressForWaze = physicalAddress; // קישור Waze לכתובת הפיזית
+    } else {
+        // אם אין שינוי, השתמש בערך הנוכחי
+        displayAddress = currentValue;
+        addressForWaze = currentValue;
+    }
+    
+    return {
+        address: displayAddress,
+        physicalAddress: addressForWaze,
+        isGoogleAddress: field.dataset.isGoogleAddress === 'true'
+    };
+}
 
+// פונקציה לאיסוף הנתונים מהטופס
 function collectFormData() {
     // קבלת זמן נוכחי
     const now = new Date();
@@ -67,7 +96,9 @@ formData.dataSource_working = document.getElementById('dataSource_working')?.val
 formData.dataSource_exchangeDefective = document.getElementById('dataSource_exchangeDefective')?.value || '';
 
     if (formData.towingType === 'defective') {
-        formData.location = document.getElementById('defectiveSource').value;
+        // ✨ עדכון location להשתמש בפונקציה החדשה
+        const sourceData = processAddress('defectiveSource');
+        formData.location = sourceData.physicalAddress; // עבור הלוקיישן של האירוע
         
         // ✨ קבלת צבע וגיר מה-data attributes ✨
         const defectiveCarTypeField = document.getElementById('defectiveCarType');
@@ -86,14 +117,9 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
             gearType: defectiveCarTypeField?.dataset.gearType || '',
 
             defectDetails: document.getElementById('defectDetails').value,
-            source: {
-                address: document.getElementById('defectiveSource').value,
-                isGoogleAddress: document.getElementById('defectiveSource').dataset.isGoogleAddress === 'true'
-            },
-            destination: {
-                address: document.getElementById('defectiveDestination').value,
-                isGoogleAddress: document.getElementById('defectiveDestination').dataset.isGoogleAddress === 'true'
-            },
+            // ✨ שימוש בפונקציה החדשה לכתובות
+            source: processAddress('defectiveSource'),
+            destination: processAddress('defectiveDestination'),
             primaryContact: {
                 name: document.getElementById('contactName1').value,
                 phone: document.getElementById('contactPhone1').value
@@ -131,10 +157,8 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
             
             // אם לא משתפים את המוצא, השתמש בערכים שהוזנו
             if (!shareSource) {
-                formData.secondDefectiveCar.source = {
-                    address: document.getElementById('defectiveSource2').value,
-                    isGoogleAddress: document.getElementById('defectiveSource2').dataset.isGoogleAddress === 'true'
-                };
+                // ✨ שימוש בפונקציה החדשה
+                formData.secondDefectiveCar.source = processAddress('defectiveSource2');
                 formData.secondDefectiveCar.primaryContact = {
                     name: document.getElementById('contactName2').value,
                     phone: document.getElementById('contactPhone2').value
@@ -147,10 +171,8 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
             
             // אם לא משתפים את היעד, השתמש בערכים שהוזנו
             if (!shareDestination) {
-                formData.secondDefectiveCar.destination = {
-                address: document.getElementById('defectiveDestination2').value,
-                isGoogleAddress: document.getElementById('defectiveDestination2').dataset.isGoogleAddress === 'true'
-            };
+                // ✨ שימוש בפונקציה החדשה
+                formData.secondDefectiveCar.destination = processAddress('defectiveDestination2');
                 formData.secondDefectiveCar.destinationContact = {
                     name: document.getElementById('destContactName2').value,
                     phone: document.getElementById('destContactPhone2').value
@@ -162,7 +184,9 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
             }
         }
     } else if (formData.towingType === 'exchange') {
-        formData.location = document.getElementById('workingCarSource').value;
+        // ✨ עדכון location להשתמש בפונקציה החדשה
+        const sourceData = processAddress('workingCarSource');
+        formData.location = sourceData.physicalAddress; // עבור הלוקיישן של האירוע
         
         // ✨ קבלת צבע וגיר של רכב תקין ✨
         const workingCarTypeField = document.getElementById('workingCarType');
@@ -179,14 +203,9 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
             fuelType: workingCarTypeField?.dataset.fuelType || '',
             driveType: workingCarTypeField?.dataset.driveType || '',
             gearType: workingCarTypeField?.dataset.gearType || '',
-            source: {
-                address: document.getElementById('workingCarSource').value,
-                isGoogleAddress: document.getElementById('workingCarSource').dataset.isGoogleAddress === 'true'
-            },
-            destination: {
-                address: document.getElementById('workingCarDestination').value,
-                isGoogleAddress: document.getElementById('workingCarDestination').dataset.isGoogleAddress === 'true'
-            },
+            // ✨ שימוש בפונקציה החדשה לכתובות
+            source: processAddress('workingCarSource'),
+            destination: processAddress('workingCarDestination'),
             sourceContact: {
                 name: document.getElementById('workingSourceContact').value,
                 phone: document.getElementById('workingSourcePhone').value
@@ -213,10 +232,8 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
             driveType: exchangeDefectiveTypeField?.dataset.driveType || '',
             gearType: exchangeDefectiveTypeField?.dataset.gearType || '',
             defectDetails: document.getElementById('exchangeDefectiveDetails').value,
-            destination: {
-                address: document.getElementById('exchangeDefectiveDestination').value,
-                isGoogleAddress: document.getElementById('exchangeDefectiveDestination').dataset.isGoogleAddress === 'true'
-            },
+            // ✨ שימוש בפונקציה החדשה לכתובות
+            destination: processAddress('exchangeDefectiveDestination'),
             garageContact: {
                 name: document.getElementById('garageContact').value,
                 phone: document.getElementById('garagePhone').value

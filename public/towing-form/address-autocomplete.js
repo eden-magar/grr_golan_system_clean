@@ -9,6 +9,9 @@ class AddressAutocomplete {
         this.autocompleteServices = new Map();
         this.geocoder = null;
         
+        // ✨ מטמון לשמירת הטקסטים המקוריים
+        this.originalTexts = new Map();
+        
         // רשימת שדות כתובות לזיהוי אוטומטי
         this.addressFields = [
             'defectiveSource',
@@ -93,6 +96,13 @@ class AddressAutocomplete {
         const autocomplete = new google.maps.places.Autocomplete(input, options);
         this.autocompleteServices.set(input.id, autocomplete);
         
+        // ✨ מאזין להקלדה - שמירת הטקסט המקורי
+        input.addEventListener('input', (e) => {
+            this.handleInput(e);
+            // שמירת הטקסט שהמשתמש מקליד
+            this.originalTexts.set(input.id, e.target.value);
+        });
+        
         // מאזין לבחירת מקום
         autocomplete.addListener('place_changed', () => {
             const place = autocomplete.getPlace();
@@ -100,7 +110,6 @@ class AddressAutocomplete {
         });
         
         // מאזינים נוספים
-        input.addEventListener('input', (e) => this.handleInput(e));
         input.addEventListener('keydown', (e) => this.handleKeydown(e));
         input.addEventListener('focus', (e) => this.handleFocus(e));
     }
@@ -157,7 +166,7 @@ class AddressAutocomplete {
     }
     
     /**
-     * טיפול בבחירת מקום
+     * ✨ טיפול בבחירת מקום - עם שמירת טקסט מקורי
      */
     handlePlaceSelection(place, input) {
         if (!place.formatted_address && !place.name) {
@@ -165,12 +174,15 @@ class AddressAutocomplete {
             return;
         }
         
+        // קבלת הטקסט המקורי שהמשתמש הקליד
+        const originalText = this.originalTexts.get(input.id) || '';
+        
         // בחירת הכתובת הטובה ביותר
         let selectedAddress = '';
         
         if (place.name && place.formatted_address) {
             // אם יש שם עסק וכתובת - בדוק איזה יותר מתאים
-            if (this.isBusinessQuery(input.value)) {
+            if (this.isBusinessQuery(originalText)) {
                 selectedAddress = `${place.name}, ${place.formatted_address}`;
             } else {
                 selectedAddress = place.formatted_address;
@@ -179,6 +191,21 @@ class AddressAutocomplete {
             selectedAddress = place.name;
         } else {
             selectedAddress = place.formatted_address;
+        }
+        
+        // ✨ בדיקה אם הטקסט המקורי שונה מהכתובת החדשה
+        const hasChanged = originalText && originalText.trim() !== selectedAddress.trim();
+        
+        if (hasChanged) {
+            // שמירת הטקסט המקורי והכתובת הפיזית
+            input.dataset.originalText = originalText;
+            input.dataset.physicalAddress = selectedAddress;
+            input.dataset.hasChanged = 'true';
+        } else {
+            // אם אין שינוי, נקה את הנתונים הנוספים
+            input.dataset.hasChanged = 'false';
+            delete input.dataset.originalText;
+            delete input.dataset.physicalAddress;
         }
         
         // מילוי השדה
@@ -209,7 +236,8 @@ class AddressAutocomplete {
         const businessKeywords = [
             'מוסך', 'garage', 'שירות', 'service',
             'חנות', 'shop', 'store', 'מרכז', 'center',
-            'בית עסק', 'עסק', 'business', 'חברה', 'company'
+            'בית עסק', 'עסק', 'business', 'חברה', 'company',
+            'חניון', 'parking', 'גרר', 'towing'
         ];
         
         const lowerQuery = query.toLowerCase();
