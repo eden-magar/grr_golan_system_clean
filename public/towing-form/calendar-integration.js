@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZWzLQMcuAywrOk1aqaWXtr1iagwRgfAn3J3E6PJxKznuIpVsdLHrdMy1mA4qlJi1A/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWOK9IXUfnPW-Oklz1PL2lNyNMIPckJRGBcnVRnqAsO7fhEYXWPMRpmlFG7roaR_e4/exec";
 // מאזין לכפתור השליחה הסופי
 document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
     e.preventDefault();
@@ -30,7 +30,6 @@ document.getElementById('confirmSubmit').addEventListener('click', async functio
 });
 
 // פונקציה לאיסוף הנתונים מהטופס
-// מצאי את הפונקציה collectFormData והחליפי אותה בזו המעודכנת:
 
 function collectFormData() {
     // קבלת זמן נוכחי
@@ -77,8 +76,15 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
             carNumber: document.getElementById('defectiveCarNumber').value,
             carType: document.getElementById('defectiveCarType').value,
             carCode: document.getElementById('defectiveCarCode').value,
-            color: defectiveCarTypeField?.dataset.color || '', // ✨ הוספת צבע ✨
-            gear: defectiveCarTypeField?.dataset.gear || '',   // ✨ הוספת גיר ✨
+            color: defectiveCarTypeField?.dataset.color || '', 
+            gear: defectiveCarTypeField?.dataset.gear || '',   
+            machineryType: defectiveCarTypeField?.dataset.machineryType || '',
+            selfWeight: defectiveCarTypeField?.dataset.selfWeight || '',
+            totalWeightTon: defectiveCarTypeField?.dataset.totalWeightTon || '',
+            fuelType: defectiveCarTypeField?.dataset.fuelType || '',
+            driveType: defectiveCarTypeField?.dataset.driveType || '',
+            gearType: defectiveCarTypeField?.dataset.gearType || '',
+
             defectDetails: document.getElementById('defectDetails').value,
             source: {
                 address: document.getElementById('defectiveSource').value,
@@ -110,8 +116,14 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
                 carNumber: document.getElementById('defectiveCarNumber2').value,
                 carType: document.getElementById('defectiveCarType2').value,
                 carCode: document.getElementById('defectiveCarCode2').value,
-                color: defectiveCarType2Field?.dataset.color || '', // ✨ הוספת צבע ✨
-                gear: defectiveCarType2Field?.dataset.gear || '',   // ✨ הוספת גיר ✨
+                color: defectiveCarType2Field?.dataset.color || '', 
+                gear: defectiveCarType2Field?.dataset.gear || '',  
+                machineryType: defectiveCarType2Field?.dataset.machineryType || '',
+                selfWeight: defectiveCarType2Field?.dataset.selfWeight || '',
+                totalWeightTon: defectiveCarType2Field?.dataset.totalWeightTon || '',
+                fuelType: defectiveCarType2Field?.dataset.fuelType || '',
+                driveType: defectiveCarType2Field?.dataset.driveType || '',
+                gearType: defectiveCarType2Field?.dataset.gearType || '',
                 defectDetails: document.getElementById('defectDetails2').value,
                 shareSource: shareSource,
                 shareDestination: shareDestination
@@ -159,8 +171,14 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
             carType: document.getElementById('workingCarType').value,
             carNumber: document.getElementById('workingCarNumber').value,
             carCode: document.getElementById('workingCarCode').value,
-            color: workingCarTypeField?.dataset.color || '', // ✨ הוספת צבע ✨
-            gear: workingCarTypeField?.dataset.gear || '',   // ✨ הוספת גיר ✨
+            color: workingCarTypeField?.dataset.color || '', 
+            gear: workingCarTypeField?.dataset.gear || '',   
+            machineryType: workingCarTypeField?.dataset.machineryType || '',
+            selfWeight: workingCarTypeField?.dataset.selfWeight || '',
+            totalWeightTon: workingCarTypeField?.dataset.totalWeightTon || '',
+            fuelType: workingCarTypeField?.dataset.fuelType || '',
+            driveType: workingCarTypeField?.dataset.driveType || '',
+            gearType: workingCarTypeField?.dataset.gearType || '',
             source: {
                 address: document.getElementById('workingCarSource').value,
                 isGoogleAddress: document.getElementById('workingCarSource').dataset.isGoogleAddress === 'true'
@@ -186,8 +204,14 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
             carType: document.getElementById('exchangeDefectiveType').value,
             carNumber: document.getElementById('exchangeDefectiveNumber').value,
             carCode: document.getElementById('exchangeDefectiveCode').value,
-            color: exchangeDefectiveTypeField?.dataset.color || '', // ✨ הוספת צבע ✨
-            gear: exchangeDefectiveTypeField?.dataset.gear || '',   // ✨ הוספת גיר ✨
+            color: exchangeDefectiveTypeField?.dataset.color || '', 
+            gear: exchangeDefectiveTypeField?.dataset.gear || '',   
+            machineryType: exchangeDefectiveTypeField?.dataset.machineryType || '',
+            selfWeight: exchangeDefectiveTypeField?.dataset.selfWeight || '',
+            totalWeightTon: exchangeDefectiveTypeField?.dataset.totalWeightTon || '',
+            fuelType: exchangeDefectiveTypeField?.dataset.fuelType || '',
+            driveType: exchangeDefectiveTypeField?.dataset.driveType || '',
+            gearType: exchangeDefectiveTypeField?.dataset.gearType || '',
             defectDetails: document.getElementById('exchangeDefectiveDetails').value,
             destination: {
                 address: document.getElementById('exchangeDefectiveDestination').value,

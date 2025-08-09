@@ -369,7 +369,18 @@ function setDefaultOrderNumber() {
                 showSummary();
             });
         }
-        
+        const submitToSummaryBtn = document.getElementById('submitToSummary');
+        if (submitToSummaryBtn) {
+            submitToSummaryBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                // מפעיל את אותה בדיקה כמו submit של הטופס
+                const form = document.getElementById('towingForm');
+                if (form) {
+                    const submitEvent = new Event('submit');
+                    form.dispatchEvent(submitEvent);
+                }
+            });
+        }
         // חזרה לעריכה
         if (backToEdit) {
             backToEdit.addEventListener('click', function() {
@@ -379,34 +390,6 @@ function setDefaultOrderNumber() {
             });
         }
         
-        // אישור ושליחה
-        if (confirmSubmit) {
-            confirmSubmit.addEventListener('click', function() {
-                // כאן תוכל להוסיף קוד לשמירת/שליחת הנתונים
-                alert('הטופס נשלח בהצלחה!');
-                // ניקוי הטופס והחזרה למסך הראשי
-                mainForm.reset();
-                mainForm.classList.remove('hidden');
-                summaryPage.classList.add('hidden');
-                
-                // החזרה למצב התחלתי
-                if (defectiveCarForm) defectiveCarForm.classList.add('hidden');
-                if (exchangeForm) exchangeForm.classList.add('hidden');
-                if (secondDefectiveCarForm) {
-                secondDefectiveCarForm.classList.add('hidden');
-            clearSource('defective2');
-            }
-                
-                // מסתירים את כפתור הוספת הרכב - מחלקת CSS וגם visibility
-                if (addCarButtonContainer) {
-                    addCarButtonContainer.classList.add('hidden');
-                    addCarButtonContainer.style.visibility = 'hidden';
-                }
-                
-                // איפוס בחירת סוג גרירה
-                document.getElementById('towingType').value = '';
-            });
-        }
         document.querySelectorAll('input, select, textarea').forEach(element => {
             if (element.id !== 'orderNumber') {
                 element.addEventListener('focus', function() {
@@ -826,6 +809,12 @@ function getCarNumberFieldId(context) {
             // ✨ שמירת צבע וגיר ב-data attributes ✨
             typeField.dataset.color = vehicle.color || '';
             typeField.dataset.gear = vehicle.gear || vehicle.transmission || '';
+            typeField.dataset.machineryType = vehicle.machineryType || '';
+            typeField.dataset.selfWeight = vehicle.selfWeight || '';
+            typeField.dataset.totalWeightTon = vehicle.totalWeightTon || '';
+            typeField.dataset.fuelType = vehicle.fuelType || '';
+            typeField.dataset.driveType = vehicle.driveType || '';
+            typeField.dataset.gearType = vehicle.gearType || '';
             console.log(`נשמר מידע עבור ${context}: צבע=${vehicle.color}, גיר=${vehicle.gear || vehicle.transmission}`);
             
             // הצגת שדה סוג רכב כשמצאנו מידע

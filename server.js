@@ -689,6 +689,39 @@ app.post('/api/vehicles/quick', async (req, res) => {
         }
 
         // עיבוד הנתונים לפורמט פשוט לטופס הגרירה
+        // אם זה רכב פרטי, חפש מידע נוסף במאגר הנוסף
+        if (vehicleType === 'private' && vehicleData) {
+            try {
+                const model = (vehicleData.tozeret_nm || '') + ' ' + (vehicleData.kinuy_mishari || '');
+                const query = encodeURIComponent(model);
+                const extraApiUrl = `https://data.gov.il/api/3/action/datastore_search?resource_id=${apiResources.private_extra}&q=${query}`;
+                
+                const extraResponse = await fetch(extraApiUrl);
+                const extraResult = await extraResponse.json();
+                
+                if (extraResult.success && extraResult.result.records.length > 0) {
+                    const match = extraResult.result.records.find(record =>
+                        record.shnat_yitzur == vehicleData.shnat_yitzur &&
+                        record.degem_cd == vehicleData.degem_cd &&
+                        record.nefach_manoa == vehicleData.nefach_manoa
+                    );
+                    
+                    if (match) {
+                        vehicleData.hanaa_nm = match.hanaa_nm || vehicleData.hanaa_nm;
+                        vehicleData.automatic_ind = match.automatic_ind || vehicleData.automatic_ind;
+                        
+                        if (vehicleData.automatic_ind) {
+                            vehicleData.automatic_ind = (vehicleData.automatic_ind === '1' || vehicleData.automatic_ind === 1) 
+                                ? 'אוטומטי' 
+                                : 'ידני';
+                            }
+                    
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching extra private vehicle data:', error);
+            }
+        }
         const responseData = {
             success: true,
             vehicle: {
@@ -700,6 +733,13 @@ app.post('/api/vehicles/quick', async (req, res) => {
                 fuelType: vehicleData.sug_delek_nm || '',
                 vehicleType: vehicleData.sug_rechev_nm || '',
                 weight: vehicleData.mishkal_kolel || '',
+
+                machineryType: vehicleData.sug_tzama_nm || '',        // סוג צמ״ה
+                driveType: vehicleData.hanaa_nm || '',               // סוג הנעה
+                gearType: vehicleData.automatic_ind || '',           // סוג גיר
+                selfWeight: vehicleData.mishkal_ton || '',           // משקל עצמי (צמ״ה)
+                totalWeightTon: vehicleData.mishkal_kolel_ton || '', // משקל כולל בטון (צמ״ה)
+
                 source: sourceMeta,
                 fullDescription: ''
             },
