@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKE8TeURp_GnA-gjshf8aAfKjrsbQzDW5a4jpqzTij4JletOPpP1oIoZX82TtMbDRy/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZWzLQMcuAywrOk1aqaWXtr1iagwRgfAn3J3E6PJxKznuIpVsdLHrdMy1mA4qlJi1A/exec";
 // מאזין לכפתור השליחה הסופי
 document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
     e.preventDefault();
@@ -61,6 +61,11 @@ function collectFormData() {
     const secondDefectiveCarForm = document.getElementById('secondDefectiveCarForm');
     const hasSecondCar = secondDefectiveCarForm && !secondDefectiveCarForm.classList.contains('hidden');
     formData.hasSecondCar = hasSecondCar;
+    // הוספת מקור המידע לכל רכב
+formData.dataSource_defective = document.getElementById('dataSource_defective')?.value || '';
+formData.dataSource_defective2 = document.getElementById('dataSource_defective2')?.value || '';
+formData.dataSource_working = document.getElementById('dataSource_working')?.value || '';
+formData.dataSource_exchangeDefective = document.getElementById('dataSource_exchangeDefective')?.value || '';
 
     if (formData.towingType === 'defective') {
         formData.location = document.getElementById('defectiveSource').value;

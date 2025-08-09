@@ -136,7 +136,10 @@ function setDefaultOrderNumber() {
             // קודם מסתירים את כל הטפסים בכל מקרה
             if (defectiveCarForm) defectiveCarForm.classList.add('hidden');
             if (exchangeForm) exchangeForm.classList.add('hidden');
-            if (secondDefectiveCarForm) secondDefectiveCarForm.classList.add('hidden');
+            if (secondDefectiveCarForm) {
+                secondDefectiveCarForm.classList.add('hidden');
+            clearSource('defective2');
+            }
             
             // מסתירים את כפתור הוספת הרכב הנוסף - מחלקת CSS וגם visibility
             if (addCarButtonContainer) {
@@ -178,7 +181,10 @@ function setDefaultOrderNumber() {
         
         if (removeSecondDefectiveCarBtn) {
             removeSecondDefectiveCarBtn.addEventListener('click', function() {
-                if (secondDefectiveCarForm) secondDefectiveCarForm.classList.add('hidden');
+                if (secondDefectiveCarForm) {
+                secondDefectiveCarForm.classList.add('hidden');
+            clearSource('defective2');
+            }
                 // מציגים חזרה את כפתור ההוספה - מחלקת CSS וגם visibility
                 if (addCarButtonContainer) {
                     addCarButtonContainer.classList.remove('hidden');
@@ -386,7 +392,10 @@ function setDefaultOrderNumber() {
                 // החזרה למצב התחלתי
                 if (defectiveCarForm) defectiveCarForm.classList.add('hidden');
                 if (exchangeForm) exchangeForm.classList.add('hidden');
-                if (secondDefectiveCarForm) secondDefectiveCarForm.classList.add('hidden');
+                if (secondDefectiveCarForm) {
+                secondDefectiveCarForm.classList.add('hidden');
+            clearSource('defective2');
+            }
                 
                 // מסתירים את כפתור הוספת הרכב - מחלקת CSS וגם visibility
                 if (addCarButtonContainer) {
@@ -637,6 +646,9 @@ function setupVehicleLookup() {
             const cleanValue = this.value.replace(/[^0-9]/g, '');
             if (cleanValue !== lastSearchedValue) {
                 hasSearched = false;
+                // נקה את מקור המידע עבור ההקשר הזה אם המספר השתנה
+                const hid = document.getElementById(`dataSource_${context}`);
+                if (hid) hid.value = '';
                 // הסתרת שדה סוג רכב אם משנים את המספר
                 if (cleanValue.length < 6) {
                     const typeFieldId = getCarTypeFieldId(context);
@@ -742,7 +754,22 @@ function getCarNumberFieldId(context) {
             const result = await response.json();
 
             if (result.success) {
-    fillVehicleData(result.vehicle, result.status, result.towTypes, vehicleContext);
+                fillVehicleData(result.vehicle, result.status, result.towTypes, vehicleContext);
+                // שמירת מקור המידע (source) שהגיע מהשרת
+                const src = result.source || result?.vehicle?.source || null;
+                if (src) {
+                const hiddenId = `dataSource_${vehicleContext}`;
+                let hidden = document.getElementById(hiddenId);
+                if (!hidden) {
+                    hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.id = hiddenId;
+                    hidden.name = hiddenId;
+                    document.getElementById(getCarNumberFieldId(vehicleContext)).closest('form').appendChild(hidden);
+                }
+                hidden.value = JSON.stringify(src);
+                }
+
     
                 // הצגת התראות אם הרכב מבוטל או לא פעיל - אבל לא הצגת החלונית הכחולה
                 if (result.status.isCanceled) {
@@ -1087,4 +1114,9 @@ function setupAddressTracking() {
 // פונקציה לפתיחת דשבורד האדמין
 function openAdminDashboard() {
     window.open('/admin', '_blank');
+}
+
+function clearSource(context) {
+  const hid = document.getElementById(`dataSource_${context}`);
+  if (hid) hid.value = '';
 }

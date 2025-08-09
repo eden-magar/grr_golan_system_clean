@@ -555,6 +555,7 @@ app.post('/login-user', upload.none(), async (req, res) => {
 
 // API route for vehicle quick search - המרה של get-vehicle-quick.php
 app.post('/api/vehicles/quick', async (req, res) => {
+    let sourceMeta = null;
     try {
         const { license } = req.body;
         
@@ -596,6 +597,12 @@ app.post('/api/vehicles/quick', async (req, res) => {
                     for (const record of result.result.records) {
                         const recordNumber = String(record[matchField] || '').replace(/[^0-9]/g, '');
                         if (recordNumber === cleanLicense) {
+                            sourceMeta = {
+                            category: 'regular',
+                            type: type,        
+                            resourceId: resourceId,
+                            apiUrl: apiUrl
+                            };
                             vehicleData = record;
                             vehicleType = type;
                             break;
@@ -634,6 +641,11 @@ app.post('/api/vehicles/quick', async (req, res) => {
                             if (found) {
                                 vehicleData = record;
                                 vehicleData.__canceled = true;
+                                sourceMeta = {
+                                category: 'canceled',
+                                resourceId,
+                                apiUrl
+                                };
                                 break;
                             }
                         }
@@ -658,6 +670,11 @@ app.post('/api/vehicles/quick', async (req, res) => {
                 if (result.success && result.result && result.result.records.length > 0) {
                     vehicleData = result.result.records[0];
                     vehicleData.__inactive = true;
+                    sourceMeta = {
+                    category: 'inactive',
+                    resourceId: inactiveResourceId,
+                    apiUrl
+                    };
                 }
             } catch (error) {
                 console.error('Error searching in inactive vehicles:', error);
@@ -683,6 +700,7 @@ app.post('/api/vehicles/quick', async (req, res) => {
                 fuelType: vehicleData.sug_delek_nm || '',
                 vehicleType: vehicleData.sug_rechev_nm || '',
                 weight: vehicleData.mishkal_kolel || '',
+                source: sourceMeta,
                 fullDescription: ''
             },
             status: {
