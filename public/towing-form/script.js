@@ -665,6 +665,34 @@ function setupLicenseNumberSanitization() {
     });
 }
 
+function cleanPhoneNumber(phoneNumber) {
+    if (!phoneNumber) return '';
+    
+    // הסרת כל מה שאינו ספרה
+    let cleaned = phoneNumber.replace(/\D/g, '');
+    
+    // טיפול בקידומת +972 (ישראל)
+    if (cleaned.startsWith('972')) {
+        cleaned = cleaned.substring(3); // הסר את 972
+        
+        // אם המספר מתחיל ב-0 אחרי הקידומת, הסר אותו
+        if (cleaned.startsWith('0')) {
+            cleaned = cleaned.substring(1);
+        }
+        
+        // הוסף 0 בהתחלה
+        cleaned = '0' + cleaned;
+    }
+    
+    // וידוא שהמספר מתחיל ב-0 (פורמט ישראלי)
+    if (!cleaned.startsWith('0') && cleaned.length >= 9) {
+        cleaned = '0' + cleaned;
+    }
+    
+    // הגבלה ל-10 ספרות מקסימום
+    return cleaned.slice(0, 10);
+}
+
 function setupPhoneSanitization() {
     const phoneFields = [
         'contactPhone1',
@@ -679,24 +707,30 @@ function setupPhoneSanitization() {
     phoneFields.forEach(id => {
         const input = document.getElementById(id);
         if (input) {
-            // הסרת כל המאזינים הקודמים - כולל אלה של סקריפטים חיצוניים
+            // הסרת כל המאזינים הקודמים
             const newInput = input.cloneNode(true);
             input.parentNode.replaceChild(newInput, input);
             
-            // הוספת המאזין החדש שלנו
+            // מאזין להקלדה
             newInput.addEventListener('input', function(e) {
                 const cursorPos = e.target.selectionStart;
-                const cleanValue = e.target.value.replace(/[^0-9]/g, '');
-                e.target.value = cleanValue.slice(0, 10);
+                const cleanedPhone = cleanPhoneNumber(e.target.value);
+                e.target.value = cleanedPhone;
                 e.target.setSelectionRange(cursorPos, cursorPos);
             });
             
-            // הוספת מאזין נוסף ל-paste (הדבקה)
+            // מאזין להדבקה
             newInput.addEventListener('paste', function(e) {
                 e.preventDefault();
                 const pasteData = (e.clipboardData || window.clipboardData).getData('text');
-                const cleanValue = pasteData.replace(/[^0-9]/g, '');
-                e.target.value = cleanValue.slice(0, 10);
+                const cleanedPhone = cleanPhoneNumber(pasteData);
+                e.target.value = cleanedPhone;
+            });
+            
+            // מאזין ל-blur (כשעוזבים את השדה) - לניקוי סופי
+            newInput.addEventListener('blur', function(e) {
+                const cleanedPhone = cleanPhoneNumber(e.target.value);
+                e.target.value = cleanedPhone;
             });
         }
     });
