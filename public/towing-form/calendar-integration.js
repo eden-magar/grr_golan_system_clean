@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzmxaXljdyiNdBPlWCxyp4vn_RxRbJILWj183JunXgbhGLeQr5W3IPUi49VITi7qLgU/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwlDk2s5t-HgPLxWRDU-Z4v0O9_RpZK4ZS9HV2YymoctQqn9_ALxG5uo40YWpekvsDk/exec";
 // מאזין לכפתור השליחה הסופי
 document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
     e.preventDefault();
@@ -242,6 +242,7 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
     }
         formData.payment = {
         price: document.getElementById('price').value || '',
+        idNumber: document.getElementById('idNumber').value || '', 
         creditCard: {
             number: document.getElementById('cardNumber').value || '',
             expiry: document.getElementById('cardExpiry').value || '',

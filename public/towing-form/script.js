@@ -878,6 +878,7 @@ function setupCreditCardFormatting() {
       input.setSelectionRange(newCursor, newCursor);
     }, { passive: true });
   }
+  setupIDValidation();
 }
 
 function getCarNumberFieldId(context) {
@@ -1287,4 +1288,65 @@ function openAdminDashboard() {
 function clearSource(context) {
   const hid = document.getElementById(`dataSource_${context}`);
   if (hid) hid.value = '';
+}
+
+
+// פונקציה לעיצוב מספר תעודת זהות - הוסף אחרי הפונקציות הקיימות
+function formatIDNumber(value) {
+    return value.replace(/\D/g, '').slice(0, 9);
+}
+
+function validateIsraeliID(id) {
+    if (!id || id.length !== 9) return false;
+    
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+        let digit = parseInt(id[i]);
+        if (i % 2 === 1) {
+            digit *= 2;
+            if (digit > 9) digit = Math.floor(digit / 10) + (digit % 10);
+        }
+        sum += digit;
+    }
+    
+    return sum % 10 === 0;
+}
+
+function setupIDValidation() {
+    const idField = document.getElementById('idNumber');
+    if (!idField) return;
+
+    idField.addEventListener('input', function(e) {
+        const cursorPos = e.target.selectionStart;
+        const formatted = formatIDNumber(e.target.value);
+        e.target.value = formatted;
+        e.target.setSelectionRange(cursorPos, cursorPos);
+        
+        const errorMsg = e.target.parentNode.querySelector('.id-error');
+        if (errorMsg) errorMsg.remove();
+    });
+
+    idField.addEventListener('blur', function(e) {
+        const value = e.target.value.trim();
+        if (!value) return;
+
+        const existingError = e.target.parentNode.querySelector('.id-error');
+        if (existingError) existingError.remove();
+
+        if (!validateIsraeliID(value)) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'id-error';
+            errorDiv.style.cssText = `
+                margin-top: 5px;
+                padding: 5px 8px;
+                background: #fef2f2;
+                border: 1px solid #fca5a5;
+                border-radius: 4px;
+                font-size: 12px;
+                color: #991b1b;
+            `;
+            errorDiv.textContent = 'מספר תעודת זהות לא תקין';
+            e.target.parentNode.appendChild(errorDiv);
+        }
+    });
 }
