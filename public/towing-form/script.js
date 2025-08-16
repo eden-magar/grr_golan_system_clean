@@ -401,6 +401,7 @@ function setDefaultOrderNumber() {
         setupCreditCardFormatting();
         setupPaymentTypeButtons();
         setupAddressAutoScroll();
+        initializeAutomaticPricing();
     }
 
     // פונקציה לגלילה אוטומטית רק עבור שדות כתובות
@@ -448,8 +449,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setupAddressAutoScroll();
 });
 
-    
-    
     // פונקציות הנוגעות לעמוד הסיכום
     
     function getDateDisplay() {
@@ -1440,4 +1439,513 @@ function clearCreditCardFields() {
 function getSelectedPaymentType() {
     const activeButton = document.querySelector('.payment-btn.active');
     return activeButton ? activeButton.dataset.payment : 'cash';
+}
+
+
+// פונקציה לזיהוי סוג רכב ומחיר בסיס
+function getVehicleBasePrice(context = 'defective') {
+    try {
+        // קריאת מקור המידע
+        const dataSourceId = `dataSource_${context}`;
+        const dataSourceElement = document.getElementById(dataSourceId);
+        
+        if (!dataSourceElement || !dataSourceElement.value) {
+            console.log('אין מידע על מקור הנתונים, משתמש במחיר ברירת מחדל');
+            return { price: 200, type: 'default', description: 'מחיר בסיס (ברירת מחדל)' };
+        }
+        
+        // פירוק נתוני המקור
+        const sourceData = JSON.parse(dataSourceElement.value);
+        const vehicleType = sourceData.type;
+        
+        // מיפוי סוג רכב למחיר
+        const priceMap = {
+            'private': { price: 200, description: 'רכב פרטי' },
+            'motorcycle': { price: 200, description: 'דו-גלגלי' },  // דו-גלגלי כמו פרטי
+            'heavy': { price: 400, description: 'מעל 3.5 טון' },
+            'machinery': { price: 600, description: 'צמ״ה' }
+        };
+        
+        const result = priceMap[vehicleType] || { price: 200, description: 'לא מזוהה' };
+        
+        console.log(`סוג רכב: ${vehicleType}, מחיר בסיס: ${result.price}₪`);
+        
+        return {
+            price: result.price,
+            type: vehicleType,
+            description: result.description
+        };
+        
+    } catch (error) {
+        console.error('שגיאה בקריאת מידע הרכב:', error);
+        return { price: 200, type: 'error', description: 'שגיאה - מחיר ברירת מחדל' };
+    }
+}
+
+// פונקציה לבדיקת זמינות נתוני הרכב
+function isVehicleDataAvailable(context = 'defective') {
+    const dataSourceId = `dataSource_${context}`;
+    const dataSourceElement = document.getElementById(dataSourceId);
+    return dataSourceElement && dataSourceElement.value;
+}
+
+// פונקציה לבדיקה ולוג - לצורך פיתוח ובדיקה
+function testVehicleBasePrice() {
+    console.log('🧪 בדיקת פונקציית מחיר בסיס:');
+    
+    const result = getVehicleBasePrice('defective');
+    console.log('תוצאה:', result);
+    
+    const available = isVehicleDataAvailable('defective');
+    console.log('נתונים זמינים:', available);
+    
+    return result;
+}
+
+
+
+// פונקציה לחישוב מרחק בין שתי כתובות
+async function calculateDistance(sourceAddress, destinationAddress) {
+    return new Promise((resolve, reject) => {
+        // בדיקה שיש לנו את ה-Google Maps API
+        if (typeof google === 'undefined') {
+            reject(new Error('Google Maps API לא זמין'));
+            return;
+        }
+
+        // יצירת Distance Matrix Service
+        const service = new google.maps.DistanceMatrixService();
+        
+        console.log(`🗺️ מחשב מרחק מ: "${sourceAddress}" אל: "${destinationAddress}"`);
+
+        service.getDistanceMatrix({
+            origins: [sourceAddress],
+            destinations: [destinationAddress],
+            travelMode: google.maps.TravelMode.DRIVING,
+            unitSystem: google.maps.UnitSystem.METRIC,
+            region: 'IL' // מוגבל לישראל
+        }, (response, status) => {
+            if (status === 'OK') {
+                const element = response.rows[0].elements[0];
+                
+                if (element.status === 'OK') {
+                    const distanceInMeters = element.distance.value;
+                    const distanceInKm = Math.round(distanceInMeters / 1000);
+                    const duration = element.duration.text;
+                    
+                    console.log(`✅ מרחק נמצא: ${distanceInKm} ק"מ (${duration})`);
+                    
+                    resolve({
+                        success: true,
+                        distanceKm: distanceInKm,
+                        distanceText: element.distance.text,
+                        duration: duration,
+                        durationValue: element.duration.value
+                    });
+                } else {
+                    const errorMsg = getDistanceErrorMessage(element.status);
+                    console.warn(`⚠️ שגיאה בחישוב מרחק: ${errorMsg}`);
+                    reject(new Error(errorMsg));
+                }
+            } else {
+                const errorMsg = `שגיאה ב-API: ${status}`;
+                console.error(`❌ ${errorMsg}`);
+                reject(new Error(errorMsg));
+            }
+        });
+    });
+}
+
+// פונקציה לתרגום הודעות שגיאה
+function getDistanceErrorMessage(status) {
+    const errorMessages = {
+        'NOT_FOUND': 'כתובת לא נמצאה במפות גוגל',
+        'ZERO_RESULTS': 'לא נמצא מסלול בין הכתובות',
+        'MAX_WAYPOINTS_EXCEEDED': 'יותר מדי נקודות במסלול',
+        'MAX_ROUTE_LENGTH_EXCEEDED': 'המסלול ארוך מדי',
+        'INVALID_REQUEST': 'בקשה לא תקינה',
+        'OVER_DAILY_LIMIT': 'חרגת מהמכסה היומית של Google',
+        'OVER_QUERY_LIMIT': 'חרגת ממגבלת הבקשות',
+        'REQUEST_DENIED': 'הבקשה נדחתה - בדוק הגדרות API',
+        'UNKNOWN_ERROR': 'שגיאה לא ידועה בשרתי גוגל'
+    };
+    
+    return errorMessages[status] || `שגיאה לא מוכרת: ${status}`;
+}
+
+// פונקציה לקבלת כתובות מהטופס
+function getAddressesForCalculation(context = 'defective') {
+    let sourceFieldId, destinationFieldId;
+    
+    if (context === 'defective') {
+        sourceFieldId = 'defectiveSource';
+        destinationFieldId = 'defectiveDestination';
+    } else if (context === 'defective2') {
+        sourceFieldId = 'defectiveSource2';
+        destinationFieldId = 'defectiveDestination2';
+    } else {
+        throw new Error('קונטקסט לא נתמך');
+    }
+    
+    const sourceField = document.getElementById(sourceFieldId);
+    const destField = document.getElementById(destinationFieldId);
+    
+    if (!sourceField || !destField) {
+        throw new Error('שדות כתובת לא נמצאו');
+    }
+    
+    // נעדיף כתובות פיזיות אם זמינות, אחרת נשתמש בטקסט שהוזן
+    const sourceAddress = sourceField.dataset.physicalAddress || sourceField.value;
+    const destAddress = destField.dataset.physicalAddress || destField.value;
+    
+    if (!sourceAddress.trim() || !destAddress.trim()) {
+        throw new Error('חסרות כתובות מוצא או יעד');
+    }
+    
+    return {
+        source: sourceAddress.trim(),
+        destination: destAddress.trim(),
+        sourceIsGoogle: sourceField.dataset.isGoogleAddress === 'true',
+        destIsGoogle: destField.dataset.isGoogleAddress === 'true'
+    };
+}
+
+// פונקציה לבדיקה ולוג - לצורך פיתוח ובדיקה
+async function testDistanceCalculation() {
+    try {
+        console.log('🧪 בדיקת חישוב מרחק:');
+        
+        // נסה לקבל כתובות מהטופס
+        const addresses = getAddressesForCalculation('defective');
+        console.log('כתובות:', addresses);
+        
+        // חשב מרחק
+        const result = await calculateDistance(addresses.source, addresses.destination);
+        console.log('תוצאת חישוב מרחק:', result);
+        
+        return result;
+        
+    } catch (error) {
+        console.error('❌ שגיאה בבדיקת מרחק:', error.message);
+        return null;
+    }
+}
+
+// פונקציה לחישוב מחיר סופי
+async function calculateTotalPrice(context = 'defective') {
+    try {
+        console.log(`💰 מתחיל חישוב מחיר עבור ${context}`);
+        
+        // שלב 1: קבלת מחיר בסיס
+        const vehicleData = getVehicleBasePrice(context);
+        console.log(`מחיר בסיס: ${vehicleData.price}₪ (${vehicleData.description})`);
+        
+        // שלב 2: קבלת כתובות וחישוב מרחק
+        const addresses = getAddressesForCalculation(context);
+        const distanceData = await calculateDistance(addresses.source, addresses.destination);
+        
+        // שלב 3: חישוב מחיר נסיעה (10₪ לק"מ)
+        const travelPrice = distanceData.distanceKm * 10;
+        console.log(`מחיר נסיעה: ${distanceData.distanceKm} ק"מ × 10₪ = ${travelPrice}₪`);
+        
+        // שלב 4: חישוב מחיר סופי
+        const totalPrice = vehicleData.price + travelPrice;
+        console.log(`מחיר סופי: ${vehicleData.price}₪ + ${travelPrice}₪ = ${totalPrice}₪`);
+        
+        return {
+            success: true,
+            basePrice: vehicleData.price,
+            vehicleType: vehicleData.description,
+            distanceKm: distanceData.distanceKm,
+            distanceText: distanceData.distanceText,
+            duration: distanceData.duration,
+            travelPrice: travelPrice,
+            totalPrice: totalPrice,
+            calculation: {
+                base: `${vehicleData.description}: ${vehicleData.price}₪`,
+                travel: `${distanceData.distanceKm} ק"מ × 10₪ = ${travelPrice}₪`,
+                total: `סה"כ: ${totalPrice}₪`
+            }
+        };
+        
+    } catch (error) {
+        console.error(`❌ שגיאה בחישוב מחיר: ${error.message}`);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+// פונקציה לעדכון שדה המחיר בטופס
+function updatePriceField(priceData) {
+    const priceField = document.getElementById('price');
+    if (!priceField) {
+        console.error('שדה מחיר לא נמצא');
+        return;
+    }
+    
+    if (priceData.success) {
+        // עדכון הערך
+        priceField.value = priceData.totalPrice;
+        
+        // הוספת סגנון ויזואלי להראות שהמחיר חושב אוטומטית
+        priceField.style.backgroundColor = '#e8f5e8';
+        priceField.style.border = '2px solid #4caf50';
+        
+        // הוסף tooltip או data attribute עם פירוט החישוב
+        priceField.title = `${priceData.calculation.base}\n${priceData.calculation.travel}\n${priceData.calculation.total}`;
+        priceField.dataset.autoCalculated = 'true';
+        priceField.dataset.calculationDetails = JSON.stringify(priceData);
+        
+        // הסרת הסגנון אחרי 3 שניות
+        setTimeout(() => {
+            priceField.style.backgroundColor = '';
+            priceField.style.border = '';
+        }, 3000);
+        
+        console.log(`✅ שדה מחיר עודכן ל-${priceData.totalPrice}₪`);
+        
+        // הצגת הודעה למשתמש (אופציונלי)
+        showPriceCalculationMessage(priceData);
+        
+    } else {
+        console.error('לא ניתן לעדכן שדה מחיר - חישוב נכשל');
+    }
+}
+
+// פונקציה להצגת הודעה על חישוב המחיר (אופציונלי)
+function showPriceCalculationMessage(priceData) {
+    // יצירת הודעה זמנית
+    const messageDiv = document.createElement('div');
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 15px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 300px;
+        background: #e8f5e8;
+        border: 2px solid #4caf50;
+        color: #2d5016;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    messageDiv.innerHTML = `
+        <strong>💰 מחיר חושב אוטומטית:</strong><br>
+        ${priceData.calculation.base}<br>
+        ${priceData.calculation.travel}<br>
+        <strong>${priceData.calculation.total}</strong>
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    // הסרה אחרי 5 שניות
+    setTimeout(() => {
+        messageDiv.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => messageDiv.remove(), 300);
+    }, 5000);
+}
+
+// פונקציה מרכזית לחישוב מחיר עם עדכון הטופס
+async function calculateAndUpdatePrice(context = 'defective') {
+    try {
+        console.log('🚀 מתחיל חישוב מחיר מלא...');
+        
+        const result = await calculateTotalPrice(context);
+        
+        if (result.success) {
+            updatePriceField(result);
+            return result;
+        } else {
+            console.error('חישוב מחיר נכשל:', result.error);
+            // כאן אפשר להוסיף הודעת שגיאה למשתמש
+            return null;
+        }
+        
+    } catch (error) {
+        console.error('שגיאה כללית בחישוב מחיר:', error);
+        return null;
+    }
+}
+
+// פונקציה לבדיקה ולוג - לצורך פיתוח ובדיקה
+async function testFullPriceCalculation() {
+    console.log('🧪 בדיקת חישוב מחיר מלא:');
+    const result = await calculateAndUpdatePrice('defective');
+    console.log('תוצאה סופית:', result);
+    return result;
+}
+
+// הוסף את הפונקציות האלה לסוף קובץ script.js (אחרי הפונקציות משלב 3)
+
+// פונקציה לבדיקה אם כל הנתונים זמינים לחישוב מחיר
+function canCalculatePrice(context = 'defective') {
+    try {
+        // בדיקה שיש נתוני רכב
+        if (!isVehicleDataAvailable(context)) {
+            console.log('❌ אין נתוני רכב זמינים');
+            return false;
+        }
+        
+        // בדיקה שיש שתי כתובות
+        const addresses = getAddressesForCalculation(context);
+        if (!addresses.source || !addresses.destination) {
+            console.log('❌ חסרות כתובות');
+            return false;
+        }
+        
+        console.log('✅ כל הנתונים זמינים לחישוב מחיר');
+        return true;
+        
+    } catch (error) {
+        console.log('❌ שגיאה בבדיקת נתונים:', error.message);
+        return false;
+    }
+}
+
+// פונקציה לחישוב מחיר עם debounce (למניעת חישובים מיותרים)
+let priceCalculationTimeout;
+async function debouncedPriceCalculation(context = 'defective', delay = 1000) {
+    // ביטול חישוב קודם אם עדיין ממתין
+    if (priceCalculationTimeout) {
+        clearTimeout(priceCalculationTimeout);
+    }
+    
+    priceCalculationTimeout = setTimeout(async () => {
+        // בדיקה שהמשתמש לא עדכן ידנית את המחיר
+        const priceField = document.getElementById('price');
+        const wasManuallyEdited = priceField && priceField.dataset.manuallyEdited === 'true';
+        
+        if (wasManuallyEdited) {
+            console.log('⚠️ המשתמש עדכן את המחיר ידנית - לא מחשב אוטומטית');
+            return;
+        }
+        
+        if (canCalculatePrice(context)) {
+            console.log('⏰ מתחיל חישוב מחיר אוטומטי...');
+            await calculateAndUpdatePrice(context);
+        }
+    }, delay);
+}
+
+// פונקציה להוספת מאזינים לשדות הרלוונטיים
+function setupAutomaticPriceCalculation() {
+    console.log('🔧 מגדיר חישוב מחיר אוטומטי...');
+    
+    // שדות שצריכים לעקוב אחריהם עבור רכב תקול ראשון
+    const fieldsToWatch = [
+        'defectiveCarNumber',    // מספר רכב (לקבלת סוג רכב)
+        'defectiveSource',      // כתובת מוצא
+        'defectiveDestination'  // כתובת יעד
+    ];
+    
+    fieldsToWatch.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            // מאזין לשינויים בשדה
+            field.addEventListener('input', () => {
+                console.log(`📝 שינוי בשדה ${fieldId}`);
+                debouncedPriceCalculation('defective', 1500);
+            });
+            
+            // מאזין לאובדן פוקוס (כשעוזבים את השדה)
+            field.addEventListener('blur', () => {
+                console.log(`👁️ עזיבת שדה ${fieldId}`);
+                debouncedPriceCalculation('defective', 500);
+            });
+        }
+    });
+    
+    // מאזין מיוחד לשינויים בנתוני הרכב (כשהמערכת מוצאת רכב)
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && 
+                mutation.attributeName === 'value' && 
+                mutation.target.id === 'dataSource_defective') {
+                console.log('🚗 נתוני רכב עודכנו');
+                debouncedPriceCalculation('defective', 1000);
+            }
+        });
+    });
+    
+    // התחל לעקוב אחר שינויים במקור נתוני הרכב
+    const dataSourceField = document.getElementById('dataSource_defective');
+    if (dataSourceField) {
+        observer.observe(dataSourceField, {
+            attributes: true,
+            attributeFilter: ['value']
+        });
+    }
+}
+
+// פונקציה לטיפול בעריכה ידנית של המחיר
+function setupManualPriceEditing() {
+    const priceField = document.getElementById('price');
+    if (!priceField) return;
+    
+    // מאזין לעריכה ידנית של המחיר
+    priceField.addEventListener('input', function() {
+        // סימון שהמשתמש ערך ידנית
+        this.dataset.manuallyEdited = 'true';
+        this.dataset.autoCalculated = 'false';
+        
+        // הסרת סגנון "חושב אוטומטית"
+        this.style.backgroundColor = '';
+        this.style.border = '';
+        this.removeAttribute('title');
+        
+        console.log('✏️ המשתמש ערך את המחיר ידנית:', this.value);
+    });
+    
+    // איפוס הסימון כשמוחקים את השדה
+    priceField.addEventListener('focus', function() {
+        if (!this.value) {
+            this.dataset.manuallyEdited = 'false';
+            console.log('🔄 איפוס סימון עריכה ידנית');
+        }
+    });
+}
+
+// פונקציה לאיפוס מעקב מחיר אוטומטי (כשמשנים סוג גרירה)
+function resetAutomaticPriceCalculation() {
+    // ביטול חישוב ממתין
+    if (priceCalculationTimeout) {
+        clearTimeout(priceCalculationTimeout);
+        priceCalculationTimeout = null;
+    }
+    
+    // איפוס שדה מחיר
+    const priceField = document.getElementById('price');
+    if (priceField) {
+        priceField.value = '';
+        priceField.style.backgroundColor = '';
+        priceField.style.border = '';
+        priceField.removeAttribute('title');
+        priceField.dataset.autoCalculated = 'false';
+        priceField.dataset.manuallyEdited = 'false';
+        delete priceField.dataset.calculationDetails;
+    }
+}
+
+// פונקציה להפעלת המערכת המלאה
+function initializeAutomaticPricing() {
+    console.log('🚀 מפעיל מערכת חישוב מחיר אוטומטי');
+    
+    // הגדרת מאזינים אוטומטיים
+    setupAutomaticPriceCalculation();
+    
+    // הגדרת טיפול בעריכה ידנית
+    setupManualPriceEditing();
+    
+    console.log('✅ מערכת חישוב מחיר מוכנה לשימוש (אוטומטי + עריכה ידנית)');
+}
+
+// פונקציה לבדיקה - להפעלה ידנית
+function testAutomaticPricing() {
+    console.log('🧪 בדיקת מערכת חישוב אוטומטי:');
+    initializeAutomaticPricing();
 }
