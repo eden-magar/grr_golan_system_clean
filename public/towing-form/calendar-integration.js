@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkkc7NE7PQ8_2XkF213ynoq9SJYOGH0l8ZSxE-266_73_bLfQG7RcJL4etgA_j_JMI/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzoUkjt8C6eXUmn7-UjvBga7E3G37VmBDypuCgND_HAfZAaMmLiaZoM-9NqPtPRCGRh/exec";
 // מאזין לכפתור השליחה הסופי
 document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
     e.preventDefault();
@@ -240,7 +240,9 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
             }
         };
     }
+        const selectedPaymentType = getSelectedPaymentType();
         formData.payment = {
+        paymentType: selectedPaymentType,
         price: document.getElementById('price').value || '',
         idNumber: document.getElementById('idNumber').value || '', 
         creditCard: {
@@ -250,4 +252,9 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
         }
     };
     return formData;
+}
+
+function getSelectedPaymentType() {
+    const activeButton = document.querySelector('.payment-btn.active');
+    return activeButton ? activeButton.dataset.payment : 'cash';
 }

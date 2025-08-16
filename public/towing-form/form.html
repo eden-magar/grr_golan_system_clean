@@ -561,6 +561,31 @@
                     <div class="form-section">
                         <h3>פרטי תשלום</h3>
                         
+                        <!-- בחירת סוג תשלום -->
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-credit-card"></i>
+                                סוג תשלום:
+                            </label>
+                            <div class="payment-type-selector">
+                                <div class="payment-buttons">
+                                    <button type="button" class="payment-btn active" data-payment="cash">
+                                        <i class="fas fa-money-bills"></i>
+                                        מזומן
+                                    </button>
+                                    <button type="button" class="payment-btn" data-payment="credit">
+                                        <i class="fas fa-credit-card"></i>
+                                        אשראי
+                                    </button>
+                                    <button type="button" class="payment-btn" data-payment="invoice">
+                                        <i class="fas fa-file-invoice"></i>
+                                        חשבונית סוף חודש
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- שדה מחיר - תמיד גלוי -->
                         <div class="form-group">
                             <label for="price">
                                 <i class="fas fa-shekel-sign"></i>
@@ -569,42 +594,45 @@
                             <input type="number" id="price" name="price" min="0" step="0.01" placeholder="הזן מחיר בשקלים">
                         </div>
 
-                         <div class="form-group">
-                            <label for="idNumber">
-                                <i class="fas fa-id-card"></i>
-                                מספר תעודת זהות:
-                            </label>
-                            <input type="text" id="idNumber" name="idNumber" 
-                                placeholder="הזן מספר תעודת זהות" maxlength="9"
-                                pattern="[0-9]*">
-                        </div>
+                        <!-- פרטי אשראי - מוצגים רק עבור אשראי -->
+                        <div id="creditCardSection" class="credit-card-section hidden">
+                            <div class="form-group">
+                                <label for="idNumber">
+                                    <i class="fas fa-id-card"></i>
+                                    מספר תעודת זהות:
+                                </label>
+                                <input type="text" id="idNumber" name="idNumber" 
+                                    placeholder="הזן מספר תעודת זהות" maxlength="9"
+                                    pattern="[0-9]*">
+                            </div>
 
-                        <div class="form-group">
-                            <label>
-                                <i class="fas fa-credit-card"></i>
-                                פרטי כרטיס אשראי:
-                            </label>
-                            <div class="credit-card-fields">
-                                <div class="card-row">
-                                    <div class="card-field">
-                                        <label for="cardNumber">מספר כרטיס:</label>
-                                        <input type="text" id="cardNumber" name="cardNumber" 
-                                            placeholder="0000-0000-0000-0000" maxlength="19"
-                                            pattern="[0-9\-\s]*">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-credit-card"></i>
+                                    פרטי כרטיס אשראי:
+                                </label>
+                                <div class="credit-card-fields">
+                                    <div class="card-row">
+                                        <div class="card-field">
+                                            <label for="cardNumber">מספר כרטיס:</label>
+                                            <input type="text" id="cardNumber" name="cardNumber" 
+                                                placeholder="0000-0000-0000-0000" maxlength="19"
+                                                pattern="[0-9\-\s]*">
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="card-row">
-                                    <div class="card-field">
-                                        <label for="cardExpiry">תוקף (MM/YY):</label>
-                                        <input type="text" id="cardExpiry" name="cardExpiry" 
-                                            placeholder="MM/YY" maxlength="5"
-                                            pattern="[0-9/]*">
-                                    </div>
-                                    <div class="card-field">
-                                        <label for="cardCvv">CVV:</label>
-                                        <input type="text" id="cardCvv" name="cardCvv" 
-                                            placeholder="000" maxlength="4"
-                                            pattern="[0-9]*">
+                                    <div class="card-row">
+                                        <div class="card-field">
+                                            <label for="cardExpiry">תוקף (MM/YY):</label>
+                                            <input type="text" id="cardExpiry" name="cardExpiry" 
+                                                placeholder="MM/YY" maxlength="5"
+                                                pattern="[0-9/]*">
+                                        </div>
+                                        <div class="card-field">
+                                            <label for="cardCvv">CVV:</label>
+                                            <input type="text" id="cardCvv" name="cardCvv" 
+                                                placeholder="000" maxlength="4"
+                                                pattern="[0-9]*">
+                                        </div>
                                     </div>
                                 </div>
                             </div>

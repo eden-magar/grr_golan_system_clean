@@ -399,7 +399,10 @@ function setDefaultOrderNumber() {
         });
 
         setupCreditCardFormatting();
+        setupPaymentTypeButtons();
     }
+
+
     
     // פונקציות הנוגעות לעמוד הסיכום
     
@@ -1349,4 +1352,46 @@ function setupIDValidation() {
             e.target.parentNode.appendChild(errorDiv);
         }
     });
+}
+
+
+function setupPaymentTypeButtons() {
+    const paymentButtons = document.querySelectorAll('.payment-btn');
+    const creditCardSection = document.getElementById('creditCardSection');
+    
+    paymentButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // הסרת active מכל הכפתורים
+            paymentButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // הוספת active לכפתור שנלחץ
+            this.classList.add('active');
+            
+            // הצגה/הסתרה של שדות כרטיס אשראי
+            const paymentType = this.dataset.payment;
+            
+            if (paymentType === 'credit') {
+                creditCardSection.classList.remove('hidden');
+            } else {
+                creditCardSection.classList.add('hidden');
+                // איפוס שדות כרטיס אשראי כשמחליפים לאופציה אחרת
+                clearCreditCardFields();
+            }
+        });
+    });
+}
+
+// פונקציה לאיפוס שדות כרטיס אשראי
+function clearCreditCardFields() {
+    const creditFields = ['idNumber', 'cardNumber', 'cardExpiry', 'cardCvv'];
+    creditFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) field.value = '';
+    });
+}
+
+// פונקציה לקבלת סוג התשלום הנבחר
+function getSelectedPaymentType() {
+    const activeButton = document.querySelector('.payment-btn.active');
+    return activeButton ? activeButton.dataset.payment : 'cash';
 }
