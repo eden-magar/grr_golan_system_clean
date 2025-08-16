@@ -400,9 +400,55 @@ function setDefaultOrderNumber() {
 
         setupCreditCardFormatting();
         setupPaymentTypeButtons();
+        setupAddressAutoScroll();
     }
 
+    // פונקציה לגלילה אוטומטית רק עבור שדות כתובות
+function setupAddressAutoScroll() {
+    // רשימת שדות הכתובות שיש להם השלמה אוטומטית
+    const addressFieldIds = [
+        'defectiveSource',
+        'defectiveDestination',
+        'defectiveSource2', 
+        'defectiveDestination2',
+        'workingCarSource',
+        'workingCarDestination',
+        'exchangeDefectiveDestination'
+    ];
+    
+    addressFieldIds.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('focus', function() {
+                // השהיה קטנה כדי לתת לאירוע הפוקוס להסתיים
+                setTimeout(() => {
+                    // חישוב המיקום של השדה
+                    const fieldRect = this.getBoundingClientRect();
+                    const fieldTop = fieldRect.top + window.pageYOffset;
+                    
+                    // חישוב גובה הכותרת העליונה (אם יש)
+                    const headerHeight = document.querySelector('.main-header')?.offsetHeight || 0;
+                    
+                    // גלילה לשדה עם מרווח נוח מלמעלה (200px כדי להשאיר מקום לרשימת ההצעות)
+                    const scrollToPosition = fieldTop - headerHeight - 200;
+                    
+                    // גלילה חלקה
+                    window.scrollTo({
+                        top: Math.max(0, scrollToPosition), // וודא שלא נגלול למעלה מהעמוד
+                        behavior: 'smooth'
+                    });
+                }, 150); // השהיה של 150ms
+            });
+        }
+    });
+}
 
+// הפעל את הפונקציה כשהדף נטען
+document.addEventListener('DOMContentLoaded', function() {
+    setupAddressAutoScroll();
+});
+
+    
     
     // פונקציות הנוגעות לעמוד הסיכום
     
