@@ -1460,8 +1460,8 @@ function getVehicleBasePrice(context = 'defective') {
         
         // מיפוי סוג רכב למחיר
         const priceMap = {
-            'private': { price: 200, description: 'רכב פרטי' },
-            'motorcycle': { price: 200, description: 'דו-גלגלי' },  // דו-גלגלי כמו פרטי
+            'private': { price: 300, description: 'רכב פרטי' },
+            'motorcycle': { price: 300, description: 'דו-גלגלי' },  // דו-גלגלי כמו פרטי
             'heavy': { price: 400, description: 'מעל 3.5 טון' },
             'machinery': { price: 600, description: 'צמ״ה' }
         };
@@ -1649,7 +1649,7 @@ async function calculateTotalPrice(context = 'defective') {
         console.log(`מחיר נסיעה: ${distanceData.distanceKm} ק"מ × 10₪ = ${travelPrice}₪`);
         
         // שלב 4: חישוב מחיר סופי
-        const totalPrice = vehicleData.price + travelPrice;
+        const totalPrice = Math.round((vehicleData.price + travelPrice) * 1.18);
         console.log(`מחיר סופי: ${vehicleData.price}₪ + ${travelPrice}₪ = ${totalPrice}₪`);
         
         return {
