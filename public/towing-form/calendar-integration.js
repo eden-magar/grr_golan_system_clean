@@ -1,30 +1,58 @@
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYS3hE5rrwhUD8kEJuhcDEqS1o0jfn9pBs37sqcOmTAE4MHgrw3mq8M9a-wHQsl8J2/exec";
+
 // מאזין לכפתור השליחה הסופי
 document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
     e.preventDefault();
     
     try {
-        const formData = collectFormData();
-
-        const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = APPS_SCRIPT_URL;
-    form.target = '_blank';
-
-    const hiddenField = document.createElement('input');
-    hiddenField.type = 'hidden';
-    hiddenField.name = 'data';
-    hiddenField.value = JSON.stringify(formData);
-
-    form.appendChild(hiddenField);
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+        // הצגת מודל טעינה
+        const loadingModal = document.getElementById('loadingModal');
+        loadingModal.classList.add('show');
         
-        alert('הטופס נשלח בהצלחה והאירוע נוסף ליומן!');
-        location.reload();
+        // איסוף נתוני הטופס
+        const formData = collectFormData();
+        
+        // יצירת חלון popup קטן שיסגר מיד (פתרון לבעיית CORS)
+        const popup = window.open('', 'formSubmit', 'width=1,height=1,left=9999,top=9999');
+        
+        // יצירת form במבנה נסתר בחלון החדש
+        const formHtml = `
+            <html><body>
+            <form method="POST" action="${APPS_SCRIPT_URL}">
+                <input type="hidden" name="data" value='${JSON.stringify(formData)}'>
+            </form>
+            <script>
+                document.forms[0].submit();
+                setTimeout(() => window.close(), 500);
+            </script>
+            </body></html>
+        `;
+        
+        popup.document.write(formHtml);
+        popup.document.close();
+        
+        // המתנה קצרה ואז הצגת הצלחה
+        setTimeout(() => {
+            // הסתרת מודל טעינה
+            loadingModal.classList.remove('show');
+            
+            // הצגת מודל הצלחה
+            const successModal = document.getElementById('successModal');
+            successModal.classList.add('show');
+            
+            // סגירת החלון אם עדיין פתוח
+            if (!popup.closed) {
+                popup.close();
+            }
+        }, 2500); // 2.5 שניות המתנה
+        
     } catch (error) {
         console.error('Error:', error);
+        
+        // הסתרת מודל טעינה במקרה של שגיאה
+        const loadingModal = document.getElementById('loadingModal');
+        loadingModal.classList.remove('show');
+        
         alert('אירעה שגיאה בשליחת הטופס. אנא נסה שוב.');
     }
 });
@@ -257,4 +285,155 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
 function getSelectedPaymentType() {
     const activeButton = document.querySelector('.payment-btn.active');
     return activeButton ? activeButton.dataset.payment : 'cash';
+}
+
+// פונקציה לטיפול במודל הצלחה
+document.getElementById('successOkButton').addEventListener('click', function() {
+    // סגירת מודל הצלחה
+    const successModal = document.getElementById('successModal');
+    successModal.classList.remove('show');
+    
+    // איפוס הטופס תוך שמירה על נתוני המשתמש
+    resetFormKeepUserData();
+});
+
+// תחליף את הפונקציה resetFormKeepUserData בקובץ calendar-integration.js עם הגרסה הזו:
+
+function resetFormKeepUserData() {
+    // שמירה על נתוני המשתמש לפני איפוס (רק פרטי משתמש!)
+    const userEmail = localStorage.getItem('userEmail');
+    const userCompany = localStorage.getItem('userCompany');
+    const userDepartment = localStorage.getItem('userDepartment');
+    
+    // איפוס כל הטופס - כולל נתוני רכב!
+    document.getElementById('towingForm').reset();
+    
+    // 🔧 ניקוי מלא של כל נתוני הכתובות
+    const addressFields = [
+        'defectiveSource', 'defectiveDestination',
+        'defectiveSource2', 'defectiveDestination2', 
+        'workingCarSource', 'workingCarDestination',
+        'exchangeDefectiveDestination'
+    ];
+    
+    addressFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            // ניקוי הערך
+            field.value = '';
+            
+            // 🚨 ניקוי כל ה-data attributes של כתובות
+            field.dataset.physicalAddress = '';
+            field.dataset.isGoogleAddress = 'false';
+            field.dataset.hasChanged = 'false';
+            field.dataset.originalText = '';
+            
+            // ניקוי attributes נוספים אם קיימים
+            delete field.dataset.physicalAddress;
+            delete field.dataset.isGoogleAddress;
+            delete field.dataset.hasChanged;
+            delete field.dataset.originalText;
+            
+            console.log(`🧹 נוקה שדה כתובת: ${fieldId}`);
+        }
+    });
+    
+    // 🔧 ניקוי מלא של כל נתוני הרכב (בלי שמירה!)
+    const vehicleFields = [
+        'defectiveCarType',
+        'defectiveCarType2', 
+        'workingCarType',
+        'exchangeDefectiveType'
+    ];
+    
+    vehicleFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            // ניקוי הערך
+            field.value = '';
+            
+            // 🚨 ניקוי כל ה-data attributes של רכב
+            delete field.dataset.color;
+            delete field.dataset.gear;
+            delete field.dataset.machineryType;
+            delete field.dataset.selfWeight;
+            delete field.dataset.totalWeightTon;
+            delete field.dataset.fuelType;
+            delete field.dataset.driveType;
+            delete field.dataset.gearType;
+            
+            // הסתרת שדה סוג רכב
+            field.closest('.form-group')?.classList.add('vehicle-type-hidden');
+            
+            console.log(`🧹 נוקה שדה רכב: ${fieldId}`);
+        }
+    });
+    
+    // 🔧 ניקוי מלא של מקורות המידע (data sources)
+    ['defective', 'defective2', 'working', 'exchangeDefective'].forEach(context => {
+        const sourceField = document.getElementById(`dataSource_${context}`);
+        if (sourceField) {
+            sourceField.remove(); // מחק לגמרי את השדה
+            console.log(`🧹 הוסר מקור מידע: ${context}`);
+        }
+    });
+    
+    // החזרה למצב התחלתי
+    document.getElementById('summaryPage').classList.add('hidden');
+    document.getElementById('towingForm').classList.remove('hidden');
+    
+    // הסתרת כל הטפסים המתקדמים
+    document.getElementById('defectiveCarForm')?.classList.add('hidden');
+    document.getElementById('exchangeForm')?.classList.add('hidden');
+    document.getElementById('secondDefectiveCarForm')?.classList.add('hidden');
+    
+    // הסתרת כפתור הוספת רכב נוסף
+    const addCarButtonContainer = document.getElementById('addCarButtonContainer');
+    if (addCarButtonContainer) {
+        addCarButtonContainer.classList.add('hidden');
+        addCarButtonContainer.style.visibility = 'hidden';
+    }
+    
+    // איפוס בחירת סוג גרירה
+    document.getElementById('towingType').value = '';
+    
+    // החזרת התאריך להיום
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('executionDate').value = today;
+    
+    // החזרת כפתורי התאריך למצב ברירת מחדל
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector('[data-target="today"]')?.classList.add('active');
+    document.getElementById('datePicker')?.classList.add('hidden');
+    
+    // איפוס מחיר ונקה כל עיצוב אוטומטי
+    const priceField = document.getElementById('price');
+    if (priceField) {
+        priceField.value = '';
+        priceField.style.backgroundColor = '';
+        priceField.style.border = '';
+        priceField.removeAttribute('title');
+        priceField.dataset.autoCalculated = 'false';
+        priceField.dataset.manuallyEdited = 'false';
+        delete priceField.dataset.calculationDetails;
+    }
+    
+    // איפוס כפתורי תשלום
+    document.querySelectorAll('.payment-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector('[data-payment="cash"]')?.classList.add('active');
+    document.getElementById('creditCardSection')?.classList.add('hidden');
+    
+    // 🔧 הגדרה מחדש של המאזינים אחרי הניקוי
+    console.log('🔄 מגדיר מחדש מאזיני רכב...');
+    setupVehicleLookup();
+    setupPhoneSanitization();
+    setupAddressTracking();
+    
+    console.log('✅ הטופס אופס לחלוטין - רק פרטי משתמש נשמרו');
+    console.log('🧹 כל נתוני הרכב והכתובות נמחקו');
+    console.log('🔄 מאזינים הוגדרו מחדש');
 }

@@ -1,0 +1,1190 @@
+[1mdiff --git a/public/towing-form/calendar-integration.js b/public/towing-form/calendar-integration.js[m
+[1mindex afdf175..8ae11d9 100644[m
+[1m--- a/public/towing-form/calendar-integration.js[m
+[1m+++ b/public/towing-form/calendar-integration.js[m
+[36m@@ -1,28 +1,32 @@[m
+[31m-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYS3hE5rrwhUD8kEJuhcDEqS1o0jfn9pBs37sqcOmTAE4MHgrw3mq8M9a-wHQsl8J2/exec";[m
+[32m+[m[32mconst APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbygQ4lwQXOS9JeAVgNgMQu8JCUXxJSr2KzLfrFA46CuVCNwTjPTskKJpSdOW5_Shd-r/exec";[m
+ // מאזין לכפתור השליחה הסופי[m
+ document.getElementById('confirmSubmit').addEventListener('click', async function(e) {[m
+     e.preventDefault();[m
+[31m-    [m
+[32m+[m
+     try {[m
+[32m+[m[32m        showLoadingOverlay();[m
+         const formData = collectFormData();[m
+[32m+[m[41m        [m
+[32m+[m[32m        // יצירת FormData לשליחה[m
+[32m+[m[32m        const postData = new FormData();[m
+[32m+[m[32m        postData.append('data', JSON.stringify(formData));[m
+ [m
+[31m-        const form = document.createElement('form');[m
+[31m-    form.method = 'POST';[m
+[31m-    form.action = APPS_SCRIPT_URL;[m
+[31m-    form.target = '_blank';[m
+[31m-[m
+[31m-    const hiddenField = document.createElement('input');[m
+[31m-    hiddenField.type = 'hidden';[m
+[31m-    hiddenField.name = 'data';[m
+[31m-    hiddenField.value = JSON.stringify(formData);[m
+[32m+[m[32m        // שליחת הנתונים ברקע[m
+[32m+[m[32m        const response = await fetch(APPS_SCRIPT_URL, {[m
+[32m+[m[32m            method: 'POST',[m
+[32m+[m[32m            body: postData[m
+[32m+[m[32m        });[m
+ [m
+[31m-    form.appendChild(hiddenField);[m
+[31m-    document.body.appendChild(form);[m
+[31m-    form.submit();[m
+[31m-    document.body.removeChild(form);[m
+[32m+[m[32m        const result = await response.json();[m
+[32m+[m[41m        [m
+[32m+[m[32m        if (result.success) {[m
+[32m+[m[32m            hideLoadingOverlay();[m
+[32m+[m[32m            showSuccessModal();[m
+[32m+[m[32m            // כאן נוסיף בשלב הבא את ההודעה הקופצת והניקוי[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            alert('שגיאה: ' + result.message);[m
+[32m+[m[32m        }[m
+         [m
+[31m-        alert('הטופס נשלח בהצלחה והאירוע נוסף ליומן!');[m
+[31m-        location.reload();[m
+     } catch (error) {[m
+         console.error('Error:', error);[m
+         alert('אירעה שגיאה בשליחת הטופס. אנא נסה שוב.');[m
+[36m@@ -257,4 +261,180 @@[m [mformData.dataSource_exchangeDefective = document.getElementById('dataSource_exch[m
+ function getSelectedPaymentType() {[m
+     const activeButton = document.querySelector('.payment-btn.active');[m
+     return activeButton ? activeButton.dataset.payment : 'cash';[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// פונקציה להצגת הודעה קופצת של הצלחה[m
+[32m+[m[32mfunction showSuccessModal() {[m
+[32m+[m[32m    const modal = document.createElement('div');[m
+[32m+[m[32m    modal.className = 'success-modal';[m
+[32m+[m[32m    modal.innerHTML = `[m
+[32m+[m[32m        <div class="success-modal-content">[m
+[32m+[m[32m            <div class="success-icon">✅</div>[m
+[32m+[m[32m            <h2 class="success-title">ההזמנה נשלחה בהצלחה!</h2>[m
+[32m+[m[32m            <p class="success-message">[m
+[32m+[m[32m                האירוע נוסף ליומן וצוות גרר גולן יצור איתכם קשר בהקדם.<br>[m
+[32m+[m[32m                תודה רבה![m
+[32m+[m[32m            </p>[m
+[32m+[m[32m            <button class="success-button" onclick="closeSuccessModal()">[m
+[32m+[m[32m                אוקיי[m
+[32m+[m[32m            </button>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m    `;[m
+[32m+[m[32m    document.body.appendChild(modal);[m
+[32m+[m[41m    [m
+[32m+[m[32m    // סגירה אוטומטית אחרי 5 שניות[m
+[32m+[m[32m    setTimeout(() => {[m
+[32m+[m[32m        closeSuccessModal();[m
+[32m+[m[32m    }, 5000);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// פונקציה לסגירת ההודעה הקופצת[m
+[32m+[m[32mfunction closeSuccessModal() {[m
+[32m+[m[32m    const modal = document.querySelector('.success-modal');[m
+[32m+[m[32m    if (modal) {[m
+[32m+[m[32m        modal.style.animation = 'fadeOut 0.3s ease';[m
+[32m+[m[32m        setTimeout(() => {[m
+[32m+[m[32m            modal.remove();[m
+[32m+[m[32m            resetFormForNewOrder(); // כאן נוסיף בשלב הבא את ניקוי הטופס[m
+[32m+[m[32m        }, 300);[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// פונקציה להצגת אינדיקטור טעינה[m
+[32m+[m[32mfunction showLoadingOverlay() {[m
+[32m+[m[32m    const overlay = document.createElement('div');[m
+[32m+[m[32m    overlay.className = 'loading-overlay';[m
+[32m+[m[32m    overlay.innerHTML = `[m
+[32m+[m[32m        <div class="spinner"></div>[m
+[32m+[m[32m        <div>שולח הזמנה...</div>[m
+[32m+[m[32m    `;[m
+[32m+[m[32m    document.body.appendChild(overlay);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// פונקציה להסתרת אינדיקטור טעינה[m
+[32m+[m[32mfunction hideLoadingOverlay() {[m
+[32m+[m[32m    const overlay = document.querySelector('.loading-overlay');[m
+[32m+[m[32m    if (overlay) {[m
+[32m+[m[32m        overlay.remove();[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// תחליפי את הפונקציה resetFormForNewOrder הקיימת ב-calendar-integration.js עם הקוד הזה:[m
+[32m+[m
+[32m+[m[32mfunction resetFormForNewOrder() {[m
+[32m+[m[32m    // 🔄 שלב 1: שמירת פרטי המשתמש לפני האיפוס[m
+[32m+[m[32m    const savedUserData = {[m
+[32m+[m[32m        userEmail: localStorage.getItem('userEmail'),[m
+[32m+[m[32m        userCompany: localStorage.getItem('userCompany'),[m
+[32m+[m[32m        userDepartment: localStorage.getItem('userDepartment')[m
+[32m+[m[32m    };[m
+[32m+[m[41m    [m
+[32m+[m[32m    console.log('💾 שומר פרטי משתמש:', savedUserData);[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 1. חזרה לעמוד הטופס הראשי (לא סיכום)[m
+[32m+[m[32m    document.getElementById('summaryPage').classList.add('hidden');[m
+[32m+[m[32m    document.getElementById('towingForm').classList.remove('hidden');[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 2. איפוס כל השדות של הטופס[m
+[32m+[m[32m    const form = document.getElementById('towingForm');[m
+[32m+[m[32m    form.reset();[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 3. הסתרת כל הטפסים המתקדמים[m
+[32m+[m[32m    document.getElementById('defectiveCarForm').classList.add('hidden');[m
+[32m+[m[32m    document.getElementById('exchangeForm').classList.add('hidden');[m
+[32m+[m[32m    document.getElementById('secondDefectiveCarForm').classList.add('hidden');[m
+[32m+[m[32m    document.getElementById('addCarButtonContainer').classList.add('hidden');[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 4. איפוס בחירות כפתורים[m
+[32m+[m[32m    document.querySelectorAll('.choice-btn').forEach(btn => {[m
+[32m+[m[32m        btn.classList.remove('selected');[m
+[32m+[m[32m    });[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 5. איפוס כפתורי תשלום[m
+[32m+[m[32m    document.querySelectorAll('.payment-btn').forEach(btn => {[m
+[32m+[m[32m        btn.classList.remove('active');[m
+[32m+[m[32m    });[m
+[32m+[m[32m    document.querySelector('.payment-btn[data-payment="cash"]').classList.add('active');[m
+[32m+[m[32m    document.getElementById('creditCardSection').classList.add('hidden');[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 6. הסתרת שדות רכב שנוצרו דינמית[m
+[32m+[m[32m    document.querySelectorAll('.vehicle-info-display').forEach(el => el.remove());[m
+[32m+[m[32m    document.querySelectorAll('[id^="loading-"]').forEach(el => el.remove());[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 6.5. איפוס שדות dataSource נסתרים (מוחק ויוצר מחדש)[m
+[32m+[m[32m    document.querySelectorAll('[id^="dataSource_"]').forEach(field => {[m
+[32m+[m[32m        if (field) field.remove();[m
+[32m+[m[32m    });[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 🔄 שלב 2: שחזור פרטי המשתמש אחרי האיפוס[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 7. שחזור פרטי המשתמש ל-localStorage (למקרה שנמחקו)[m
+[32m+[m[32m    if (savedUserData.userEmail) localStorage.setItem('userEmail', savedUserData.userEmail);[m
+[32m+[m[32m    if (savedUserData.userCompany) localStorage.setItem('userCompany', savedUserData.userCompany);[m
+[32m+[m[32m    if (savedUserData.userDepartment) localStorage.setItem('userDepartment', savedUserData.userDepartment);[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 8. הצגת שם החברה מחדש (נשמר מ-localStorage)[m
+[32m+[m[32m    const companyName = localStorage.getItem('userCompany') || 'חברה לא מזוהה';[m
+[32m+[m[32m    document.getElementById('companyName').textContent = companyName;[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 9. הצגת שדה שם לקוח אם זה גרר גולן[m
+[32m+[m[32m    const isGrerGolan = companyName === 'גרר גולן';[m
+[32m+[m[32m    if (isGrerGolan) {[m
+[32m+[m[32m        const clientNameGroup = document.getElementById('clientNameGroup');[m
+[32m+[m[32m        if (clientNameGroup) {[m
+[32m+[m[32m            clientNameGroup.style.display = 'block';[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 10. איפוס תאריך ושעה לערכים נוכחיים[m
+[32m+[m[32m    const now = new Date();[m
+[32m+[m[32m    const currentDate = now.toISOString().split('T')[0];[m
+[32m+[m[32m    document.getElementById('executionDate').value = currentDate;[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 11. הפעלת כפתור "היום" בבחירת מחדל[m
+[32m+[m[32m    document.querySelectorAll('[data-target="today"], [data-target="now"]').forEach(btn => {[m
+[32m+[m[32m        btn.classList.add('active');[m
+[32m+[m[32m    });[m
+[32m+[m[32m    document.querySelectorAll('[data-target="other-date"], [data-target="other-time"]').forEach(btn => {[m
+[32m+[m[32m        btn.classList.remove('active');[m
+[32m+[m[32m    });[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 12. הסתרת picker של תאריך ושעה[m
+[32m+[m[32m    document.getElementById('datePicker').classList.add('hidden');[m
+[32m+[m[32m    document.getElementById('timePicker').classList.add('hidden');[m
+[32m+[m[41m    [m
+[32m+[m[32m    console.log('🔄 הטופס אופס להזמנה חדשה עם שמירת פרטי המשתמש');[m
+[32m+[m
+[32m+[m[32m    // 🔄 שלב 3: יצירת שדות dataSource חדשים מיד (לא ב-setTimeout)[m
+[32m+[m[32m    createDataSourceFields();[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 🔄 שלב 4: הפעלת הפונקציות מחדש עם השהיה קצרה[m
+[32m+[m[32m    setTimeout(() => {[m
+[32m+[m[32m        if (typeof initializeAllFeatures === 'function') {[m
+[32m+[m[32m            initializeAllFeatures();[m
+[32m+[m[32m            console.log('🔄 כל הפונקציות הופעלו מחדש דרך initializeAllFeatures');[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            console.log('⚠️ initializeAllFeatures לא זמינה - מדלג על הפעלת פונקציות');[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }, 300);[m
+[32m+[m[41m    [m
+[32m+[m[32m    console.log('✅ פרטי המשתמש נשמרו והטופס מוכן להזמנה חדשה');[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// 🆕 פונקציה חדשה ליצירת שדות dataSource[m
+[32m+[m[32mfunction createDataSourceFields() {[m
+[32m+[m[32m    // יצירת שדות dataSource חדשים[m
+[32m+[m[32m    const contexts = ['defective', 'defective2', 'working', 'exchangeDefective'];[m
+[32m+[m[32m    contexts.forEach(context => {[m
+[32m+[m[32m        const hiddenId = `dataSource_${context}`;[m
+[32m+[m[32m        if (!document.getElementById(hiddenId)) {[m
+[32m+[m[32m            const hidden = document.createElement('input');[m
+[32m+[m[32m            hidden.type = 'hidden';[m
+[32m+[m[32m            hidden.id = hiddenId;[m
+[32m+[m[32m            hidden.name = hiddenId;[m
+[32m+[m[32m            hidden.value = ''; // ערך ריק בהתחלה[m
+[32m+[m[32m            document.body.appendChild(hidden);[m
+[32m+[m[32m        }[m
+[32m+[m[32m    });[m
+[32m+[m[32m    console.log('🔧 שדות dataSource נוצרו מחדש');[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/public/towing-form/script.js b/public/towing-form/script.js[m
+[1mindex 823232e..46e2280 100644[m
+[1m--- a/public/towing-form/script.js[m
+[1m+++ b/public/towing-form/script.js[m
+[36m@@ -1,3 +1,6 @@[m
+[32m+[m[32mconsole.log('🚀 script.js התחיל לרוץ');[m
+[32m+[m
+[32m+[m
+ document.addEventListener('DOMContentLoaded', function() { [m
+     // אלמנטים ראשיים[m
+     const mainForm = document.getElementById('towingForm');[m
+[36m@@ -132,36 +135,42 @@[m [mfunction setDefaultOrderNumber() {[m
+     }[m
+     [m
+     function setupTowingTypeChange() {[m
+[31m-        towingTypeSelect.addEventListener('change', function() {[m
+[31m-            // קודם מסתירים את כל הטפסים בכל מקרה[m
+[31m-            if (defectiveCarForm) defectiveCarForm.classList.add('hidden');[m
+[31m-            if (exchangeForm) exchangeForm.classList.add('hidden');[m
+[31m-            if (secondDefectiveCarForm) {[m
+[31m-                secondDefectiveCarForm.classList.add('hidden');[m
+[32m+[m[32m    towingTypeSelect.addEventListener('change', function() {[m
+[32m+[m[32m        // קודם מסתירים את כל הטפסים בכל מקרה[m
+[32m+[m[32m        if (defectiveCarForm) defectiveCarForm.classList.add('hidden');[m
+[32m+[m[32m        if (exchangeForm) exchangeForm.classList.add('hidden');[m
+[32m+[m[32m        if (secondDefectiveCarForm) {[m
+[32m+[m[32m            secondDefectiveCarForm.classList.add('hidden');[m
+             clearSource('defective2');[m
+[31m-            }[m
+[31m-            [m
+[31m-            // מסתירים את כפתור הוספת הרכב הנוסף - מחלקת CSS וגם visibility[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        // מסתירים את כפתור הוספת הרכב הנוסף - מחלקת CSS וגם visibility[m
+[32m+[m[32m        if (addCarButtonContainer) {[m
+[32m+[m[32m            addCarButtonContainer.classList.add('hidden');[m
+[32m+[m[32m            addCarButtonContainer.style.visibility = 'hidden';[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        // 🔧 יצירת שדות dataSource מיד כשמשנים סוג גרירה[m
+[32m+[m[32m        if (typeof createDataSourceFields === 'function') {[m
+[32m+[m[32m            createDataSourceFields();[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        // מציגים את הטופס המתאים לפי הבחירה[m
+[32m+[m[32m        if (this.value === 'defective') {[m
+[32m+[m[32m            if (defectiveCarForm) defectiveCarForm.classList.remove('hidden');[m
+[32m+[m[32m            // מציגים את כפתור הוספת הרכב - מחלקת CSS וגם visibility[m
+             if (addCarButtonContainer) {[m
+[31m-                addCarButtonContainer.classList.add('hidden');[m
+[31m-                addCarButtonContainer.style.visibility = 'hidden';[m
+[31m-            }[m
+[31m-            [m
+[31m-            // מציגים את הטופס המתאים לפי הבחירה[m
+[31m-            if (this.value === 'defective') {[m
+[31m-                if (defectiveCarForm) defectiveCarForm.classList.remove('hidden');[m
+[31m-                // מציגים את כפתור הוספת הרכב - מחלקת CSS וגם visibility[m
+[31m-                if (addCarButtonContainer) {[m
+[31m-                    addCarButtonContainer.classList.remove('hidden');[m
+[31m-                    addCarButtonContainer.style.visibility = 'visible';[m
+[31m-                }[m
+[31m-            } else if (this.value === 'exchange') {[m
+[31m-                if (exchangeForm) exchangeForm.classList.remove('hidden');[m
+[32m+[m[32m                addCarButtonContainer.classList.remove('hidden');[m
+[32m+[m[32m                addCarButtonContainer.style.visibility = 'visible';[m
+             }[m
+[31m-            updateRequiredFieldsVisibility();[m
+[31m-            setTimeout(() => setupPhoneSanitization(), 100);[m
+[31m-        });[m
+[31m-    }[m
+[32m+[m[32m        } else if (this.value === 'exchange') {[m
+[32m+[m[32m            if (exchangeForm) exchangeForm.classList.remove('hidden');[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        updateRequiredFieldsVisibility();[m
+[32m+[m[32m        setTimeout(() => setupPhoneSanitization(), 100);[m
+[32m+[m[32m    });[m
+[32m+[m[32m}[m
+     [m
+     function setupSecondCarButtons() {[m
+         if (addSecondDefectiveCarBtn) {[m
+[36m@@ -635,85 +644,9 @@[m [mdocument.addEventListener('DOMContentLoaded', function() {[m
+     // ===== הוספת פונקציונליות מילוי אוטומטי של רכבים =====[m
+     [m
+     // מאזינים לשינויים בשדות מספר רכב[m
+[31m-// מאזינים לשדות מספר רכב לחיפוש אוטומטי[m
+[31m-function setupVehicleLookup() {[m
+[31m-    const vehicleFields = [[m
+[31m-        { id: 'defectiveCarNumber', context: 'defective' },[m
+[31m-        { id: 'defectiveCarNumber2', context: 'defective2' },[m
+[31m-        { id: 'workingCarNumber', context: 'working' },[m
+[31m-        { id: 'exchangeDefectiveNumber', context: 'exchangeDefective' }[m
+[31m-    ];[m
+ [m
+[31m-    vehicleFields.forEach(({ id, context }) => {[m
+[31m-        const field = document.getElementById(id);[m
+[31m-        if (!field) return;[m
+[31m-[m
+[31m-        // משתנה לעקיבה אחר חיפושים[m
+[31m-        let lastSearchedValue = '';[m
+[31m-        let hasSearched = false;[m
+[31m-[m
+[31m-        // חיפוש מיידי אחרי הדבקה[m
+[31m-        field.addEventListener('paste', function(e) {[m
+[31m-            setTimeout(() => {[m
+[31m-                const cleanValue = this.value.replace(/[^0-9]/g, '');[m
+[31m-                if (cleanValue.length >= 6 && cleanValue !== lastSearchedValue) {[m
+[31m-                    lookupVehicleData(cleanValue, context);[m
+[31m-                    lastSearchedValue = cleanValue;[m
+[31m-                    hasSearched = true;[m
+[31m-                }[m
+[31m-            }, 10); // השהיה קטנה כדי לתת לערך להתעדכן[m
+[31m-        });[m
+[31m-[m
+[31m-        // חיפוש כשעוזבים את השדה (אם עדיין לא חיפשנו)[m
+[31m-        field.addEventListener('blur', function() {[m
+[31m-            const cleanValue = this.value.replace(/[^0-9]/g, '');[m
+[31m-            if (cleanValue.length >= 6 && cleanValue !== lastSearchedValue && !hasSearched) {[m
+[31m-                lookupVehicleData(cleanValue, context);[m
+[31m-                lastSearchedValue = cleanValue;[m
+[31m-                hasSearched = true;[m
+[31m-            }[m
+[31m-        });[m
+[31m-[m
+[31m-        // איפוס מצב החיפוש כשמשנים את הערך[m
+[31m-        field.addEventListener('input', function() {[m
+[31m-            const cleanValue = this.value.replace(/[^0-9]/g, '');[m
+[31m-            if (cleanValue !== lastSearchedValue) {[m
+[31m-                hasSearched = false;[m
+[31m-                // נקה את מקור המידע עבור ההקשר הזה אם המספר השתנה[m
+[31m-                const hid = document.getElementById(`dataSource_${context}`);[m
+[31m-                if (hid) hid.value = '';[m
+[31m-                // הסתרת שדה סוג רכב אם משנים את המספר[m
+[31m-                if (cleanValue.length < 6) {[m
+[31m-                    const typeFieldId = getCarTypeFieldId(context);[m
+[31m-                    hideVehicleTypeField(typeFieldId);[m
+[31m-                    const typeField = document.getElementById(typeFieldId);[m
+[31m-                    if (typeField) typeField.value = '';[m
+[31m-                }[m
+[31m-            }[m
+[31m-        });[m
+[31m-    });[m
+[31m-}[m
+ [m
+[31m-function setupLicenseNumberSanitization() {[m
+[31m-    const licenseInputs = [[m
+[31m-        'defectiveCarNumber',[m
+[31m-        'defectiveCarNumber2',[m
+[31m-        'workingCarNumber',[m
+[31m-        'exchangeDefectiveNumber'[m
+[31m-    ];[m
+ [m
+[31m-    licenseInputs.forEach(id => {[m
+[31m-        const input = document.getElementById(id);[m
+[31m-        if (input) {[m
+[31m-            input.addEventListener('input', function () {[m
+[31m-                const cursorPos = input.selectionStart;[m
+[31m-                const cleanValue = input.value.replace(/[^0-9]/g, '');[m
+[31m-                input.value = cleanValue;[m
+[31m-                input.setSelectionRange(cursorPos, cursorPos); // שמירה על מיקום הסמן[m
+[31m-            });[m
+[31m-        }[m
+[31m-    });[m
+[31m-}[m
+ [m
+ function cleanPhoneNumber(phoneNumber) {[m
+     if (!phoneNumber) return '';[m
+[36m@@ -743,48 +676,7 @@[m [mfunction cleanPhoneNumber(phoneNumber) {[m
+     return cleaned.slice(0, 10);[m
+ }[m
+ [m
+[31m-function setupPhoneSanitization() {[m
+[31m-    const phoneFields = [[m
+[31m-        'contactPhone1',[m
+[31m-        'destContactPhone',[m
+[31m-        'contactPhone2',[m
+[31m-        'destContactPhone2',[m
+[31m-        'workingSourcePhone',[m
+[31m-        'workingDestPhone',[m
+[31m-        'garagePhone'[m
+[31m-    ];[m
+ [m
+[31m-    phoneFields.forEach(id => {[m
+[31m-        const input = document.getElementById(id);[m
+[31m-        if (input) {[m
+[31m-            // הסרת כל המאזינים הקודמים[m
+[31m-            const newInput = input.cloneNode(true);[m
+[31m-            input.parentNode.replaceChild(newInput, input);[m
+[31m-            [m
+[31m-            // מאזין להקלדה[m
+[31m-            newInput.addEventListener('input', function(e) {[m
+[31m-                const cursorPos = e.target.selectionStart;[m
+[31m-                const cleanedPhone = cleanPhoneNumber(e.target.value);[m
+[31m-                e.target.value = cleanedPhone;[m
+[31m-                e.target.setSelectionRange(cursorPos, cursorPos);[m
+[31m-            });[m
+[31m-            [m
+[31m-            // מאזין להדבקה[m
+[31m-            newInput.addEventListener('paste', function(e) {[m
+[31m-                e.preventDefault();[m
+[31m-                const pasteData = (e.clipboardData || window.clipboardData).getData('text');[m
+[31m-                const cleanedPhone = cleanPhoneNumber(pasteData);[m
+[31m-                e.target.value = cleanedPhone;[m
+[31m-            });[m
+[31m-            [m
+[31m-            // מאזין ל-blur (כשעוזבים את השדה) - לניקוי סופי[m
+[31m-            newInput.addEventListener('blur', function(e) {[m
+[31m-                const cleanedPhone = cleanPhoneNumber(e.target.value);[m
+[31m-                e.target.value = cleanedPhone;[m
+[31m-            });[m
+[31m-        }[m
+[31m-    });[m
+[31m-}[m
+ [m
+ [m
+ // פונקציה לעיצוב מספר כרטיס אשראי[m
+[36m@@ -939,189 +831,98 @@[m [mfunction getCarNumberFieldId(context) {[m
+     return fieldMap[context];[m
+ }[m
+ [m
+[31m-    // פונקציה לחיפוש מידע רכב[m
+[31m-    async function lookupVehicleData(licenseNumber, vehicleContext) {[m
+[31m-        const cleanLicense = licenseNumber.replace(/[^0-9]/g, '');[m
+[31m-        [m
+[31m-        if (cleanLicense.length < 6) return;[m
+ [m
+[31m-        // הצגת אינדיקטור טעינה[m
+[31m-        showLoadingIndicator(vehicleContext, true);[m
+[31m-        showVehicleWarning('🔍 מחפש מידע רכב במאגרי משרד התחבורה...', 'info');[m
+[32m+[m[32m    // פונקציה לעיצוב מספר רישוי[m
+[32m+[m[32m    function formatLicenseNumber(number) {[m
+[32m+[m[32m        const cleanNumber = number.replace(/[^0-9]/g, '');[m
+[32m+[m[32m        if (cleanNumber.length === 7) {[m
+[32m+[m[32m            return cleanNumber.slice(0, 2) + '-' + cleanNumber.slice(2, 5) + '-' + cleanNumber.slice(5);[m
+[32m+[m[32m        } else if (cleanNumber.length === 8) {[m
+[32m+[m[32m            return cleanNumber.slice(0, 3) + '-' + cleanNumber.slice(3, 5) + '-' + cleanNumber.slice(5);[m
+[32m+[m[32m        }[m
+[32m+[m[32m        return cleanNumber;[m
+[32m+[m[32m    }[m
+ [m
+[31m-        try {[m
+[31m-            const response = await fetch('/api/vehicles/quick', {[m
+[31m-                method: 'POST',[m
+[31m-                headers: {[m
+[31m-                    'Content-Type': 'application/json',[m
+[31m-                },[m
+[31m-                body: JSON.stringify({[m
+[31m-                    license: cleanLicense[m
+[31m-                })[m
+[31m-            });[m
+[32m+[m[32m    // הוספת סגנונות CSS לאנימציות[m
+[32m+[m[32m    const style = document.createElement('style');[m
+[32m+[m[32m    style.textContent = `[m
+[32m+[m[32m        @keyframes slideIn {[m
+[32m+[m[32m            from { transform: translateX(100%); opacity: 0; }[m
+[32m+[m[32m            to { transform: translateX(0); opacity: 1; }[m
+[32m+[m[32m        }[m
+[32m+[m[32m        @keyframes slideOut {[m
+[32m+[m[32m            from { transform: translateX(0); opacity: 1; }[m
+[32m+[m[32m            to { transform: translateX(100%); opacity: 0; }[m
+[32m+[m[32m        }[m
+[32m+[m[32m    `;[m
+[32m+[m[32m    document.head.appendChild(style);[m
+ [m
+[31m-            const result = await response.json();[m
+[32m+[m[32m    // הפעלת פונקציונליות מילוי אוטומטי[m
+[32m+[m[32m    initializeAllFeatures();[m
+[32m+[m[32m    setTimeout(() => {[m
+[32m+[m[32m    setupPhoneSanitization();[m
+[32m+[m[32m}, 2000);[m
+[32m+[m[32m});[m
+[32m+[m[32m// מאזינים לשדות מספר רכב לחיפוש אוטומטי[m
+[32m+[m[32mfunction setupVehicleLookup() {[m
+[32m+[m[32m    const vehicleFields = [[m
+[32m+[m[32m        { id: 'defectiveCarNumber', context: 'defective' },[m
+[32m+[m[32m        { id: 'defectiveCarNumber2', context: 'defective2' },[m
+[32m+[m[32m        { id: 'workingCarNumber', context: 'working' },[m
+[32m+[m[32m        { id: 'exchangeDefectiveNumber', context: 'exchangeDefective' }[m
+[32m+[m[32m    ];[m
+ [m
+[31m-            if (result.success) {[m
+[31m-                fillVehicleData(result.vehicle, result.status, result.towTypes, vehicleContext);[m
+[31m-                // שמירת מקור המידע (source) שהגיע מהשרת[m
+[31m-                const src = result.source || result?.vehicle?.source || null;[m
+[31m-                if (src) {[m
+[31m-                const hiddenId = `dataSource_${vehicleContext}`;[m
+[31m-                let hidden = document.getElementById(hiddenId);[m
+[31m-                if (!hidden) {[m
+[31m-                    hidden = document.createElement('input');[m
+[31m-                    hidden.type = 'hidden';[m
+[31m-                    hidden.id = hiddenId;[m
+[31m-                    hidden.name = hiddenId;[m
+[31m-                    document.getElementById(getCarNumberFieldId(vehicleContext)).closest('form').appendChild(hidden);[m
+[31m-                }[m
+[31m-                hidden.value = JSON.stringify(src);[m
+[31m-                }[m
+[32m+[m[32m    vehicleFields.forEach(({ id, context }) => {[m
+[32m+[m[32m        const field = document.getElementById(id);[m
+[32m+[m[32m        if (!field) return;[m
+ [m
+[31m-    [m
+[31m-                // הצגת התראות אם הרכב מבוטל או לא פעיל - אבל לא הצגת החלונית הכחולה[m
+[31m-                if (result.status.isCanceled) {[m
+[31m-                    showVehicleWarning('הרכב מבוטל סופית ואינו כשיר לנסיעה!', 'error');[m
+[31m-                } else if (result.status.isInactive) {[m
+[31m-                    showVehicleWarning('הרכב לא מופיע כרכב פעיל במאגר משרד התחבורה', 'warning');[m
+[32m+[m[32m        // משתנה לעקיבה אחר חיפושים[m
+[32m+[m[32m        let lastSearchedValue = '';[m
+[32m+[m[32m        let hasSearched = false;[m
+[32m+[m
+[32m+[m[32m        // חיפוש מיידי אחרי הדבקה[m
+[32m+[m[32m        field.addEventListener('paste', function(e) {[m
+[32m+[m[32m            setTimeout(() => {[m
+[32m+[m[32m                const cleanValue = this.value.replace(/[^0-9]/g, '');[m
+[32m+[m[32m                if (cleanValue.length >= 6 && cleanValue !== lastSearchedValue) {[m
+[32m+[m[32m                    lookupVehicleData(cleanValue, context);[m
+[32m+[m[32m                    lastSearchedValue = cleanValue;[m
+[32m+[m[32m                    hasSearched = true;[m
+                 }[m
+[31m-                // לא קוראים ל-showVehicleInfo כאן![m
+[31m-            } else {[m
+[31m-                // רק אם הרכב לא נמצא - מציגים את החלונית[m
+[31m-                const typeFieldId = getCarTypeFieldId(vehicleContext);[m
+[31m-                showVehicleTypeField(typeFieldId);[m
+[31m-                document.getElementById(typeFieldId).placeholder = 'נא להזין סוג רכב';[m
+[31m-                document.getElementById(typeFieldId).value = '';[m
+[31m-                showVehicleInfo({}, {}, [], vehicleContext); // חלונית ריקה להזנה ידנית[m
+[32m+[m[32m            }, 10); // השהיה קטנה כדי לתת לערך להתעדכן[m
+[32m+[m[32m        });[m
+[32m+[m
+[32m+[m[32m        // חיפוש כשעוזבים את השדה (אם עדיין לא חיפשנו)[m
+[32m+[m[32m        field.addEventListener('blur', function() {[m
+[32m+[m[32m            const cleanValue = this.value.replace(/[^0-9]/g, '');[m
+[32m+[m[32m            if (cleanValue.length >= 6 && cleanValue !== lastSearchedValue && !hasSearched) {[m
+[32m+[m[32m                lookupVehicleData(cleanValue, context);[m
+[32m+[m[32m                lastSearchedValue = cleanValue;[m
+[32m+[m[32m                hasSearched = true;[m
+             }[m
+[31m-        } catch (error) {[m
+[31m-            console.error('Error fetching vehicle data:', error);[m
+[31m-            // הצגת שדה סוג רכב למילוי ידני (ללא הודעת שגיאה)[m
+[31m-            const typeFieldId = getCarTypeFieldId(vehicleContext);[m
+[31m-            showVehicleTypeField(typeFieldId);[m
+[31m-            document.getElementById(typeFieldId).placeholder = 'נא להזין סוג רכב';[m
+[31m-            document.getElementById(typeFieldId).value = '';[m
+[31m-        } finally {[m
+[31m-            showLoadingIndicator(vehicleContext, false);[m
+[31m-            setTimeout(() => {[m
+[31m-            document.querySelectorAll('[style*="top: 20px"]').forEach(el => el.remove());[m
+[31m-        }, 100);[m
+[31m-        }[m
+[31m-    }[m
+[31m-[m
+[31m-    // פונקציה למילוי הנתונים בטופס[m
+[31m-    function fillVehicleData(vehicle, status, towTypes, context) {[m
+[31m-    const typeFieldMap = {[m
+[31m-        'defective': 'defectiveCarType',[m
+[31m-        'defective2': 'defectiveCarType2', [m
+[31m-        'working': 'workingCarType',[m
+[31m-        'exchangeDefective': 'exchangeDefectiveType'[m
+[31m-    };[m
+[31m-[m
+[31m-    const typeFieldId = typeFieldMap[context];[m
+[31m-    if (typeFieldId) {[m
+[31m-        console.log('🚗 כל נתוני הרכב:', vehicle);[m
+[31m-        const typeField = document.getElementById(typeFieldId);[m
+[31m-        if (typeField) {[m
+[31m-            // יצירת תיאור מקוצר לשדה סוג רכב[m
+[31m-            let vehicleDescription = '';[m
+[31m-            if (vehicle.manufacturer) vehicleDescription += vehicle.manufacturer;[m
+[31m-            if (vehicle.model) vehicleDescription += (vehicleDescription ? ' ' : '') + vehicle.model;[m
+[31m-            if (vehicle.year) vehicleDescription += (vehicleDescription ? ' ' : '') + vehicle.year;[m
+[31m-            [m
+[31m-            typeField.value = vehicleDescription;[m
+[31m-            [m
+[31m-            // ✨ שמירת צבע וגיר ב-data attributes ✨[m
+[31m-            typeField.dataset.color = vehicle.color || '';[m
+[31m-            typeField.dataset.gear = vehicle.gear || vehicle.transmission || '';[m
+[31m-            typeField.dataset.machineryType = vehicle.machineryType || '';[m
+[31m-            typeField.dataset.selfWeight = vehicle.selfWeight || '';[m
+[31m-            typeField.dataset.totalWeightTon = vehicle.totalWeightTon || '';[m
+[31m-            typeField.dataset.fuelType = vehicle.fuelType || '';[m
+[31m-            typeField.dataset.driveType = vehicle.driveType || '';[m
+[31m-            typeField.dataset.gearType = vehicle.gearType || '';[m
+[31m-            console.log(`נשמר מידע עבור ${context}: צבע=${vehicle.color}, גיר=${vehicle.gear || vehicle.transmission}`);[m
+[31m-            [m
+[31m-            // הצגת שדה סוג רכב כשמצאנו מידע[m
+[31m-            showVehicleTypeField(typeFieldId);[m
+[31m-            [m
+[31m-            // הוספת סגנון ויזואלי להראות שהמידע התמלא אוטומטית[m
+[31m-            typeField.style.backgroundColor = '#e8f5e8';[m
+[31m-            typeField.style.border = '2px solid #4caf50';[m
+[31m-            [m
+[31m-            // הסרת הסגנון לאחר 3 שניות[m
+[31m-            setTimeout(() => {[m
+[31m-                typeField.style.backgroundColor = '';[m
+[31m-                typeField.style.border = '';[m
+[31m-            }, 2000);[m
+[31m-        }[m
+[31m-    }[m
+[31m-    showVehicleInfo(vehicle, status, towTypes, context);[m
+[31m-[m
+[31m-}[m
+[31m-[m
+[31m-    // פונקציה להצגת מידע נוסף על הרכב[m
+[31m-    function showVehicleInfo(vehicle, status, towTypes, context) {[m
+[31m-    const fieldMap = {[m
+[31m-        'defective': 'defectiveCarType',[m
+[31m-        'defective2': 'defectiveCarType2',[m
+[31m-        'working': 'workingCarType', [m
+[31m-        'exchangeDefective': 'exchangeDefectiveType'[m
+[31m-    };[m
+[31m-[m
+[31m-    const fieldId = fieldMap[context];[m
+[31m-    const field = document.getElementById(fieldId);[m
+[31m-    if (!field) return;[m
+[31m-[m
+[31m-    // הסרת הודעה קיימת אם יש[m
+[31m-    const existingInfo = field.parentNode.querySelector('.vehicle-info-display');[m
+[31m-    if (existingInfo) {[m
+[31m-        existingInfo.remove();[m
+[31m-    }[m
+[31m-[m
+[31m-    // יצירת מידע על המאגר בלבד[m
+[31m-    const source = vehicle.source;[m
+[31m-    let sourceText = 'מאגר ממשלתי';[m
+[31m-    [m
+[31m-    if (source) {[m
+[31m-        const typeMap = {[m
+[31m-            private: 'רכב פרטי',[m
+[31m-            motorcycle: 'דו-גלגלי',[m
+[31m-            heavy: 'מעל 3.5 טון',[m
+[31m-            machinery: 'צמ״ה'[m
+[31m-        };[m
+[31m-        [m
+[31m-        const statusMap = {[m
+[31m-            regular: 'פעיל',[m
+[31m-            canceled: 'מבוטל',[m
+[31m-            inactive: 'לא פעיל'[m
+[31m-        };[m
+[31m-        [m
+[31m-        const vehicleType = typeMap[source.type] || '';[m
+[31m-        const vehicleStatus = statusMap[source.category] || '';[m
+[31m-        [m
+[31m-        sourceText = [vehicleType, vehicleStatus].filter(Boolean).join(' • ');[m
+[31m-    }[m
+[31m-[m
+[31m-    // יצירת אלמנט מידע קטן[m
+[31m-    const infoDiv = document.createElement('div');[m
+[31m-    infoDiv.className = 'vehicle-info-display';[m
+[31m-    infoDiv.style.cssText = `[m
+[31m-        margin-top: 5px;[m
+[31m-        padding: 5px 8px;[m
+[31m-        background: #f0f9ff;[m
+[31m-        border: 1px solid #bfdbfe;[m
+[31m-        border-radius: 4px;[m
+[31m-        font-size: 12px;[m
+[31m-        color: #1e40af;[m
+[31m-    `;[m
+[31m-    infoDiv.textContent = `מקור: ${sourceText}`;[m
+[32m+[m[32m        });[m
+ [m
+[31m-    field.parentNode.appendChild(infoDiv);[m
+[32m+[m[32m        // איפוס מצב החיפוש כשמשנים את הערך[m
+[32m+[m[32m        field.addEventListener('input', function() {[m
+[32m+[m[32m            const cleanValue = this.value.replace(/[^0-9]/g, '');[m
+[32m+[m[32m            if (cleanValue !== lastSearchedValue) {[m
+[32m+[m[32m                hasSearched = false;[m
+[32m+[m[32m                // נקה את מקור המידע עבור ההקשר הזה אם המספר השתנה[m
+[32m+[m[32m                const hid = document.getElementById(`dataSource_${context}`);[m
+[32m+[m[32m                if (hid) hid.value = '';[m
+[32m+[m[32m                // הסתרת שדה סוג רכב אם משנים את המספר[m
+[32m+[m[32m                if (cleanValue.length < 6) {[m
+[32m+[m[32m                    const typeFieldId = getCarTypeFieldId(context);[m
+[32m+[m[32m                    hideVehicleTypeField(typeFieldId);[m
+[32m+[m[32m                    const typeField = document.getElementById(typeFieldId);[m
+[32m+[m[32m                    if (typeField) typeField.value = '';[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }[m
+[32m+[m[32m        });[m
+[32m+[m[32m    });[m
+ }[m
+ [m
+[31m-    // פונקציה להצגת אינדיקטור טעינה[m
+[32m+[m[32m// פונקציה להצגת אינדיקטור טעינה[m
+     function showLoadingIndicator(context, show) {[m
+         const fieldMap = {[m
+             'defective': 'defectiveCarType',[m
+[36m@@ -1196,40 +997,251 @@[m [mfunction getCarNumberFieldId(context) {[m
+         }, 5000);[m
+     }[m
+ [m
+[31m-    // פונקציה לעיצוב מספר רישוי[m
+[31m-    function formatLicenseNumber(number) {[m
+[31m-        const cleanNumber = number.replace(/[^0-9]/g, '');[m
+[31m-        if (cleanNumber.length === 7) {[m
+[31m-            return cleanNumber.slice(0, 2) + '-' + cleanNumber.slice(2, 5) + '-' + cleanNumber.slice(5);[m
+[31m-        } else if (cleanNumber.length === 8) {[m
+[31m-            return cleanNumber.slice(0, 3) + '-' + cleanNumber.slice(3, 5) + '-' + cleanNumber.slice(5);[m
+[32m+[m[32m// פונקציה להצגת מידע נוסף על הרכב[m
+[32m+[m[32m    function showVehicleInfo(vehicle, status, towTypes, context) {[m
+[32m+[m[32m    const fieldMap = {[m
+[32m+[m[32m        'defective': 'defectiveCarType',[m
+[32m+[m[32m        'defective2': 'defectiveCarType2',[m
+[32m+[m[32m        'working': 'workingCarType',[m[41m [m
+[32m+[m[32m        'exchangeDefective': 'exchangeDefectiveType'[m
+[32m+[m[32m    };[m
+[32m+[m
+[32m+[m[32m    const fieldId = fieldMap[context];[m
+[32m+[m[32m    const field = document.getElementById(fieldId);[m
+[32m+[m[32m    if (!field) return;[m
+[32m+[m
+[32m+[m[32m    // הסרת הודעה קיימת אם יש[m
+[32m+[m[32m    const existingInfo = field.parentNode.querySelector('.vehicle-info-display');[m
+[32m+[m[32m    if (existingInfo) {[m
+[32m+[m[32m        existingInfo.remove();[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // יצירת מידע על המאגר בלבד[m
+[32m+[m[32m    const source = vehicle.source;[m
+[32m+[m[32m    let sourceText = 'מאגר ממשלתי';[m
+[32m+[m[41m    [m
+[32m+[m[32m    if (source) {[m
+[32m+[m[32m        const typeMap = {[m
+[32m+[m[32m            private: 'רכב פרטי',[m
+[32m+[m[32m            motorcycle: 'דו-גלגלי',[m
+[32m+[m[32m            heavy: 'מעל 3.5 טון',[m
+[32m+[m[32m            machinery: 'צמ״ה'[m
+[32m+[m[32m        };[m
+[32m+[m[41m        [m
+[32m+[m[32m        const statusMap = {[m
+[32m+[m[32m            regular: 'פעיל',[m
+[32m+[m[32m            canceled: 'מבוטל',[m
+[32m+[m[32m            inactive: 'לא פעיל'[m
+[32m+[m[32m        };[m
+[32m+[m[41m        [m
+[32m+[m[32m        const vehicleType = typeMap[source.type] || '';[m
+[32m+[m[32m        const vehicleStatus = statusMap[source.category] || '';[m
+[32m+[m[41m        [m
+[32m+[m[32m        sourceText = [vehicleType, vehicleStatus].filter(Boolean).join(' • ');[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // יצירת אלמנט מידע קטן[m
+[32m+[m[32m    const infoDiv = document.createElement('div');[m
+[32m+[m[32m    infoDiv.className = 'vehicle-info-display';[m
+[32m+[m[32m    infoDiv.style.cssText = `[m
+[32m+[m[32m        margin-top: 5px;[m
+[32m+[m[32m        padding: 5px 8px;[m
+[32m+[m[32m        background: #f0f9ff;[m
+[32m+[m[32m        border: 1px solid #bfdbfe;[m
+[32m+[m[32m        border-radius: 4px;[m
+[32m+[m[32m        font-size: 12px;[m
+[32m+[m[32m        color: #1e40af;[m
+[32m+[m[32m    `;[m
+[32m+[m[32m    infoDiv.textContent = `מקור: ${sourceText}`;[m
+[32m+[m
+[32m+[m[32m    field.parentNode.appendChild(infoDiv);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m // פונקציה למילוי הנתונים בטופס[m
+[32m+[m[32m    function fillVehicleData(vehicle, status, towTypes, context) {[m
+[32m+[m[32m    const typeFieldMap = {[m
+[32m+[m[32m        'defective': 'defectiveCarType',[m
+[32m+[m[32m        'defective2': 'defectiveCarType2',[m[41m [m
+[32m+[m[32m        'working': 'workingCarType',[m
+[32m+[m[32m        'exchangeDefective': 'exchangeDefectiveType'[m
+[32m+[m[32m    };[m
+[32m+[m
+[32m+[m[32m    const typeFieldId = typeFieldMap[context];[m
+[32m+[m[32m    if (typeFieldId) {[m
+[32m+[m[32m        console.log('🚗 כל נתוני הרכב:', vehicle);[m
+[32m+[m[32m        const typeField = document.getElementById(typeFieldId);[m
+[32m+[m[32m        if (typeField) {[m
+[32m+[m[32m            // יצירת תיאור מקוצר לשדה סוג רכב[m
+[32m+[m[32m            let vehicleDescription = '';[m
+[32m+[m[32m            if (vehicle.manufacturer) vehicleDescription += vehicle.manufacturer;[m
+[32m+[m[32m            if (vehicle.model) vehicleDescription += (vehicleDescription ? ' ' : '') + vehicle.model;[m
+[32m+[m[32m            if (vehicle.year) vehicleDescription += (vehicleDescription ? ' ' : '') + vehicle.year;[m
+[32m+[m[41m            [m
+[32m+[m[32m            typeField.value = vehicleDescription;[m
+[32m+[m[41m            [m
+[32m+[m[32m            // ✨ שמירת צבע וגיר ב-data attributes ✨[m
+[32m+[m[32m            typeField.dataset.color = vehicle.color || '';[m
+[32m+[m[32m            typeField.dataset.gear = vehicle.gear || vehicle.transmission || '';[m
+[32m+[m[32m            typeField.dataset.machineryType = vehicle.machineryType || '';[m
+[32m+[m[32m            typeField.dataset.selfWeight = vehicle.selfWeight || '';[m
+[32m+[m[32m            typeField.dataset.totalWeightTon = vehicle.totalWeightTon || '';[m
+[32m+[m[32m            typeField.dataset.fuelType = vehicle.fuelType || '';[m
+[32m+[m[32m            typeField.dataset.driveType = vehicle.driveType || '';[m
+[32m+[m[32m            typeField.dataset.gearType = vehicle.gearType || '';[m
+[32m+[m[32m            console.log(`נשמר מידע עבור ${context}: צבע=${vehicle.color}, גיר=${vehicle.gear || vehicle.transmission}`);[m
+[32m+[m[41m            [m
+[32m+[m[32m            // הצגת שדה סוג רכב כשמצאנו מידע[m
+[32m+[m[32m            showVehicleTypeField(typeFieldId);[m
+[32m+[m[41m            [m
+[32m+[m[32m            // הוספת סגנון ויזואלי להראות שהמידע התמלא אוטומטית[m
+[32m+[m[32m            typeField.style.backgroundColor = '#e8f5e8';[m
+[32m+[m[32m            typeField.style.border = '2px solid #4caf50';[m
+[32m+[m[41m            [m
+[32m+[m[32m            // הסרת הסגנון לאחר 3 שניות[m
+[32m+[m[32m            setTimeout(() => {[m
+[32m+[m[32m                typeField.style.backgroundColor = '';[m
+[32m+[m[32m                typeField.style.border = '';[m
+[32m+[m[32m            }, 2000);[m
+         }[m
+[31m-        return cleanNumber;[m
+     }[m
+[32m+[m[32m    showVehicleInfo(vehicle, status, towTypes, context);[m
+ [m
+[31m-    // הוספת סגנונות CSS לאנימציות[m
+[31m-    const style = document.createElement('style');[m
+[31m-    style.textContent = `[m
+[31m-        @keyframes slideIn {[m
+[31m-            from { transform: translateX(100%); opacity: 0; }[m
+[31m-            to { transform: translateX(0); opacity: 1; }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// פונקציה לחיפוש מידע רכב[m
+[32m+[m[32m    async function lookupVehicleData(licenseNumber, vehicleContext) {[m
+[32m+[m[32m        const cleanLicense = licenseNumber.replace(/[^0-9]/g, '');[m
+[32m+[m[41m        [m
+[32m+[m[32m        if (cleanLicense.length < 6) return;[m
+[32m+[m
+[32m+[m[32m        // הצגת אינדיקטור טעינה[m
+[32m+[m[32m        showLoadingIndicator(vehicleContext, true);[m
+[32m+[m[32m        showVehicleWarning('🔍 מחפש מידע רכב במאגרי משרד התחבורה...', 'info');[m
+[32m+[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            const response = await fetch('/api/vehicles/quick', {[m
+[32m+[m[32m                method: 'POST',[m
+[32m+[m[32m                headers: {[m
+[32m+[m[32m                    'Content-Type': 'application/json',[m
+[32m+[m[32m                },[m
+[32m+[m[32m                body: JSON.stringify({[m
+[32m+[m[32m                    license: cleanLicense[m
+[32m+[m[32m                })[m
+[32m+[m[32m            });[m
+[32m+[m
+[32m+[m[32m            const result = await response.json();[m
+[32m+[m
+[32m+[m[32m            if (result.success) {[m
+[32m+[m[32m                fillVehicleData(result.vehicle, result.status, result.towTypes, vehicleContext);[m
+[32m+[m[32m                // שמירת מקור המידע (source) שהגיע מהשרת[m
+[32m+[m[32m                const src = result.source || result?.vehicle?.source || null;[m
+[32m+[m[32m                if (src) {[m
+[32m+[m[32m                const hiddenId = `dataSource_${vehicleContext}`;[m
+[32m+[m[32m                let hidden = document.getElementById(hiddenId);[m
+[32m+[m[32m                if (!hidden) {[m
+[32m+[m[32m                    hidden = document.createElement('input');[m
+[32m+[m[32m                    hidden.type = 'hidden';[m
+[32m+[m[32m                    hidden.id = hiddenId;[m
+[32m+[m[32m                    hidden.name = hiddenId;[m
+[32m+[m[32m                    document.getElementById(getCarNumberFieldId(vehicleContext)).closest('form').appendChild(hidden);[m
+[32m+[m[32m                }[m
+[32m+[m[32m                hidden.value = JSON.stringify(src);[m
+[32m+[m[32m                }[m
+[32m+[m
+[32m+[m[41m    [m
+[32m+[m[32m                // הצגת התראות אם הרכב מבוטל או לא פעיל - אבל לא הצגת החלונית הכחולה[m
+[32m+[m[32m                if (result.status.isCanceled) {[m
+[32m+[m[32m                    showVehicleWarning('הרכב מבוטל סופית ואינו כשיר לנסיעה!', 'error');[m
+[32m+[m[32m                } else if (result.status.isInactive) {[m
+[32m+[m[32m                    showVehicleWarning('הרכב לא מופיע כרכב פעיל במאגר משרד התחבורה', 'warning');[m
+[32m+[m[32m                }[m
+[32m+[m[32m                // לא קוראים ל-showVehicleInfo כאן![m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                // רק אם הרכב לא נמצא - מציגים את החלונית[m
+[32m+[m[32m                const typeFieldId = getCarTypeFieldId(vehicleContext);[m
+[32m+[m[32m                showVehicleTypeField(typeFieldId);[m
+[32m+[m[32m                document.getElementById(typeFieldId).placeholder = 'נא להזין סוג רכב';[m
+[32m+[m[32m                document.getElementById(typeFieldId).value = '';[m
+[32m+[m[32m                showVehicleInfo({}, {}, [], vehicleContext); // חלונית ריקה להזנה ידנית[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } catch (error) {[m
+[32m+[m[32m            console.error('Error fetching vehicle data:', error);[m
+[32m+[m[32m            // הצגת שדה סוג רכב למילוי ידני (ללא הודעת שגיאה)[m
+[32m+[m[32m            const typeFieldId = getCarTypeFieldId(vehicleContext);[m
+[32m+[m[32m            showVehicleTypeField(typeFieldId);[m
+[32m+[m[32m            document.getElementById(typeFieldId).placeholder = 'נא להזין סוג רכב';[m
+[32m+[m[32m            document.getElementById(typeFieldId).value = '';[m
+[32m+[m[32m        } finally {[m
+[32m+[m[32m            showLoadingIndicator(vehicleContext, false);[m
+[32m+[m[32m            setTimeout(() => {[m
+[32m+[m[32m            document.querySelectorAll('[style*="top: 20px"]').forEach(el => el.remove());[m
+[32m+[m[32m        }, 100);[m
+         }[m
+[31m-        @keyframes slideOut {[m
+[31m-            from { transform: translateX(0); opacity: 1; }[m
+[31m-            to { transform: translateX(100%); opacity: 0; }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32mfunction setupPhoneSanitization() {[m
+[32m+[m[32m    const phoneFields = [[m
+[32m+[m[32m        'contactPhone1',[m
+[32m+[m[32m        'destContactPhone',[m
+[32m+[m[32m        'contactPhone2',[m
+[32m+[m[32m        'destContactPhone2',[m
+[32m+[m[32m        'workingSourcePhone',[m
+[32m+[m[32m        'workingDestPhone',[m
+[32m+[m[32m        'garagePhone'[m
+[32m+[m[32m    ];[m
+[32m+[m
+[32m+[m[32m    phoneFields.forEach(id => {[m
+[32m+[m[32m        const input = document.getElementById(id);[m
+[32m+[m[32m        if (input) {[m
+[32m+[m[32m            // הסרת כל המאזינים הקודמים[m
+[32m+[m[32m            const newInput = input.cloneNode(true);[m
+[32m+[m[32m            input.parentNode.replaceChild(newInput, input);[m
+[32m+[m[41m            [m
+[32m+[m[32m            // מאזין להקלדה[m
+[32m+[m[32m            newInput.addEventListener('input', function(e) {[m
+[32m+[m[32m                const cursorPos = e.target.selectionStart;[m
+[32m+[m[32m                const cleanedPhone = cleanPhoneNumber(e.target.value);[m
+[32m+[m[32m                e.target.value = cleanedPhone;[m
+[32m+[m[32m                e.target.setSelectionRange(cursorPos, cursorPos);[m
+[32m+[m[32m            });[m
+[32m+[m[41m            [m
+[32m+[m[32m            // מאזין להדבקה[m
+[32m+[m[32m            newInput.addEventListener('paste', function(e) {[m
+[32m+[m[32m                e.preventDefault();[m
+[32m+[m[32m                const pasteData = (e.clipboardData || window.clipboardData).getData('text');[m
+[32m+[m[32m                const cleanedPhone = cleanPhoneNumber(pasteData);[m
+[32m+[m[32m                e.target.value = cleanedPhone;[m
+[32m+[m[32m            });[m
+[32m+[m[41m            [m
+[32m+[m[32m            // מאזין ל-blur (כשעוזבים את השדה) - לניקוי סופי[m
+[32m+[m[32m            newInput.addEventListener('blur', function(e) {[m
+[32m+[m[32m                const cleanedPhone = cleanPhoneNumber(e.target.value);[m
+[32m+[m[32m                e.target.value = cleanedPhone;[m
+[32m+[m[32m            });[m
+         }[m
+[31m-    `;[m
+[31m-    document.head.appendChild(style);[m
+[32m+[m[32m    });[m
+[32m+[m[32m}[m
+ [m
+[31m-    // הפעלת פונקציונליות מילוי אוטומטי[m
+[31m-    setupVehicleLookup();[m
+[31m-    setupLicenseNumberSanitization();[m
+[31m-    setupPhoneSanitization();[m
+[31m-    setupAddressTracking(); [m
+[31m-    setTimeout(() => {[m
+[31m-    setupPhoneSanitization();[m
+[31m-}, 2000);[m
+[31m-});[m
+[32m+[m[32mfunction setupLicenseNumberSanitization() {[m
+[32m+[m[32m    const licenseInputs = [[m
+[32m+[m[32m        'defectiveCarNumber',[m
+[32m+[m[32m        'defectiveCarNumber2',[m
+[32m+[m[32m        'workingCarNumber',[m
+[32m+[m[32m        'exchangeDefectiveNumber'[m
+[32m+[m[32m    ];[m
+[32m+[m
+[32m+[m[32m    licenseInputs.forEach(id => {[m
+[32m+[m[32m        const input = document.getElementById(id);[m
+[32m+[m[32m        if (input) {[m
+[32m+[m[32m            input.addEventListener('input', function () {[m
+[32m+[m[32m                const cursorPos = input.selectionStart;[m
+[32m+[m[32m                const cleanValue = input.value.replace(/[^0-9]/g, '');[m
+[32m+[m[32m                input.value = cleanValue;[m
+[32m+[m[32m                input.setSelectionRange(cursorPos, cursorPos); // שמירה על מיקום הסמן[m
+[32m+[m[32m            });[m
+[32m+[m[32m        }[m
+[32m+[m[32m    });[m
+[32m+[m[32m}[m
+ [m
+ // פונקציות להצגה/הסתרה של שדות סוג רכב[m
+ function showVehicleTypeField(fieldId) {[m
+[36m@@ -1328,6 +1340,8 @@[m [mfunction setupAddressTracking() {[m
+     });[m
+ }[m
+ [m
+[32m+[m[32mconsole.log('📍 הגעתי לאמצע הקובץ');[m
+[32m+[m
+ // פונקציה לפתיחת דשבורד האדמין[m
+ function openAdminDashboard() {[m
+     window.open('/admin', '_blank');[m
+[36m@@ -1460,8 +1474,8 @@[m [mfunction getVehicleBasePrice(context = 'defective') {[m
+         [m
+         // מיפוי סוג רכב למחיר[m
+         const priceMap = {[m
+[31m-            'private': { price: 300, description: 'רכב פרטי' },[m
+[31m-            'motorcycle': { price: 300, description: 'דו-גלגלי' },  // דו-גלגלי כמו פרטי[m
+[32m+[m[32m            'private': { price: 200, description: 'רכב פרטי' },[m
+[32m+[m[32m            'motorcycle': { price: 200, description: 'דו-גלגלי' },  // דו-גלגלי כמו פרטי[m
+             'heavy': { price: 400, description: 'מעל 3.5 טון' },[m
+             'machinery': { price: 600, description: 'צמ״ה' }[m
+         };[m
+[36m@@ -1948,4 +1962,37 @@[m [mfunction initializeAutomaticPricing() {[m
+ function testAutomaticPricing() {[m
+     console.log('🧪 בדיקת מערכת חישוב אוטומטי:');[m
+     initializeAutomaticPricing();[m
+[31m-}[m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mfunction initializeAllFeatures() {[m
+[32m+[m[32m    console.log('הטופס מפעיל את כל הפיצרים');[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 1. יצירת שדות dataSource קודם כל[m
+[32m+[m[32m    if (typeof createDataSourceFields === 'function') {[m
+[32m+[m[32m        createDataSourceFields();[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 2. הפעלת רק הפונקציות שבאמת קיימות וזמינות גלובלית[m
+[32m+[m[32m    if (typeof setupAddressTracking === 'function') {[m
+[32m+[m[32m        setupAddressTracking();[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 3. הפעלת מעקב כתובות (בדיקה אם הפונקציה קיימת)[m
+[32m+[m[32m    setTimeout(() => {[m
+[32m+[m[32m        if (typeof setupPhoneSanitization === 'function') {[m
+[32m+[m[32m            setupPhoneSanitization(); // וידוא שפועל על כל השדות[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            console.log('⚠️ setupPhoneSanitization לא זמינה גלובלית');[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }, 500);[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 4. הפעלת חישוב מחיר אוטומטי (אחרון)[m
+[32m+[m[32m    setTimeout(() => {[m
+[32m+[m[32m        if (typeof initializeAutomaticPricing === 'function') {[m
+[32m+[m[32m            initializeAutomaticPricing();[m
+[32m+[m[32m        }[m
+[32m+[m[32m        console.log('הפיצרים הוופעלו בהצלחה');[m
+[32m+[m[32m    }, 1000);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mconsole.log('🧪 בדיקת זיהוי רכב:', typeof setupVehicleLookup, typeof lookupVehicleData);[m
+[1mdiff --git a/public/towing-form/style.css b/public/towing-form/style.css[m
+[1mindex db1c9dc..3d7e1a0 100644[m
+[1m--- a/public/towing-form/style.css[m
+[1m+++ b/public/towing-form/style.css[m
+[36m@@ -975,4 +975,120 @@[m [mtextarea {[m
+         min-width: 100%;[m
+         justify-content: center;[m
+     }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/* הודעה קופצת להצלחה */[m
+[32m+[m[32m.success-modal {[m
+[32m+[m[32m    position: fixed;[m
+[32m+[m[32m    top: 0;[m
+[32m+[m[32m    left: 0;[m
+[32m+[m[32m    width: 100%;[m
+[32m+[m[32m    height: 100%;[m
+[32m+[m[32m    background-color: rgba(0, 0, 0, 0.5);[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    justify-content: center;[m
+[32m+[m[32m    align-items: center;[m
+[32m+[m[32m    z-index: 10000;[m
+[32m+[m[32m    animation: fadeIn 0.3s ease;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.success-modal-content {[m
+[32m+[m[32m    background: white;[m
+[32m+[m[32m    padding: 40px;[m
+[32m+[m[32m    border-radius: 15px;[m
+[32m+[m[32m    text-align: center;[m
+[32m+[m[32m    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);[m
+[32m+[m[32m    max-width: 400px;[m
+[32m+[m[32m    animation: slideIn 0.3s ease;[m
+[32m+[m[32m    direction: rtl;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.success-icon {[m
+[32m+[m[32m    font-size: 4em;[m
+[32m+[m[32m    color: #4CAF50;[m
+[32m+[m[32m    margin-bottom: 20px;[m
+[32m+[m[32m    animation: bounce 0.6s ease;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.success-title {[m
+[32m+[m[32m    font-size: 1.5em;[m
+[32m+[m[32m    color: #4CAF50;[m
+[32m+[m[32m    margin-bottom: 15px;[m
+[32m+[m[32m    font-weight: bold;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.success-message {[m
+[32m+[m[32m    font-size: 1.1em;[m
+[32m+[m[32m    color: #333;[m
+[32m+[m[32m    margin-bottom: 25px;[m
+[32m+[m[32m    line-height: 1.5;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.success-button {[m
+[32m+[m[32m    background-color: #4CAF50;[m
+[32m+[m[32m    color: white;[m
+[32m+[m[32m    border: none;[m
+[32m+[m[32m    padding: 12px 30px;[m
+[32m+[m[32m    border-radius: 5px;[m
+[32m+[m[32m    font-size: 1em;[m
+[32m+[m[32m    cursor: pointer;[m
+[32m+[m[32m    transition: background-color 0.3s;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.success-button:hover {[m
+[32m+[m[32m    background-color: #45a049;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m@keyframes fadeIn {[m
+[32m+[m[32m    from { opacity: 0; }[m
+[32m+[m[32m    to { opacity: 1; }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m@keyframes slideIn {[m
+[32m+[m[32m    from { transform: translateY(-50px); opacity: 0; }[m
+[32m+[m[32m    to { transform: translateY(0); opacity: 1; }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m@keyframes bounce {[m
+[32m+[m[32m    0%, 20%, 60%, 100% { transform: translateY(0); }[m
+[32m+[m[32m    40% { transform: translateY(-10px); }[m
+[32m+[m[32m    80% { transform: translateY(-5px); }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/* אינדיקטור טעינה */[m
+[32m+[m[32m.loading-overlay {[m
+[32m+[m[32m    position: fixed;[m
+[32m+[m[32m    top: 0;[m
+[32m+[m[32m    left: 0;[m
+[32m+[m[32m    width: 100%;[m
+[32m+[m[32m    height: 100%;[m
+[32m+[m[32m    background-color: rgba(0, 0, 0, 0.7);[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    flex-direction: column;[m
+[32m+[m[32m    justify-content: center;[m
+[32m+[m[32m    align-items: center;[m
+[32m+[m[32m    z-index: 9999;[m
+[32m+[m[32m    color: white;[m
+[32m+[m[32m    font-size: 1.2em;[m
+[32m+[m[32m    animation: fadeIn 0.3s ease;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.spinner {[m
+[32m+[m[32m    border: 4px solid #f3f3f3;[m
+[32m+[m[32m    border-top: 4px solid #4CAF50;[m
+[32m+[m[32m    border-radius: 50%;[m
+[32m+[m[32m    width: 50px;[m
+[32m+[m[32m    height: 50px;[m
+[32m+[m[32m    animation: spin 1s linear infinite;[m
+[32m+[m[32m    margin-bottom: 20px;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m@keyframes spin {[m
+[32m+[m[32m    0% { transform: rotate(0deg); }[m
+[32m+[m[32m    100% { transform: rotate(360deg); }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m@keyframes fadeOut {[m
+[32m+[m[32m    from { opacity: 1; }[m
+[32m+[m[32m    to { opacity: 0; }[m
+ }[m
+\ No newline at end of file[m
