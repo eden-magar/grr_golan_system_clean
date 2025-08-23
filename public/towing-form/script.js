@@ -408,63 +408,185 @@ function setupLicenseNumberSanitization() {
 }
 
 function setupCreditCardFormatting() {
-  // מספר כרטיס
-  const cardNumberField = document.getElementById('cardNumber');
-  if (cardNumberField) {
-    cardNumberField.addEventListener('input', function (e) {
-      const input = e.target;
-      const oldRaw = input.value;
-      const oldCursor = input.selectionStart || 0;
+    // מספר כרטיס
+    const cardNumberField = document.getElementById('cardNumber');
+    if (cardNumberField) {
+        // הוסף placeholder עם פורמט
+        cardNumberField.placeholder = '0000-0000-0000-0000';
+        
+        cardNumberField.addEventListener('input', function (e) {
+            const input = e.target;
+            const cursorPosition = input.selectionStart;
+            
+            // קבל רק את הספרות
+            const digits = input.value.replace(/\D/g, '');
+            
+            // פורמט עם קווים
+            const formatted = formatCardNumberWithDashes(digits);
+            
+            // עדכן את הערך
+            input.value = formatted;
+            
+            // חשב מיקום סמן חדש
+            const newCursorPos = calculateNewCursorPosition(cursorPosition, formatted, digits.length);
+            input.setSelectionRange(newCursorPos, newCursorPos);
+        });
 
-      // כמה ספרות היו לפני הסמן בגרסה הישנה
-      const digitsBefore = countDigitsToIndex(oldRaw, oldCursor);
+        // טיפול בהדבקה
+        cardNumberField.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+            const digits = pastedData.replace(/\D/g, '');
+            const formatted = formatCardNumberWithDashes(digits);
+            e.target.value = formatted;
+        });
+    }
 
-      // פורמט חדש
-      const formatted = formatCardNumber(oldRaw);
-      input.value = formatted;
+    // תאריך תוקף
+    const cardExpiryField = document.getElementById('cardExpiry');
+    if (cardExpiryField) {
+        // הוסף placeholder עם פורמט
+        cardExpiryField.placeholder = 'MM/YY';
+        
+        cardExpiryField.addEventListener('input', function (e) {
+            const input = e.target;
+            const cursorPosition = input.selectionStart;
+            
+            // קבל רק את הספרות
+            const digits = input.value.replace(/\D/g, '');
+            
+            // פורמט עם קו נטוי
+            const formatted = formatExpiryWithSlash(digits);
+            
+            // עדכן את הערך
+            input.value = formatted;
+            
+            // חשב מיקום סמן חדש לתוקף
+            const newCursorPos = calculateExpiryCursorPosition(cursorPosition, formatted, digits.length);
+            input.setSelectionRange(newCursorPos, newCursorPos);
+        });
 
-      // מציב סמן אחרי אותה כמות ספרות (מתעלם ממקפים)
-      const newCursor = indexAfterNDigits(formatted, digitsBefore);
-      input.setSelectionRange(newCursor, newCursor);
-    }, { passive: true });
-  }
+        // טיפול בהדבקה
+        cardExpiryField.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+            const digits = pastedData.replace(/\D/g, '');
+            const formatted = formatExpiryWithSlash(digits);
+            e.target.value = formatted;
+        });
+    }
 
-  // תאריך תוקף
-  const cardExpiryField = document.getElementById('cardExpiry');
-  if (cardExpiryField) {
-    cardExpiryField.addEventListener('input', function (e) {
-      const input = e.target;
-      const oldRaw = input.value;
-      const oldCursor = input.selectionStart || 0;
+    // CVV - רק ספרות
+    const cardCvvField = document.getElementById('cardCvv');
+    if (cardCvvField) {
+        cardCvvField.placeholder = '000';
+        
+        cardCvvField.addEventListener('input', function (e) {
+            const cursorPosition = e.target.selectionStart;
+            const digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+            e.target.value = digits;
+            e.target.setSelectionRange(cursorPosition, cursorPosition);
+        });
 
-      const digitsBefore = countDigitsToIndex(oldRaw, oldCursor);
+        cardCvvField.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+            const digits = pastedData.replace(/\D/g, '').slice(0, 4);
+            e.target.value = digits;
+        });
+    }
 
-      const formatted = formatExpiryDate(oldRaw);
-      input.value = formatted;
+    setupIDValidation();
+}
 
-      const newCursor = indexAfterNDigits(formatted, digitsBefore);
-      input.setSelectionRange(newCursor, newCursor);
-    }, { passive: true });
-  }
+// פונקציה לפורמט כרטיס אשראי עם קווים
+function formatCardNumberWithDashes(digits) {
+    // הגבל ל-16 ספרות
+    const limitedDigits = digits.slice(0, 16);
+    
+    // אם אין ספרות, החזר מחרוזת ריקה
+    if (!limitedDigits) return '';
+    
+    // חלק לקבוצות של 4
+    const parts = [];
+    for (let i = 0; i < limitedDigits.length; i += 4) {
+        parts.push(limitedDigits.slice(i, i + 4));
+    }
+    
+    return parts.join('-');
+}
 
-  // CVV
-  const cardCvvField = document.getElementById('cardCvv');
-  if (cardCvvField) {
-    cardCvvField.addEventListener('input', function (e) {
-      const input = e.target;
-      const oldRaw = input.value;
-      const oldCursor = input.selectionStart || 0;
+// פונקציה לפורמט תוקף עם קו נטוי
+function formatExpiryWithSlash(digits) {
+    // הגבל ל-4 ספרות
+    const limitedDigits = digits.slice(0, 4);
+    
+    // אם אין ספרות, החזר מחרוזת ריקה
+    if (!limitedDigits) return '';
+    
+    // אם יש פחות מ-2 ספרות, החזר כמו שזה
+    if (limitedDigits.length <= 2) {
+        return limitedDigits;
+    }
+    
+    // אחרת, הוסף קו נטוי אחרי 2 הספרות הראשונות
+    return limitedDigits.slice(0, 2) + '/' + limitedDigits.slice(2);
+}
 
-      const digitsBefore = countDigitsToIndex(oldRaw, oldCursor);
+// חישוב מיקום סמן חדש לכרטיס אשראי
+function calculateNewCursorPosition(oldCursor, newValue, digitCount) {
+    // אם הסמן בסוף, שים אותו בסוף החדש
+    if (oldCursor >= newValue.length) {
+        return newValue.length;
+    }
+    
+    // ספור כמה ספרות היו לפני הסמן הישן
+    let digitsBefore = 0;
+    for (let i = 0; i < Math.min(oldCursor, newValue.length); i++) {
+        if (/\d/.test(newValue[i])) {
+            digitsBefore++;
+        }
+    }
+    
+    // מצא את המיקום החדש אחרי אותה כמות ספרות
+    let newPos = 0;
+    let digitsFound = 0;
+    
+    for (let i = 0; i < newValue.length; i++) {
+        if (/\d/.test(newValue[i])) {
+            digitsFound++;
+            if (digitsFound === digitsBefore + 1) {
+                return i + 1;
+            }
+        }
+        newPos = i + 1;
+    }
+    
+    return newPos;
+}
 
-      const formatted = formatCVV(oldRaw);
-      input.value = formatted;
+// חישוב מיקום סמן לתוקף
+function calculateExpiryCursorPosition(oldCursor, newValue, digitCount) {
+    // עבור תוקף - לוגיקה פשוטה יותר
+    if (digitCount <= 2) {
+        return Math.min(oldCursor, newValue.length);
+    } else {
+        // אם יש יותר מ-2 ספרות, הסמן אחרי הקו נטוי
+        return Math.min(oldCursor + (newValue.includes('/') ? 1 : 0), newValue.length);
+    }
+}
 
-      const newCursor = indexAfterNDigits(formatted, digitsBefore);
-      input.setSelectionRange(newCursor, newCursor);
-    }, { passive: true });
-  }
-  setupIDValidation();
+// פונקציית ניקוי לשליחה (ללא שינוי)
+function getCleanCreditCardData() {
+    const cardNumber = document.getElementById('cardNumber');
+    const cardExpiry = document.getElementById('cardExpiry');
+    const cardCvv = document.getElementById('cardCvv');
+    
+    return {
+        number: cardNumber ? cardNumber.value.replace(/\D/g, '') : '',
+        expiry: cardExpiry ? cardExpiry.value.replace(/\D/g, '') : '',
+        cvv: cardCvv ? cardCvv.value.replace(/\D/g, '') : ''
+    };
 }
 
 function setupIDValidation() {
