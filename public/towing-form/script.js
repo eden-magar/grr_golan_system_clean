@@ -1,4 +1,9 @@
-
+function sanitizeText(text) {
+    if (!text) return text;
+    return text
+        .replace(/['״"']/g, '')  // מחיקת כל סוגי הגרשים (עברי, אנגלי, גרשיים)
+        .trim();
+}
 // מאזינים לשדות מספר רכב לחיפוש אוטומטי
 function setupVehicleLookup() {
     const vehicleFields = [
@@ -149,7 +154,8 @@ function setupVehicleLookup() {
             if (vehicle.model) vehicleDescription += (vehicleDescription ? ' ' : '') + vehicle.model;
             if (vehicle.year) vehicleDescription += (vehicleDescription ? ' ' : '') + vehicle.year;
             
-            typeField.value = vehicleDescription;
+            typeField.value = sanitizeText(vehicleDescription);
+
             
             // ✨ שמירת צבע וגיר ב-data attributes ✨
             typeField.dataset.color = vehicle.color || '';

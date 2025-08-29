@@ -1,5 +1,12 @@
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzKtpMTbPVQIvx1lMaTP3tNoiinVKjQ3VAg6YCsJj0QhnICxVDCkm4p7s0CGg3XKzKs/exec";
 
+function sanitizeText(text) {
+    if (!text) return text;
+    return text
+        .replace(/['״"']/g, '')  // מחיקת כל סוגי הגרשים (עברי, אנגלי, גרשיים)
+        .trim();
+}
+
 // מאזין לכפתור השליחה הסופי
 document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
     e.preventDefault();
@@ -133,7 +140,7 @@ formData.dataSource_exchangeDefective = document.getElementById('dataSource_exch
         
         formData.defectiveCar = {
             carNumber: document.getElementById('defectiveCarNumber').value,
-            carType: document.getElementById('defectiveCarType').value,
+            carType: sanitizeText(document.getElementById('defectiveCarType').value),
             carCode: document.getElementById('defectiveCarCode').value,
             color: defectiveCarTypeField?.dataset.color || '', 
             gear: defectiveCarTypeField?.dataset.gear || '',   
