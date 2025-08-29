@@ -1189,3 +1189,325 @@ textarea {
         font-size: 1.3rem;
     }
 }
+
+/* ===== כרטיסי מחיר – אחידות גובה ונראות ===== */
+
+
+/* .price-card {
+    flex: 1;
+    position: relative;
+    display: flex;
+} */
+
+/* .price-card-label {
+    flex: 1;
+    padding: 12px 8px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fafafa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+} */
+
+/* .price-title {
+    font-weight: bold;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: #333;
+} */
+
+/* .price-subtitle {
+    font-size: 10px;
+    color: #777;
+    margin-bottom: 6px;
+    line-height: 1.1;
+} */
+
+/* .price-amount {
+    font-size: 14px;
+    font-weight: bold;
+    color: #2196F3;
+    margin-top: auto;
+} */
+
+
+/* .price-card input[type="radio"] {
+    display: none;
+} */
+
+
+
+/* .price-card input:checked + .price-card-label {
+    border-color: #4CAF50;
+    background-color: #e8f5e8;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+    transform: translateY(-2px);
+} */
+
+
+/* עיצוב כרטיסי המחיר - גרסה קומפקטית */
+.pricing-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.price-card {
+    position: relative;
+    display: flex;
+}
+
+.price-card input[type="radio"] {
+    display: none;
+}
+
+.price-card-label {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 65px;
+    position: relative;
+}
+
+.price-card-label:hover {
+    border-color: var(--primary);
+    background: var(--primary-50);
+    transform: translateY(-1px);
+}
+
+.price-card input:checked + .price-card-label {
+    border-color: var(--success);
+    background: #f0fff4;
+    box-shadow: 0 2px 8px rgba(56, 161, 105, 0.15);
+}
+
+.price-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+}
+
+.price-subtitle {
+    font-size: 0.75rem;
+    color: var(--gray);
+    margin-bottom: 0.5rem;
+    line-height: 1.1;
+}
+
+.price-amount {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.price-amount.loading {
+    color: var(--gray);
+    font-style: italic;
+}
+
+/* עיצוב מיוחד לכרטיס מחיר ידני */
+.manual-price-card .price-card-label {
+    border-style: dashed;
+}
+
+.manual-input-wrap {
+    display: none;
+    margin-top: 0.5rem;
+}
+
+.manual-price-card input:checked + .price-card-label .manual-input-wrap {
+    display: block;
+}
+
+#customPrice {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.manual-hint {
+    font-size: 0.7rem;
+    color: var(--gray);
+}
+
+/* רספונסיבי */
+@media (max-width: 768px) {
+    .pricing-options {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .price-card-label {
+        min-height: 70px;
+        padding: 0.5rem;
+    }
+    
+    .price-title {
+        font-size: 0.8rem;
+    }
+    
+    .price-amount {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pricing-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .price-card-label {
+        min-height: 60px;
+    }
+}
+
+.price-card.recommended .price-card-label {
+    border-color: #2196F3;
+    background-color: #e3f2fd;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+    position: relative;
+}
+
+.price-card.recommended .price-card-label::after {
+    content: "מומלץ עכשיו";
+    position: absolute;
+    top: -8px;
+    right: 8px;
+    background-color: #2196F3;
+    color: white;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    z-index: 1;
+}
+
+
+/* ===== אזור ״שטחים״ – יישור ונראות יפים ===== */
+/* עיצוב חכם לפי מבנה קיים – בלי לשנות HTML */
+.form-group:has(.toggle-container) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f9fa;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.form-group:has(.toggle-container) > label {
+    margin-bottom: 0; /* לא לשבור שורה */
+}
+
+/* toggle */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.toggle-input {
+  display: none;
+}
+
+.toggle-label {
+  position: relative;
+  width: 60px;
+  height: 32px;
+  background-color: #ddd;
+  border-radius: 32px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: inline-block;
+}
+
+.toggle-input:focus + .toggle-label {
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.25);
+}
+
+.toggle-input:checked + .toggle-label {
+    background-color: #4CAF50;
+}
+
+.toggle-switch-handle {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 26px;
+  height: 26px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* מצב מופעל */
+.toggle-input:checked + .toggle-label {
+  background-color: #4CAF50;
+}
+
+.toggle-input:checked + .toggle-label .toggle-switch-handle {
+  transform: translateX(-28px);
+}
+
+/* נעדכן רק את הקבוצה של השטחים */
+.form-group.toggle-outskirts {
+  display: flex;
+  align-items: center;
+  gap: 10px;            /* רווח קטן בין טקסט לטוגל */
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  justify-content: flex-start; /* לא לפזר לצדדים */
+}
+
+.form-group.toggle-outskirts label {
+  margin-bottom: 0; /* שלא ירד שורה */
+}
+
+
+
+/* שדה המחיר הידני מוסתר עד שהכרטיס נבחר */
+/* .manual-input-wrap { 
+  display: none; 
+  margin-top: 8px; 
+} */
+/* #customPrice {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+} */
+/* .manual-hint {
+  font-size: 11px;
+  color: #777;
+  margin-top: 4px;
+} */
+
+/* כשנבחר הכרטיס הידני – מציגים את השדה */
+#price-manual:checked + .price-card-label .manual-input-wrap {
+  display: block;
+}

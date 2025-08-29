@@ -555,8 +555,73 @@
                         </div>
                     </div>
 
-                    <!-- הוסף את זה לפני שדה ההערות בטופס -->
+                    
+                       <!-- הטוגל שטחים -->
+                    <div class="form-group toggle-outskirts">
+                        <label>
+                            <i class="fas fa-map-marked-alt"></i>
+                            שטחים (+25%):
+                        </label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="isOutskirts" name="isOutskirts" class="toggle-input">
+                            <label for="isOutskirts" class="toggle-label">
+                                <span class="toggle-switch-handle"></span>
+                            </label>
+                        </div>
+                    </div>
 
+                    <!-- בחירת מחיר -->
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-calculator"></i>
+                            בחר מחיר:
+                        </label>
+                        <div class="pricing-options">
+                            <div class="price-card" data-type="regular">
+                                <input type="radio" name="priceType" value="regular" id="price-regular" checked>
+                                <label for="price-regular" class="price-card-label">
+                                    <div class="price-title">רגיל</div>
+                                    <div class="price-amount" id="price-regular-amount">0₪</div>
+                                </label>
+                            </div>
+                            
+                            <div class="price-card" data-type="plus25">
+                                <input type="radio" name="priceType" value="plus25" id="price-plus25">
+                                <label for="price-plus25" class="price-card-label">
+                                    <div class="price-title">ערב</div>
+                                    <div class="price-subtitle">15:00-19:00</div>
+                                    <div class="price-amount" id="price-plus25-amount">0₪</div>
+                                </label>
+                            </div>
+                            
+                            <div class="price-card" data-type="plus50">
+                                <input type="radio" name="priceType" value="plus50" id="price-plus50">
+                                <label for="price-plus50" class="price-card-label">
+                                    <div class="price-title">לילה/שבת</div>
+                                    <div class="price-subtitle">אחרי 19:00</div>
+                                    <div class="price-amount" id="price-plus50-amount">0₪</div>
+                                </label>
+                            </div>
+
+                            <!-- כרטיס מחיר ידני -->
+                            <div class="price-card">
+                            <input type="radio" name="priceType" id="price-manual" value="manual" />
+                            <label class="price-card-label" for="price-manual">
+                                <div class="price-title">הזן מחיר ידנית</div>
+                                <div class="price-subtitle">מתעלם מהמחירים המוצעים</div>
+
+                                <!-- השדה יוצג רק כשהכרטיס נבחר -->
+                                <div class="manual-input-wrap">
+                                <input id="customPrice" type="number" min="0" step="1" inputmode="numeric"
+                                        placeholder="למשל 1250" />
+                                <div class="manual-hint">המחיר בש״ח</div>
+                                </div>
+                            </label>
+                            </div>
+
+                        </div>
+                    </div>
+                        
                     <!-- פרטי תשלום -->
                     <div class="form-section">
                         <h3>פרטי תשלום</h3>
@@ -585,14 +650,6 @@
                             </div>
                         </div>
 
-                        <!-- שדה מחיר - תמיד גלוי -->
-                        <div class="form-group">
-                            <label for="price">
-                                <i class="fas fa-shekel-sign"></i>
-                                מחיר:
-                            </label>
-                            <input type="number" id="price" name="price" min="0" step="0.01" placeholder="הזן מחיר בשקלים">
-                        </div>
 
                         <!-- פרטי אשראי - מוצגים רק עבור אשראי -->
                         <div id="creditCardSection" class="credit-card-section hidden">

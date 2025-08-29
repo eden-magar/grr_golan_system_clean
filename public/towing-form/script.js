@@ -1,3 +1,4 @@
+
 function sanitizeText(text) {
     if (!text) return text;
     return text
@@ -652,8 +653,8 @@ function getVehicleBasePrice(context = 'defective') {
         
         // מיפוי סוג רכב למחיר
         const priceMap = {
-            'private': { price: 300, description: 'רכב פרטי' },
-            'motorcycle': { price: 300, description: 'דו-גלגלי' },  // דו-גלגלי כמו פרטי
+            'private': { price: 200, description: 'רכב פרטי' },
+            'motorcycle': { price: 200, description: 'דו-גלגלי' },  // דו-גלגלי כמו פרטי
             'heavy': { price: 400, description: 'מעל 3.5 טון' },
             'machinery': { price: 600, description: 'צמ״ה' }
         };
@@ -973,6 +974,229 @@ function updatePriceField(priceData) {
     }
 }
 
+// מעדכן את שלושת המחירים בכרטיסים לפי מחיר בסיס כולל מע"מ (totalPrice) וטוגל "שטחים"
+function updateTierPricesUI(baseInclVAT) {
+  const outskirtsEl = document.getElementById('isOutskirts');
+  const isOutskirts = !!(outskirtsEl && outskirtsEl.checked);
+
+  // "רגיל" לאחר שכבת שטחים (אם מסומן)
+  const baseEffective = Math.round(baseInclVAT * (isOutskirts ? 1.25 : 1));
+
+  // שלושת המחירים (עיגול לשקל שלם)
+  const priceRegular = baseEffective;
+  const pricePlus25  = Math.round(baseEffective * 1.25);
+  const pricePlus50  = Math.round(baseEffective * 1.50);
+
+  // כתיבה ל-UI
+  const elReg = document.getElementById('price-regular-amount');
+  const el25  = document.getElementById('price-plus25-amount');
+  const el50  = document.getElementById('price-plus50-amount');
+
+  if (elReg) elReg.textContent = priceRegular + '₪';
+  if (el25)  el25.textContent  = pricePlus25 + '₪';
+  if (el50)  el50.textContent  = pricePlus50 + '₪';
+
+  // נשמור מצב לשימוש בשלבים הבאים
+  window.__pricingState = {
+    baseInclVAT,
+    isOutskirts,
+    prices: { regular: priceRegular, plus25: pricePlus25, plus50: pricePlus50 }
+  };
+}
+
+function setupOutskirtsToggleRecalc() {
+  const el = document.getElementById('isOutskirts');
+  if (!el) return;
+
+  el.addEventListener('change', () => {
+    const st = window.__pricingState;
+    if (st && typeof st.baseInclVAT === 'number') {
+      // יש כבר בסיס מחושב → עדכני את שלושת המחירים מיידית
+      updateTierPricesUI(st.baseInclVAT);
+    } else {
+      // אין בסיס עדיין → תני למנוע החישוב שלך לרוץ
+      try { debouncedPriceCalculation('defective', 300); } catch (_) {}
+    }
+  });
+}
+
+// קולט Date מקומי ומחזיר 'regular' | 'plus25' | 'plus50'
+function getRecommendedTier(dateObj) {
+  if (!(dateObj instanceof Date)) return 'regular';
+
+  const day = dateObj.getDay(); // 0=א, 1=ב, ... 5=ו, 6=ש
+  const hours = dateObj.getHours();
+  const minutes = dateObj.getMinutes();
+  const hm = hours * 60 + minutes; // דקות מאז תחילת היום
+
+  const isSunToThu = (d) => d >= 0 && d <= 4;  // א–ה
+  const isMonToFri = (d) => d >= 1 && d <= 5;  // ב–ו
+
+  // +50% סוף שבוע: שישי 14:00 → ראשון 06:59
+  if (day === 5 && hm >= 14 * 60) return 'plus50';     // ו׳ מ-14:00
+  if (day === 6) return 'plus50';                      // כל שבת
+  if (day === 0 && hm <= 6 * 60 + 59) return 'plus50'; // א׳ עד 06:59
+
+  // +50% לילות א–ה: 19:00–06:59
+  if (isSunToThu(day) && hm >= 19 * 60) return 'plus50';     // ערב/לילה 19:00–23:59
+  if (isMonToFri(day) && hm <= 6 * 60 + 59) return 'plus50'; // לילה עד 06:59 בבוקר
+
+  // +25% ערבים א–ה: 15:00–18:59
+  if (isSunToThu(day) && hm >= 15 * 60 && hm < 19 * 60) return 'plus25';
+
+  // אחרת רגיל
+  return 'regular';
+}
+
+// מסיר/מוסיף .recommended לפי tier נתון
+function applyRecommendedHighlight(tier) {
+  const cards = document.querySelectorAll('.price-card');
+  cards.forEach(c => c.classList.remove('recommended'));
+
+  const map = {
+    regular:  '.price-card[data-type="regular"]',
+    plus25:   '.price-card[data-type="plus25"]',
+    plus50:   '.price-card[data-type="plus50"]'
+  };
+
+  const target = document.querySelector(map[tier] || map.regular);
+  if (target) target.classList.add('recommended');
+}
+
+// מוציא את הסכומים מתוך ה-DOM (מספר שלם/מעוגל)
+function getCurrentTierAmounts() {
+  const read = (sel) => {
+    const el = document.querySelector(sel);
+    if (!el) return 0;
+    const num = parseFloat(String(el.textContent || '').replace(/[^\d.]/g, ''));
+    return Math.round(num || 0);
+  };
+  return {
+    regular: read('#price-regular-amount'),
+    plus25:  read('#price-plus25-amount'),
+    plus50:  read('#price-plus50-amount')
+  };
+}
+
+// מה ה-tier הסופי לשימוש: בחירה ידנית אם קיימת, אחרת המומלץ עכשיו
+function getEffectiveTier() {
+  const manual = window.__pricingState?.chosenTier;
+  if (manual) return manual;
+  
+  // בדיקה איזה רדיו נבחר
+  const checkedRadio = document.querySelector('input[name="priceType"]:checked');
+  if (checkedRadio) {
+    return checkedRadio.value; // 'regular', 'plus25', או 'plus50'
+  }
+  
+  // ברירת מחדל - רגיל
+  return 'regular';
+}
+
+// (אופציונלי לבדיקת קונסול): כמה הסכום הסופי כרגע
+function getEffectiveAmount() {
+  const amounts = getCurrentTierAmounts();
+  const tier = getEffectiveTier();
+  return { tier, amount: amounts[tier] || 0 };
+}
+
+function writeFinalPriceToHidden() {
+  const priceEl = document.getElementById('price');
+  if (!priceEl) return;
+
+  if (isManualMode()) {
+    const manualInput = document.getElementById('customPrice');
+    const manualVal = manualInput?.value?.trim();
+    if (manualVal && !isNaN(Number(manualVal))) {
+      priceEl.value = Number(manualVal).toString();
+      priceEl.dataset.manuallyEdited = 'true';
+      console.log('מחיר ידני נשמר:', priceEl.value);
+    } else {
+      priceEl.value = '';
+      priceEl.dataset.manuallyEdited = 'false';
+    }
+    return;
+  }
+
+  const { amount } = getEffectiveAmount();
+  priceEl.value = (amount ?? '').toString();
+  priceEl.dataset.manuallyEdited = 'false';
+}
+
+
+
+// מחזיר Date לפי הבחירה בטופס (היום/תאריך אחר + שעה אם קיימת)
+function getPlannedDateTimeFromForm() {
+  const isTodayActive = !!document.querySelector('[data-target="today"].active');
+  const dateInput = document.getElementById('executionDate');
+  const timeInput = document.getElementById('executionTime');
+
+  // אם "היום" — זמן נוכחי
+  if (isTodayActive) return new Date();
+
+  // אחרת "תאריך אחר"
+  const d = (dateInput && dateInput.value) ? new Date(dateInput.value) : new Date();
+
+  // אם יש שעה (גם אם הסקשן מוסתר) נשתמש בה, אחרת ברירת מחדל 12:00
+  let hh = 12, mm = 0;
+  if (timeInput && timeInput.value) {
+    const [h, m] = timeInput.value.split(':').map(Number);
+    if (!Number.isNaN(h)) hh = h;
+    if (!Number.isNaN(m)) mm = m;
+  }
+  d.setHours(hh, mm, 0, 0);
+  return d;
+}
+
+// מרענן את ההדגשה לפי הבחירה בטופס
+function refreshRecommendedHighlight() {
+  const dt = getPlannedDateTimeFromForm();
+  const tier = getRecommendedTier(dt);
+  applyRecommendedHighlight(tier);
+}
+
+// קובע אם מצב "מחיר ידני" מסומן
+function isManualMode() {
+  const manualRadio = document.getElementById('price-manual');
+  return !!(manualRadio && manualRadio.checked);
+}
+
+// מוודא שקיים שדה מחיר נסתר לשליחה ולקריאה פנימית
+function ensureHiddenPriceField() {
+  let el = document.getElementById('price');
+  if (!el) {
+    el = document.createElement('input');
+    el.type = 'hidden';
+    el.id = 'price';
+    el.name = 'price';
+    const form = document.getElementById('towingForm');
+    if (form) form.appendChild(el);
+  }
+}
+
+
+function setupPriceChoiceHandlers() {
+  const radios = document.querySelectorAll('input[name="priceType"]');
+  if (!radios.length) return;
+
+  // ודאי שיש אובייקט מצב
+  window.__pricingState = window.__pricingState || {};
+
+  radios.forEach(r => {
+    r.addEventListener('change', () => {
+      window.__pricingState.chosenTier = r.value; // 'regular' | 'plus25' | 'plus50'
+      // שומרות רק את הבחירה; ההדגשה הוויזואלית נשארת נפרדת
+      writeFinalPriceToHidden();
+    });
+  });
+  
+
+  // אתחול ערך התחלתי אם יש רדיו מסומן בדיפולט
+  const checked = document.querySelector('input[name="priceType"]:checked');
+  if (checked) window.__pricingState.chosenTier = checked.value;
+}
+
+
 // פונקציה להצגת הודעה על חישוב המחיר (אופציונלי)
 function showPriceCalculationMessage(priceData) {
     // יצירת הודעה זמנית
@@ -1018,6 +1242,7 @@ async function calculateAndUpdatePrice(context = 'defective') {
         
         if (result.success) {
             updatePriceField(result);
+            updateTierPricesUI(result.totalPrice);
             return result;
         } else {
             console.error('חישוב מחיר נכשל:', result.error);
@@ -1657,7 +1882,8 @@ function setDefaultOrderNumber() {
                         return; // אל תמשיך לדף הסיכום
                     }
                 }
-                
+                if (typeof ensureHiddenPriceField === 'function') ensureHiddenPriceField();
+                if (typeof writeFinalPriceToHidden === 'function') writeFinalPriceToHidden();       
                 // אם הגענו לכאן, הכל תקין - הצג את דף הסיכום
                 showSummary();
             });
@@ -1691,12 +1917,63 @@ function setDefaultOrderNumber() {
             }
         });
 
-        setupCreditCardFormatting();
-        setupPaymentTypeButtons();
-        setupAddressAutoScroll();
-        initializeAutomaticPricing();
-    }
+         setupCreditCardFormatting();
+    setupPaymentTypeButtons();
+    setupAddressAutoScroll();
+    initializeAutomaticPricing();
+    setupOutskirtsToggleRecalc();
+    setupPriceChoiceHandlers();
+    ensureHiddenPriceField();
 
+    // הדגשה אוטומטית לפי הזמן הנוכחי
+    const now = new Date();
+    const recommended = getRecommendedTier(now);
+    applyRecommendedHighlight(recommended);
+
+    document
+      .querySelectorAll('[data-target="today"], [data-target="other-date"]')
+      .forEach(btn => btn.addEventListener('click', refreshRecommendedHighlight));
+
+    const execDateEl = document.getElementById('executionDate');
+    if (execDateEl) execDateEl.addEventListener('change', refreshRecommendedHighlight);
+
+    const execTimeEl = document.getElementById('executionTime');
+    if (execTimeEl) execTimeEl.addEventListener('change', refreshRecommendedHighlight);
+
+    // ⬇️ הצגה/הסתרה של המחיר הידני + סינכרון ל-#price
+    (function initManualPriceVisibility(){
+    const manualRadio = document.getElementById('price-manual');
+    const wrap        = document.querySelector('.manual-input-wrap');
+    const manualInput = document.getElementById('customPrice');
+
+    if (!manualRadio || !wrap) return;
+
+    const toggle = () => {
+        const isManual = manualRadio.checked;
+        wrap.style.display = isManual ? 'block' : 'none';
+        // בכל מעבר מצב נעדכן את הערך הסופי בשדה הנסתר
+        writeFinalPriceToHidden();
+    };
+
+    toggle();
+    document
+        .querySelectorAll('input[name="priceType"]')
+        .forEach(r => r.addEventListener('change', toggle));
+
+    // כשהמשתמש מקליד מחיר ידני – נסנכרן לשדה הנסתר #price
+    if (manualInput) {
+        manualInput.addEventListener('input', () => {
+        const hidden = document.getElementById('price');
+        if (hidden) {
+            const hasVal = manualInput.value.trim() !== '';
+            hidden.dataset.manuallyEdited = hasVal ? 'true' : 'false';
+            hidden.dataset.autoCalculated = 'false';
+        }
+        writeFinalPriceToHidden();
+        });
+    }
+    })();
+}
 
 
 // הפעל את הפונקציה כשהדף נטען
