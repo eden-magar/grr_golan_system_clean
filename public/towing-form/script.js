@@ -26,7 +26,7 @@ function setupVehicleLookup() {
         field.addEventListener('paste', function(e) {
             setTimeout(() => {
                 const cleanValue = this.value.replace(/[^0-9]/g, '');
-                if (cleanValue.length >= 6 && cleanValue !== lastSearchedValue) {
+                if (cleanValue.length >= 5 && cleanValue !== lastSearchedValue) {
                     lookupVehicleData(cleanValue, context);
                     lastSearchedValue = cleanValue;
                     hasSearched = true;
@@ -37,7 +37,7 @@ function setupVehicleLookup() {
         // חיפוש כשעוזבים את השדה (אם עדיין לא חיפשנו)
         field.addEventListener('blur', function() {
             const cleanValue = this.value.replace(/[^0-9]/g, '');
-            if (cleanValue.length >= 6 && cleanValue !== lastSearchedValue && !hasSearched) {
+            if (cleanValue.length >= 5 && cleanValue !== lastSearchedValue && !hasSearched) {
                 lookupVehicleData(cleanValue, context);
                 lastSearchedValue = cleanValue;
                 hasSearched = true;
@@ -53,7 +53,7 @@ function setupVehicleLookup() {
                 const hid = document.getElementById(`dataSource_${context}`);
                 if (hid) hid.value = '';
                 // הסתרת שדה סוג רכב אם משנים את המספר
-                if (cleanValue.length < 6) {
+                if (cleanValue.length < 5) {
                     const typeFieldId = getCarTypeFieldId(context);
                     hideVehicleTypeField(typeFieldId);
                     const typeField = document.getElementById(typeFieldId);
@@ -68,7 +68,7 @@ function setupVehicleLookup() {
     async function lookupVehicleData(licenseNumber, vehicleContext) {
         const cleanLicense = licenseNumber.replace(/[^0-9]/g, '');
         
-        if (cleanLicense.length < 6) return;
+        if (cleanLicense.length < 5) return;
 
         // הצגת אינדיקטור טעינה
         showLoadingIndicator(vehicleContext, true);
