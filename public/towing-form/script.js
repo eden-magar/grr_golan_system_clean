@@ -1,4 +1,26 @@
 
+function setupAddressEditingGuards() {
+  const ids = [
+    'defectiveSource','defectiveDestination',
+    'defectiveSource2','defectiveDestination2'
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    // בזמן הקלדה – מסמנים שזה לא מגוגל, ואם ריק מוחקים כתובת פיזית
+    el.addEventListener('input', function () {
+      this.dataset.isGoogleAddress = 'false';
+      if (!this.value.trim()) delete this.dataset.physicalAddress;
+    });
+
+    // ביציאה מהשדה – אם ריק מוחקים כתובת פיזית
+    el.addEventListener('blur', function () {
+      if (!this.value.trim()) delete this.dataset.physicalAddress;
+    });
+  });
+}
+
 function sanitizeText(text) {
     if (!text) return text;
     return text
@@ -188,7 +210,7 @@ function setupVehicleLookup() {
 }
 
 // פונקציה להצגת מידע נוסף על הרכב
-    function showVehicleInfo(vehicle, status, towTypes, context) {
+function showVehicleInfo(vehicle, status, towTypes, context) {
     const fieldMap = {
         'defective': 'defectiveCarType',
         'defective2': 'defectiveCarType2',
@@ -206,7 +228,7 @@ function setupVehicleLookup() {
         existingInfo.remove();
     }
 
-    // יצירת מידע על המאגר בלבד
+    // יצירת מידע על המאגר
     const source = vehicle.source;
     let sourceText = 'מאגר ממשלתי';
     
@@ -215,7 +237,7 @@ function setupVehicleLookup() {
             private: 'רכב פרטי',
             motorcycle: 'דו-גלגלי',
             heavy: 'מעל 3.5 טון',
-            machinery: 'צמ״ה'
+            machinery: 'צמ"ה'
         };
         
         const statusMap = {
@@ -230,19 +252,55 @@ function setupVehicleLookup() {
         sourceText = [vehicleType, vehicleStatus].filter(Boolean).join(' • ');
     }
 
-    // יצירת אלמנט מידע קטן
+    // הוספת מידע נוסף
+    const additionalInfo = [];
+    
+    // גיר
+    const gearType = field.dataset.gear || field.dataset.gearType;
+    if (gearType) {
+        additionalInfo.push(`גיר: ${gearType}`);
+    }
+    
+    // משקל
+    const weight = field.dataset.selfWeight || field.dataset.totalWeightTon || vehicle.weight;
+    if (weight) {
+        const weightText = weight.includes('טון') ? weight : `${weight} ק"ג`;
+        additionalInfo.push(`משקל: ${weightText}`);
+    }
+
+    // סוג דלק
+    const fuelType = field.dataset.fuelType;
+    if (fuelType) {
+        additionalInfo.push(`דלק: ${fuelType}`);
+    }
+    
+    // הנעה
+    const driveType = field.dataset.driveType;
+    if (driveType) {
+        additionalInfo.push(`הנעה: ${driveType}`);
+    }
+
+    // יצירת התצוגה
     const infoDiv = document.createElement('div');
     infoDiv.className = 'vehicle-info-display';
     infoDiv.style.cssText = `
         margin-top: 5px;
-        padding: 5px 8px;
+        padding: 8px 12px;
         background: #f0f9ff;
         border: 1px solid #bfdbfe;
         border-radius: 4px;
         font-size: 12px;
         color: #1e40af;
+        line-height: 1.4;
     `;
-    infoDiv.textContent = `מקור: ${sourceText}`;
+    
+    let fullText = `מקור: ${sourceText}`;
+    if (additionalInfo.length > 0) {
+        fullText += '\n' + additionalInfo.join(' • ');
+    }
+    
+    infoDiv.textContent = fullText;
+    infoDiv.style.whiteSpace = 'pre-line';
 
     field.parentNode.appendChild(infoDiv);
 }
@@ -844,30 +902,42 @@ function hideVehicleTypeField(fieldId) {
 
 
 // מעקב אחר סוג כתובות (גוגל vs טקסט חופשי)
-function setupAddressTracking() {
-    const addressFields = [
-        'defectiveSource',
-        'defectiveDestination', 
-        'defectiveSource2',
-        'defectiveDestination2',
-        'workingCarSource',
-        'workingCarDestination',
-        'exchangeDefectiveDestination'
-    ];
+// פונקציה לקבלת כתובות מהטופס (מעדיפים value; ואם הוא ריק — מחזירים ריק)
+function getAddressesForCalculation(context = 'defective') {
+  let sourceFieldId, destinationFieldId;
 
-    addressFields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        if (!field) return;
+  if (context === 'defective') {
+    sourceFieldId = 'defectiveSource';
+    destinationFieldId = 'defectiveDestination';
+  } else if (context === 'defective2') {
+    sourceFieldId = 'defectiveSource2';
+    destinationFieldId = 'defectiveDestination2';
+  } else {
+    throw new Error('קונטקסט לא נתמך');
+  }
 
-        // ברירת מחדל - טקסט חופשי
-        field.dataset.isGoogleAddress = 'false';
+  const sourceField = document.getElementById(sourceFieldId);
+  const destField   = document.getElementById(destinationFieldId);
 
-        // כשמשתמש מקליד ידנית - זה טקסט חופשי
-        field.addEventListener('input', function() {
-            this.dataset.isGoogleAddress = 'false';
-        });
-    });
+  if (!sourceField || !destField) {
+    throw new Error('שדות כתובת לא נמצאו');
+  }
+
+  const srcVal  = (sourceField.value || '').trim();
+  const destVal = (destField.value   || '').trim();
+
+  // ❗ אם המשתמש מחק את הטקסט – מחזירים ריק, בלי להסתמך על dataset.physicalAddress
+  const sourceAddress = srcVal  ? (sourceField.dataset.physicalAddress || srcVal)  : '';
+  const destAddress   = destVal ? (destField.dataset.physicalAddress   || destVal) : '';
+
+  return {
+    source: sourceAddress,
+    destination: destAddress,
+    sourceIsGoogle: sourceField.dataset.isGoogleAddress === 'true',
+    destIsGoogle:   destField.dataset.isGoogleAddress   === 'true'
+  };
 }
+
 
 function clearSource(context) {
   const hid = document.getElementById(`dataSource_${context}`);
@@ -949,7 +1019,7 @@ function updatePriceField(priceData) {
         // עדכון הערך
         priceField.value = priceData.totalPrice;
         
-        // הוספת סגנון ויזואלי להראות שהמחיר חושב אוטומטית
+        // הוספת סגנון ויזואלי
         priceField.style.backgroundColor = '#e8f5e8';
         priceField.style.border = '2px solid #4caf50';
         
@@ -958,6 +1028,9 @@ function updatePriceField(priceData) {
         priceField.dataset.autoCalculated = 'true';
         priceField.dataset.calculationDetails = JSON.stringify(priceData);
         
+        // עדכן גם את הכרטיסים כשהחישוב מצליח
+        updateTierPricesUI(priceData.totalPrice);
+        
         // הסרת הסגנון אחרי 3 שניות
         setTimeout(() => {
             priceField.style.backgroundColor = '';
@@ -965,8 +1038,6 @@ function updatePriceField(priceData) {
         }, 3000);
         
         console.log(`✅ שדה מחיר עודכן ל-${priceData.totalPrice}₪`);
-        
-        // הצגת הודעה למשתמש (אופציונלי)
         showPriceCalculationMessage(priceData);
         
     } else {
@@ -1242,7 +1313,6 @@ async function calculateAndUpdatePrice(context = 'defective') {
         
         if (result.success) {
             updatePriceField(result);
-            updateTierPricesUI(result.totalPrice);
             return result;
         } else {
             console.error('חישוב מחיר נכשל:', result.error);
@@ -1267,76 +1337,65 @@ async function testFullPriceCalculation() {
 // פונקציה לבדיקה אם כל הנתונים זמינים לחישוב מחיר
 function canCalculatePrice(context = 'defective') {
     try {
-        // בדיקה שיש נתוני רכב
         if (!isVehicleDataAvailable(context)) {
-            console.log('❌ אין נתוני רכב זמינים');
             return false;
         }
         
-        // בדיקה שיש שתי כתובות
         const addresses = getAddressesForCalculation(context);
-        if (!addresses.source || !addresses.destination) {
-            console.log('❌ חסרות כתובות');
+        
+        // בדיקה מדויקת יותר - לא רק שקיימות אלא שאינן ריקות
+        if (!addresses.source || !addresses.destination || 
+            !addresses.source.trim() || !addresses.destination.trim()) {
             return false;
         }
         
-        console.log('✅ כל הנתונים זמינים לחישוב מחיר');
         return true;
         
     } catch (error) {
-        console.log('❌ שגיאה בבדיקת נתונים:', error.message);
         return false;
     }
 }
 
+
+
 // פונקציה לחישוב מחיר עם debounce (למניעת חישובים מיותרים)
 let priceCalculationTimeout;
-async function debouncedPriceCalculation(context = 'defective', delay = 1000) {
-    // ביטול חישוב קודם אם עדיין ממתין
-    if (priceCalculationTimeout) {
-        clearTimeout(priceCalculationTimeout);
-    }
-    
-    priceCalculationTimeout = setTimeout(async () => {
-        // בדיקה שהמשתמש לא עדכן ידנית את המחיר
-        const priceField = document.getElementById('price');
-        const wasManuallyEdited = priceField && priceField.dataset.manuallyEdited === 'true';
-        
-        if (wasManuallyEdited) {
-            console.log('⚠️ המשתמש עדכן את המחיר ידנית - לא מחשב אוטומטית');
-            return;
-        }
-        
-        if (canCalculatePrice(context)) {
-            console.log('⏰ מתחיל חישוב מחיר אוטומטי...');
-            await calculateAndUpdatePrice(context);
-        }
-    }, delay);
-}
 
-// פונקציה להוספת מאזינים לשדות הרלוונטיים
 function setupAutomaticPriceCalculation() {
-    console.log('🔧 מגדיר חישוב מחיר אוטומטי...');
+    console.log('מגדיר חישוב מחיר אוטומטי...');
     
-    // שדות שצריכים לעקוב אחריהם עבור רכב תקול ראשון
+    // שדות שצריכים לעקוב אחריהם עבור רכב תקול ראשון ושני
     const fieldsToWatch = [
         'defectiveCarNumber',    // מספר רכב (לקבלת סוג רכב)
         'defectiveSource',      // כתובת מוצא
-        'defectiveDestination'  // כתובת יעד
+        'defectiveDestination', // כתובת יעד
+        'defectiveSource2',     // כתובת מוצא רכב שני
+        'defectiveDestination2' // כתובת יעד רכב שני
     ];
     
     fieldsToWatch.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) {
             // מאזין לשינויים בשדה
-            field.addEventListener('input', () => {
-                console.log(`📝 שינוי בשדה ${fieldId}`);
-                debouncedPriceCalculation('defective', 1500);
+            field.addEventListener('input', (e) => {
+                console.log(`שינוי בשדה ${fieldId}`);
+                
+                // בדיקה מיידית אם שדה כתובת התרוקן
+                const isAddressField = fieldId.includes('Source') || fieldId.includes('Destination');
+                const isEmpty = !e.target.value.trim();
+                
+                if (isAddressField && isEmpty) {
+                    // זמן קצר יותר למחיקת כתובות
+                    debouncedPriceCalculation('defective', 300);
+                } else {
+                    // זמן רגיל לעריכה
+                    debouncedPriceCalculation('defective', 1500);
+                }
             });
             
             // מאזין לאובדן פוקוס (כשעוזבים את השדה)
             field.addEventListener('blur', () => {
-                console.log(`👁️ עזיבת שדה ${fieldId}`);
+                console.log(`עזיבת שדה ${fieldId}`);
                 debouncedPriceCalculation('defective', 500);
             });
         }
@@ -1346,23 +1405,143 @@ function setupAutomaticPriceCalculation() {
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             if (mutation.type === 'attributes' && 
-                mutation.attributeName === 'value' && 
-                mutation.target.id === 'dataSource_defective') {
-                console.log('🚗 נתוני רכב עודכנו');
-                debouncedPriceCalculation('defective', 1000);
+                mutation.attributeName === 'value') {
+                
+                // טיפול בנתוני רכב ראשון ושני
+                if (mutation.target.id === 'dataSource_defective' || 
+                    mutation.target.id === 'dataSource_defective2') {
+                    console.log(`נתוני רכב עודכנו: ${mutation.target.id}`);
+                    debouncedPriceCalculation('defective', 1000);
+                }
             }
         });
     });
     
     // התחל לעקוב אחר שינויים במקור נתוני הרכב
-    const dataSourceField = document.getElementById('dataSource_defective');
-    if (dataSourceField) {
-        observer.observe(dataSourceField, {
-            attributes: true,
-            attributeFilter: ['value']
-        });
-    }
+    const dataSourceFields = ['dataSource_defective', 'dataSource_defective2'];
+    dataSourceFields.forEach(fieldId => {
+        const dataSourceField = document.getElementById(fieldId);
+        if (dataSourceField) {
+            observer.observe(dataSourceField, {
+                attributes: true,
+                attributeFilter: ['value']
+            });
+        }
+    });
 }
+
+// פונקציה חדשה לאיפוס מחיר
+function resetPriceField() {
+    console.log('🔴 resetPriceField נקרא - מתחיל איפוס');
+    
+    const priceField = document.getElementById('price');
+    if (priceField) {
+        console.log('🔴 מאפס שדה מחיר נסתר, ערך לפני:', priceField.value);
+        priceField.value = '';
+        priceField.style.backgroundColor = '';
+        priceField.style.border = '';
+        priceField.removeAttribute('title');
+        priceField.dataset.autoCalculated = 'false';
+        delete priceField.dataset.calculationDetails;
+        console.log('🔴 שדה מחיר נסתר אופס');
+    }
+    
+    // איפוס המחירים בכרטיסים עם לוגים
+    const priceElements = [
+        { id: 'price-regular-amount', text: '0₪' },
+        { id: 'price-plus25-amount', text: '0₪' },
+        { id: 'price-plus50-amount', text: '0₪' }
+    ];
+    
+    priceElements.forEach(({ id, text }) => {
+        const element = document.getElementById(id);
+        if (element) {
+            console.log(`🔴 מאפס ${id}, ערך לפני: "${element.textContent}", ערך אחרי: "${text}"`);
+            element.textContent = text;
+            element.innerText = text;
+        } else {
+            console.log(`🔴 ❌ לא נמצא אלמנט: ${id}`);
+        }
+    });
+    
+    // איפוס מצב התמחור
+    if (window.__pricingState) {
+        console.log('🔴 מאפס __pricingState');
+        delete window.__pricingState.baseInclVAT;
+        delete window.__pricingState.prices;
+    }
+    
+    // הסרת המלצה
+    const recommendedCards = document.querySelectorAll('.price-card.recommended');
+    console.log(`🔴 מסיר המלצה מ-${recommendedCards.length} כרטיסים`);
+    document.querySelectorAll('.price-card').forEach(card => {
+        card.classList.remove('recommended');
+    });
+    
+    console.log('🔴 ✅ resetPriceField הושלם');
+}
+
+async function debouncedPriceCalculation(context = 'defective', delay = 1000) {
+    console.log(`🔵 debouncedPriceCalculation נקרא עבור ${context}, עיכוב: ${delay}ms`);
+    
+    if (priceCalculationTimeout) {
+        console.log('🔵 מבטל חישוב קודם');
+        clearTimeout(priceCalculationTimeout);
+    }
+    
+    priceCalculationTimeout = setTimeout(async () => {
+        console.log('🔵 מתחיל לוגיקת חישוב לאחר עיכוב');
+        
+        const priceField = document.getElementById('price');
+        const wasManuallyEdited = priceField && priceField.dataset.manuallyEdited === 'true';
+        
+        if (wasManuallyEdited) {
+            console.log('🔵 המשתמש עדכן את המחיר ידנית - לא מחשב אוטומטית');
+            return;
+        }
+        
+        let addresses;
+        try {
+            addresses = getAddressesForCalculation(context);
+            console.log('🔵 כתובות שנמצאו:', addresses);
+        } catch (error) {
+            console.log('🔵 שדות כתובת לא נמצאו - איפוס המחיר', error.message);
+            resetPriceField();
+            return;
+        }
+        
+        console.log('🔵 בודק אם כתובות ריקות...');
+        console.log(`🔵 מוצא: "${addresses.source}" (אורך: ${addresses.source.length})`);
+        console.log(`🔵 יעד: "${addresses.destination}" (אורך: ${addresses.destination.length})`);
+        
+        if (!addresses.source || !addresses.destination) {
+            console.log('🔵 כתובות ריקות - קורא ל-resetPriceField');
+            resetPriceField();
+            
+            // בדיקה אם המחיר באמת התאפס
+            setTimeout(() => {
+                const regularEl = document.getElementById('price-regular-amount');
+                const plus25El = document.getElementById('price-plus25-amount');
+                const plus50El = document.getElementById('price-plus50-amount');
+                
+                console.log('🔵 בדיקה אחרי איפוס:');
+                console.log(`🔵 רגיל: "${regularEl?.textContent}"`);
+                console.log(`🔵 +25%: "${plus25El?.textContent}"`);
+                console.log(`🔵 +50%: "${plus50El?.textContent}"`);
+            }, 100);
+            
+            return;
+        }
+        
+        console.log('🔵 כתובות לא ריקות - ממשיך לחישוב');
+        
+        if (canCalculatePrice(context)) {
+            console.log('🔵 מתחיל חישוב מחיר אוטומטי...');
+            const result = await calculateAndUpdatePrice(context);
+        }
+    }, delay);
+}
+
 
 // פונקציה לטיפול בעריכה ידנית של המחיר
 function setupManualPriceEditing() {
@@ -1516,7 +1695,7 @@ function openAdminDashboard() {
     }
 
 
-document.addEventListener('DOMContentLoaded', function() { 
+document.addEventListener('DOMContentLoaded', function() {
     // אלמנטים ראשיים
     const mainForm = document.getElementById('towingForm');
     const summaryPage = document.getElementById('summaryPage');
@@ -1558,6 +1737,8 @@ document.addEventListener('DOMContentLoaded', function() {
     setupSecondCarButtons();
     setupSharedLocationOptions();
     setupFormEvents();
+    setupAddressEditingGuards();
+
     
     function initDateTime() {
         const now = new Date();
@@ -1977,9 +2158,9 @@ function setDefaultOrderNumber() {
 
 
 // הפעל את הפונקציה כשהדף נטען
-document.addEventListener('DOMContentLoaded', function() {
-    setupAddressAutoScroll();
-});
+// document.addEventListener('DOMContentLoaded', function() {
+//     setupAddressAutoScroll();
+// });
 
     // פונקציות הנוגעות לעמוד הסיכום
     
@@ -2165,17 +2346,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-// פונקציה לעיצוב מספר כרטיס אשראי
-function formatCardNumber(value) {
-    // הסרת כל מה שאינו ספרה
-    const numbers = value.replace(/\D/g, '');
-    
-    // הוספת מקפים כל 4 ספרות
-    const formatted = numbers.replace(/(\d{4})(?=\d)/g, '$1-');
-    
-    // הגבלה ל-16 ספרות (19 תווים עם מקפים)
-    return formatted.slice(0, 19);
-}
 
 // פונקציה לעיצוב תאריך תוקף
 function formatExpiryDate(value) {
@@ -2219,15 +2389,15 @@ function countDigitsToIndex(str, idx) {
   return (str.slice(0, idx).match(/\d/g) || []).length;
 }
 
-// מספר כרטיס: קבוצות של 4 עם '-' ביניהן, עד 19 ספרות
 function formatCardNumber(value) {
-  const digits = onlyDigits(value).slice(0, 19);
-  const parts = [];
-  for (let i = 0; i < digits.length; i += 4) {
-    parts.push(digits.slice(i, i + 4));
-  }
-  return parts.join("-");
+  // השאר רק ספרות (באמצעות onlyDigits אם קיימת)
+  const digits = (typeof onlyDigits === 'function' ? onlyDigits(value) : value.replace(/\D/g, ''))
+                  .slice(0, 16); // הגבל ל-16 ספרות
+
+  // הוסף מקפים אחרי כל 4 ספרות
+  return digits.replace(/(\d{4})(?=\d)/g, '$1-');
 }
+
 
 // תוקף: MM/YY (עד 4 ספרות, בלי "תיקון חכם")
 function formatExpiryDate(value) {
@@ -2261,7 +2431,7 @@ function formatCVV(value) {
     setupVehicleLookup();
     setupLicenseNumberSanitization();
     setupPhoneSanitization();
-    setupAddressTracking(); 
+    // setupAddressTracking(); 
     setTimeout(() => {
     setupPhoneSanitization();
 }, 2000);
@@ -2316,42 +2486,38 @@ function getDistanceErrorMessage(status) {
 }
 
 // פונקציה לקבלת כתובות מהטופס
-function getAddressesForCalculation(context = 'defective') {
-    let sourceFieldId, destinationFieldId;
+// function getAddressesForCalculation(context = 'defective') {
+//     let sourceFieldId, destinationFieldId;
     
-    if (context === 'defective') {
-        sourceFieldId = 'defectiveSource';
-        destinationFieldId = 'defectiveDestination';
-    } else if (context === 'defective2') {
-        sourceFieldId = 'defectiveSource2';
-        destinationFieldId = 'defectiveDestination2';
-    } else {
-        throw new Error('קונטקסט לא נתמך');
-    }
+//     if (context === 'defective') {
+//         sourceFieldId = 'defectiveSource';
+//         destinationFieldId = 'defectiveDestination';
+//     } else if (context === 'defective2') {
+//         sourceFieldId = 'defectiveSource2';
+//         destinationFieldId = 'defectiveDestination2';
+//     } else {
+//         throw new Error('קונטקסט לא נתמך');
+//     }
     
-    const sourceField = document.getElementById(sourceFieldId);
-    const destField = document.getElementById(destinationFieldId);
+//     const sourceField = document.getElementById(sourceFieldId);
+//     const destField = document.getElementById(destinationFieldId);
     
-    if (!sourceField || !destField) {
-        throw new Error('שדות כתובת לא נמצאו');
-    }
+//     if (!sourceField || !destField) {
+//         throw new Error('שדות כתובת לא נמצאו');
+//     }
     
-    // נעדיף כתובות פיזיות אם זמינות, אחרת נשתמש בטקסט שהוזן
-    const sourceAddress = sourceField.dataset.physicalAddress || sourceField.value;
-    const destAddress = destField.dataset.physicalAddress || destField.value;
+//     // נעדיף כתובות פיזיות אם זמינות, אחרת נשתמש בטקסט שהוזן
+//     const sourceAddress = sourceField.dataset.physicalAddress || sourceField.value;
+//     const destAddress = destField.dataset.physicalAddress || destField.value;
     
-    if (!sourceAddress.trim() || !destAddress.trim()) {
-        throw new Error('חסרות כתובות מוצא או יעד');
-    }
-    
-    return {
-        source: sourceAddress.trim(),
-        destination: destAddress.trim(),
-        sourceIsGoogle: sourceField.dataset.isGoogleAddress === 'true',
-        destIsGoogle: destField.dataset.isGoogleAddress === 'true'
-    };
-}
-
+//     // הורדנו את הבדיקה מכאן - תיעשה בפונקציה הקוראת
+//     return {
+//         source: (sourceAddress || '').trim(),
+//         destination: (destAddress || '').trim(),
+//         sourceIsGoogle: sourceField.dataset.isGoogleAddress === 'true',
+//         destIsGoogle: destField.dataset.isGoogleAddress === 'true'
+//     };
+// }
 
 
 
