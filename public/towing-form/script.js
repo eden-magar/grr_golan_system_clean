@@ -264,7 +264,13 @@ function showVehicleInfo(vehicle, status, towTypes, context) {
     // משקל
     const weight = field.dataset.selfWeight || field.dataset.totalWeightTon || vehicle.weight;
     if (weight) {
-        const weightText = weight.includes('טון') ? weight : `${weight} ק"ג`;
+        let weightText;
+        if (typeof weight === 'string') {
+            weightText = weight.includes('טון') ? weight : `${weight} ק"ג`;
+        } else {
+            // אם זה מספר, נתייחס אליו כק"ג
+            weightText = `${weight} ק"ג`;
+        }
         additionalInfo.push(`משקל: ${weightText}`);
     }
 
