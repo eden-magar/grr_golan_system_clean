@@ -1,6 +1,3 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHgdnLK7cSmgUYmRjrEyQ12N6sSm1K8StmpFEhfrjasrXqQzycaYM18P07VPE6XlRs/exec";
-
-
 const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
@@ -310,6 +307,48 @@ app.post("/api/submit-towing", async (req, res) => {
 
   } catch (err) {
     console.error("❌ Error forwarding to Apps Script:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+const CALENDAR_URL = "https://script.google.com/macros/s/AKfycbycsnNhw_KY1cckQa88LLL1sUzV9yLGGqqnsMlSCV-QRZL1CtTHnkcFokiZei2DjEHD/exec";
+const SHEETS_URL   = "https://script.google.com/macros/s/AKfycbxhMVEEenVHEwjciG_tQf0jFkpq-ZPjCK17EMMQUFdEF0Hy1WnU9Lrcno6_rsuPngGNmw/exec";
+
+app.post("/api/submit-towing", async (req, res) => {
+  try {
+    const payload = { data: JSON.stringify(req.body) };
+
+    // שליחה במקביל לשני ה־WebApps
+    const [calendarResp, sheetsResp] = await Promise.all([
+      fetch(CALENDAR_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(payload)
+      }),
+      fetch(SHEETS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(payload)
+      })
+    ]);
+
+    // טיפול בתגובת היומן
+    const text = await calendarResp.text();
+    console.log("📤 Calendar response:", text);
+
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      json = { success: false, raw: text };
+    }
+
+    // מחזירים ללקוח רק את תגובת היומן (אפשר גם לאחד אם תרצי)
+    res.status(200).json(json);
+
+  } catch (err) {
+    console.error("❌ Error forwarding:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
