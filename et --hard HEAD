@@ -3,8 +3,6 @@
 [1m--- a/public/towing-form/calendar-integration.js[m
 [1m+++ b/public/towing-form/calendar-integration.js[m
 [36m@@ -1,28 +1,32 @@[m
-[31m-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYS3hE5rrwhUD8kEJuhcDEqS1o0jfn9pBs37sqcOmTAE4MHgrw3mq8M9a-wHQsl8J2/exec";[m
-[32m+[m[32mconst APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbygQ4lwQXOS9JeAVgNgMQu8JCUXxJSr2KzLfrFA46CuVCNwTjPTskKJpSdOW5_Shd-r/exec";[m
  // מאזין לכפתור השליחה הסופי[m
  document.getElementById('confirmSubmit').addEventListener('click', async function(e) {[m
      e.preventDefault();[m
@@ -20,7 +18,6 @@
  [m
 [31m-        const form = document.createElement('form');[m
 [31m-    form.method = 'POST';[m
-[31m-    form.action = APPS_SCRIPT_URL;[m
 [31m-    form.target = '_blank';[m
 [31m-[m
 [31m-    const hiddenField = document.createElement('input');[m
@@ -28,7 +25,6 @@
 [31m-    hiddenField.name = 'data';[m
 [31m-    hiddenField.value = JSON.stringify(formData);[m
 [32m+[m[32m        // שליחת הנתונים ברקע[m
-[32m+[m[32m        const response = await fetch(APPS_SCRIPT_URL, {[m
 [32m+[m[32m            method: 'POST',[m
 [32m+[m[32m            body: postData[m
 [32m+[m[32m        });[m

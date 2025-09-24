@@ -287,33 +287,11 @@ app.post('/api/delete-user', async (req, res) => {
     }
 });
 
-app.post("/api/submit-towing", async (req, res) => {
-  try {
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ data: JSON.stringify(req.body) })
-    });
+const CALENDAR_URL = process.env.CALENDAR_URL;
+const SHEETS_URL   = process.env.SHEETS_URL;
 
-    const text = await response.text();
-    console.log("📤 Apps Script response text:", text);
-
-    try {
-      const json = JSON.parse(text);
-      res.status(200).json(json);
-    } catch {
-      res.status(200).json({ success: false, raw: text });
-    }
-
-  } catch (err) {
-    console.error("❌ Error forwarding to Apps Script:", err);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-
-const CALENDAR_URL = "https://script.google.com/macros/s/AKfycbycsnNhw_KY1cckQa88LLL1sUzV9yLGGqqnsMlSCV-QRZL1CtTHnkcFokiZei2DjEHD/exec";
-const SHEETS_URL   = "https://script.google.com/macros/s/AKfycbxhMVEEenVHEwjciG_tQf0jFkpq-ZPjCK17EMMQUFdEF0Hy1WnU9Lrcno6_rsuPngGNmw/exec";
+console.log("📌 CALENDAR_URL:", CALENDAR_URL);
+console.log("📌 SHEETS_URL:", SHEETS_URL);
 
 app.post("/api/submit-towing", async (req, res) => {
   try {

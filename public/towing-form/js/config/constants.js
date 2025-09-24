@@ -3,9 +3,6 @@
  * Keep each constant defined ONCE. Expose to window only AFTER defining.
  */
 
-// ---- Apps Script URL (define once) ----
-// const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbycsnNhw_KY1cckQa88LLL1sUzV9yLGGqqnsMlSCV-QRZL1CtTHnkcFokiZei2DjEHD/exec";
-// window.APPS_SCRIPT_URL = APPS_SCRIPT_URL; // expose globally
 
 const TOWING_SUBMIT_URL = "/api/submit-towing";
 window.TOWING_SUBMIT_URL = TOWING_SUBMIT_URL;
