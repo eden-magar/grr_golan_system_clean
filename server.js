@@ -8,6 +8,62 @@ const multer = require('multer');
 const fetch = require("node-fetch");
 const upload = multer();
 
+// ===== הוספה חדשה - מצב פיתוח =====
+const DEV_MODE = process.env.DEV_MODE === 'true';
+const MOCK_SERVICES = process.env.MOCK_SERVICES === 'true' || DEV_MODE;
+
+console.log(`🔧 מצב פיתוח: ${DEV_MODE ? 'פעיל' : 'לא פעיל'}`);
+console.log(`🎭 שירותים מדומים: ${MOCK_SERVICES ? 'פעיל' : 'לא פעיל'}`);
+
+// פונקציית עזר ליצירת תגובות מדומות
+function createMockResponse(formData, serviceName) {
+    const orderNumber = formData.orderNumber || `MOCK-${Date.now()}`;
+    const timestamp = new Date().toISOString();
+    
+    return {
+        success: true,
+        message: `נתונים נשמרו בהצלחה במצב פיתוח (${serviceName})`,
+        orderNumber: orderNumber,
+        timestamp: timestamp,
+        service: serviceName,
+        mockMode: true
+    };
+}
+
+// פונקציה לשמירה מקומית של נתונים
+async function saveMockData(formData, serviceName) {
+    try {
+        const mockDir = path.join(__dirname, 'mock-data');
+        
+        // יצירת תיקיית mock-data אם לא קיימת
+        try {
+            await fs.mkdir(mockDir, { recursive: true });
+        } catch (err) {
+            // תיקייה כבר קיימת
+        }
+        
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `${serviceName}-${timestamp}.json`;
+        const filepath = path.join(mockDir, filename);
+        
+        const mockData = {
+            timestamp: new Date().toISOString(),
+            service: serviceName,
+            formData: formData,
+            mockMode: true
+        };
+        
+        await fs.writeFile(filepath, JSON.stringify(mockData, null, 2), 'utf8');
+        
+        console.log(`💾 נתונים נשמרו: ${filename}`);
+        return true;
+    } catch (error) {
+        console.error('שגיאה בשמירת נתונים מדומים:', error);
+        return false;
+    }
+}
+// ===== סוף ההוספה =====
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -295,16 +351,38 @@ console.log("📌 SHEETS_URL:", SHEETS_URL);
 
 app.post("/api/submit-towing", async (req, res) => {
   try {
+    console.log("📥 התקבלה בקשת שליחה");
+    
+    // אם אנחנו במצב פיתוח/מדומה
+    if (MOCK_SERVICES) {
+      console.log("🎭 מצב פיתוח - לא שולח לגוגל");
+      
+      const formData = req.body;
+      
+      // שמירה מקומית של הנתונים
+      await saveMockData(formData, 'calendar');
+      await saveMockData(formData, 'sheets');
+      
+      // החזרת תגובה מדומה מוצלחת
+      const mockResponse = createMockResponse(formData, 'development');
+      
+      console.log("✅ נתונים נשמרו במצב פיתוח");
+      return res.status(200).json(mockResponse);
+    }
+    
+    // אם אנחנו במצב רגיל - הקוד המקורי
     const payload = { data: JSON.stringify(req.body) };
+    
+    console.log("📤 שולח לגוגל במצב רגיל...");
 
-    // שליחה במקביל לשני ה־WebApps
+    // שליחה במקביל לשני ה-WebApps
     const [calendarResp, sheetsResp] = await Promise.all([
-      fetch(CALENDAR_URL, {
+      fetch(process.env.CALENDAR_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(payload)
       }),
-      fetch(SHEETS_URL, {
+      fetch(process.env.SHEETS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(payload)
@@ -312,22 +390,38 @@ app.post("/api/submit-towing", async (req, res) => {
     ]);
 
     // טיפול בתגובת היומן
-    const text = await calendarResp.text();
-    console.log("📤 Calendar response:", text);
+    const calendarText = await calendarResp.text();
+    console.log("📅 תגובת יומן:", calendarText);
 
     let json;
     try {
-      json = JSON.parse(text);
+      json = JSON.parse(calendarText);
     } catch {
-      json = { success: false, raw: text };
+      json = { success: false, raw: calendarText };
     }
 
-    // מחזירים ללקוח רק את תגובת היומן (אפשר גם לאחד אם תרצי)
+    // בדיקת תגובת הגיליון
+    const sheetsText = await sheetsResp.text();
+    console.log("📊 תגובת גיליון:", sheetsResp.status, sheetsText);
+
+    // מחזירים לקוח רק את תגובת היומן
     res.status(200).json(json);
 
   } catch (err) {
-    console.error("❌ Error forwarding:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("❌ שגיאה בשליחה:", err);
+    
+    // אם אנחנו במצב פיתוח, נחזיר תגובה מדומה גם על שגיאה
+    if (MOCK_SERVICES) {
+      const mockErrorResponse = {
+        success: true,
+        message: "נתונים נשמרו מקומית (גם עם שגיאת רשת)",
+        mockMode: true,
+        originalError: err.message
+      };
+      return res.status(200).json(mockErrorResponse);
+    }
+    
+    res.status(500).json({ success: false, message: "שגיאת שרת" });
   }
 });
 
