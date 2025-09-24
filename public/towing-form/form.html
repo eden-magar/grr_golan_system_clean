@@ -185,8 +185,13 @@
                                 <i class="fas fa-exclamation-circle"></i>
                                 פירוט התקלה:
                             </label>
-                            <textarea id="defectDetails" name="defectDetails" minlength="5"
-                                title="אנא הכנס פירוט תקלה מספק"></textarea>
+                            <button type="button" id="defectSelectorBtn" class="defect-selector-btn">
+                                <i class="fas fa-list"></i>
+                                בחר תקלות
+                            </button>
+                            <div id="selectedDefects" class="selected-defects">
+                                <div class="selected-defects-placeholder">לא נבחרו תקלות</div>
+                            </div>
                         </div>
 
                         <div class="form-grid">

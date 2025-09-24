@@ -34,6 +34,7 @@ class FormManager {
         this.setupPhoneSanitization();
         this.setupCreditCardFormatting();
         this.setupPaymentTypeButtons();
+        this.setupDefectSelector();
         this.initializeDateTime();
         this.checkCompanySpecificFeatures();
         this.checkAdminStatus();
@@ -826,12 +827,28 @@ class FormManager {
             destContactPhone: 'טלפון איש קשר ביעד'
         };
 
-        for (const [id, label] of Object.entries(summaryFields)) {
-            const inputElement = document.getElementById(id);
-            const summaryElement = document.getElementById(`summary-${id}`);
+        // for (const [id, label] of Object.entries(summaryFields)) {
+        //     const inputElement = document.getElementById(id);
+        //     const summaryElement = document.getElementById(`summary-${id}`);
             
-            if (inputElement && summaryElement) {
-                summaryElement.textContent = inputElement.value || 'לא הוזן';
+        //     if (inputElement && summaryElement) {
+        //         summaryElement.textContent = inputElement.value || 'לא הוזן';
+        //     }
+        // }
+        for (const [id, label] of Object.entries(summaryFields)) {
+            let inputValue = '';
+            
+            if (id === 'defectDetails') {
+                // Handle defect details specially
+                inputValue = collectDefectDetails();
+            } else {
+                const inputElement = document.getElementById(id);
+                inputValue = inputElement ? inputElement.value : '';
+            }
+            
+            const summaryElement = document.getElementById(`summary-${id}`);
+            if (summaryElement) {
+                summaryElement.textContent = inputValue || 'לא הוזן';
             }
         }
         
@@ -1376,7 +1393,155 @@ class FormManager {
         this.formData = {};
         this.elements = {};
     }
+
+    /**
+     * Setup defect selector functionality
+     */
+    setupDefectSelector() {
+        const defectBtn = document.getElementById('defectSelectorBtn');
+        if (!defectBtn) return;
+        
+        defectBtn.addEventListener('click', () => this.showDefectModal());
+    }
+
+    /**
+     * Show defect selection modal
+     */
+    showDefectModal() {
+        this.createDefectModal();
+    }
+
+    /**
+     * Create defect modal
+     */
+    createDefectModal() {
+        // Remove existing modal if present
+        const existing = document.getElementById('defectModal');
+        if (existing) existing.remove();
+        
+        // Create modal HTML
+        const modal = document.createElement('div');
+        modal.id = 'defectModal';
+        modal.className = 'defect-modal';
+        
+        modal.innerHTML = `
+            <div class="defect-modal-content">
+                <div class="defect-modal-header">
+                    <h3 class="defect-modal-title">בחר תקלות</h3>
+                    <button class="defect-modal-close" onclick="this.closest('.defect-modal').remove()">×</button>
+                </div>
+                <div class="defect-options">
+                    <div class="defect-option" data-defect="no-power">
+                        <i class="fas fa-battery-empty"></i>
+                        <span>אין חשמל</span>
+                    </div>
+                    <div class="defect-option" data-defect="flat-tire">
+                        <i class="fas fa-circle"></i>
+                        <span>פנצ'ר</span>
+                    </div>
+                    <div class="defect-option" data-defect="accident">
+                        <i class="fas fa-car-crash"></i>
+                        <span>תאונה</span>
+                    </div>
+                    <div class="defect-option" data-defect="broken-wheel">
+                        <i class="fas fa-cog"></i>
+                        <span>גלגל עקום או שבור</span>
+                    </div>
+                    <div class="defect-option" data-defect="leak">
+                        <i class="fas fa-tint"></i>
+                        <span>נזילת מים/שמן</span>
+                    </div>
+                    <div class="defect-option" data-defect="wont-start">
+                        <i class="fas fa-wrench"></i>
+                        <span>לא נדלק/לא מניע</span>
+                    </div>
+                    <div class="defect-option" data-defect="underground">
+                        <i class="fas fa-building"></i>
+                        <span>חניון תת קרקעי</span>
+                    </div>
+                    <div class="defect-option" data-defect="runs-ok">
+                        <i class="fas fa-check"></i>
+                        <span>מניע/נדלק ונוסע</span>
+                    </div>
+                    <div class="defect-option" data-defect="other">
+                        <i class="fas fa-edit"></i>
+                        <span>אחר</span>
+                        <input type="text" class="defect-other-input" placeholder="פרט את התקלה...">
+                    </div>
+                </div>
+                <div class="defect-modal-actions">
+                    <button class="defect-modal-btn defect-modal-cancel" onclick="this.closest('.defect-modal').remove()">ביטול</button>
+                    <button class="defect-modal-btn defect-modal-confirm" onclick="window.formManager.confirmDefectSelection()">אישור</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Show modal with animation
+        setTimeout(() => modal.classList.add('show'), 10);
+        
+        // Setup option clicks
+        this.setupDefectOptions();
+    }
+
+    /**
+     * Setup defect option clicks
+     */
+    setupDefectOptions() {
+        const options = document.querySelectorAll('.defect-option');
+        options.forEach(option => {
+            option.addEventListener('click', (e) => {
+                if (e.target.classList.contains('defect-other-input')) return;
+                option.classList.toggle('selected');
+            });
+        });
+    }
+
+    /**
+     * Confirm defect selection and close modal
+     */
+    confirmDefectSelection() {
+        const selectedOptions = document.querySelectorAll('.defect-option.selected');
+        const selectedDefects = [];
+        
+        selectedOptions.forEach(option => {
+            const defectType = option.dataset.defect;
+            if (defectType === 'other') {
+                const otherText = option.querySelector('.defect-other-input').value.trim();
+                if (otherText) {
+                    selectedDefects.push(`אחר: ${otherText}`);
+                }
+            } else {
+                selectedDefects.push(option.querySelector('span').textContent);
+            }
+        });
+        
+        this.updateSelectedDefects(selectedDefects);
+        document.getElementById('defectModal').remove();
+    }
+
+    /**
+     * Update the display of selected defects
+     */
+    updateSelectedDefects(defects) {
+        const container = document.getElementById('selectedDefects');
+        if (!container) return;
+        
+        if (defects.length === 0) {
+            container.innerHTML = '<div class="selected-defects-placeholder">לא נבחרו תקלות</div>';
+            container.classList.remove('has-selections');
+        } else {
+            const tagsHtml = defects.map(defect => 
+                `<span class="defect-tag">${defect}</span>`
+            ).join('');
+            container.innerHTML = tagsHtml;
+            container.classList.add('has-selections');
+        }
+    }
 }
+
+
 
 // Initialize form manager when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {

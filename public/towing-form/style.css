@@ -882,8 +882,6 @@ textarea {
     opacity: 0.7;
 }
 
-
-
 .payment-type-selector {
     margin-top: 8px;
 }
@@ -1189,67 +1187,6 @@ textarea {
         font-size: 1.3rem;
     }
 }
-
-/* ===== כרטיסי מחיר – אחידות גובה ונראות ===== */
-
-
-/* .price-card {
-    flex: 1;
-    position: relative;
-    display: flex;
-} */
-
-/* .price-card-label {
-    flex: 1;
-    padding: 12px 8px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    background-color: #fafafa;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    min-height: 80px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 100%;
-} */
-
-/* .price-title {
-    font-weight: bold;
-    font-size: 13px;
-    margin-bottom: 4px;
-    color: #333;
-} */
-
-/* .price-subtitle {
-    font-size: 10px;
-    color: #777;
-    margin-bottom: 6px;
-    line-height: 1.1;
-} */
-
-/* .price-amount {
-    font-size: 14px;
-    font-weight: bold;
-    color: #2196F3;
-    margin-top: auto;
-} */
-
-
-/* .price-card input[type="radio"] {
-    display: none;
-} */
-
-
-
-/* .price-card input:checked + .price-card-label {
-    border-color: #4CAF50;
-    background-color: #e8f5e8;
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
-    transform: translateY(-2px);
-} */
-
 
 /* עיצוב כרטיסי המחיר - גרסה קומפקטית */
 .pricing-options {
@@ -1595,5 +1532,257 @@ textarea {
     
     .distance-details {
         font-size: 11px;
+    }
+}
+
+/* ===== מערכת בחירת תקלות ===== */
+
+/* כפתור פתיחת בחירת תקלות */
+.defect-selector-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.defect-selector-btn:hover {
+    background: var(--primary-50);
+    border-color: var(--primary);
+}
+
+.defect-selector-btn i {
+    color: var(--primary);
+}
+
+/* אזור הצגת התקלות הנבחרות */
+.selected-defects {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    min-height: 40px;
+    display: none;
+}
+
+.selected-defects.has-selections {
+    display: block;
+}
+
+.selected-defects .defect-tag {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin: 0.25rem 0.25rem 0 0;
+}
+
+/* מודל בחירת התקלות */
+.defect-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.defect-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.defect-modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9);
+    transition: all 0.3s ease;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.defect-modal.show .defect-modal-content {
+    transform: scale(1);
+}
+
+.defect-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.defect-modal-title {
+    color: var(--text);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.defect-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--gray);
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+}
+
+.defect-modal-close:hover {
+    color: var(--text);
+}
+
+/* גריד כפתורי התקלות */
+.defect-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.defect-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0.5rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    min-height: 80px;
+}
+
+.defect-option:hover {
+    border-color: var(--primary);
+    background: var(--primary-50);
+}
+
+.defect-option.selected {
+    border-color: var(--success);
+    background: #f0fff4;
+    color: var(--success);
+}
+
+.defect-option i {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: inherit;
+}
+
+.defect-option span {
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+/* שדה "אחר" */
+.defect-other-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    display: none;
+}
+
+.defect-option.selected .defect-other-input {
+    display: block;
+}
+
+/* כפתורי המודל */
+.defect-modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.defect-modal-btn {
+    padding: 0.5rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.defect-modal-cancel {
+    background: var(--white);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.defect-modal-cancel:hover {
+    background: var(--background);
+}
+
+.defect-modal-confirm {
+    background: var(--primary);
+    border: none;
+    color: white;
+}
+
+.defect-modal-confirm:hover {
+    background: var(--primary-dark);
+}
+
+/* רספונסיבי */
+@media (max-width: 768px) {
+    .defect-options {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .defect-option {
+        padding: 0.75rem 0.25rem;
+        min-height: 70px;
+    }
+    
+    .defect-option span {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .defect-modal-content {
+        padding: 1rem;
+    }
+    
+    .defect-modal-actions {
+        flex-direction: column;
+    }
+    
+    .defect-modal-btn {
+        width: 100%;
     }
 }

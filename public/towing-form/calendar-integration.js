@@ -11,74 +11,51 @@ function sanitizeText(text) {
         .trim();
 }
 
-// // מאזין לכפתור השליחה הסופי
-// document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
-//     e.preventDefault();
+/**
+ * Collect selected defects from the defect selector
+ */
+function collectDefectDetails() {
+    const container = document.getElementById('selectedDefects');
+    if (!container) {
+        return '';
+    }
     
-//     try {
-//         // הצגת מודל טעינה
-//         const loadingModal = document.getElementById('loadingModal');
-//         loadingModal.classList.add('show');
-        
-//         // איסוף נתוני הטופס
-//         const formData = collectFormData();
-
-//         console.log('price debug', {
-//         hiddenPrice: document.getElementById('price')?.value,
-//         sentPaymentPrice: formData?.payment?.price,
-//         finalPriceLogic: formData?.pricing?.finalPrice,
-//         finalTier: formData?.pricing?.finalTier
-//         });
-        
-//         // --- שליחה דרך ה-API (במקום פופ־אפ Apps Script) ---
-//         const sender =
-//         (window.apiManager?.submitTowingOrder) ||
-//         (window.apiManager?.submitTowingForm)  ||
-//         (window.apiManager?.sendOrder)         ||
-//         (window.apiManager?.createCalendarEvent);
-
-//         if (typeof sender !== 'function') {
-//         throw new Error('No submit function found on apiManager');
-//         }
-
-//         const result = await sender(formData);
-
-//         // צפי למבנה תשובה כמו { success: true, eventId, calendarLink }
-//         if (!result || result.success === false) {
-//         throw new Error(result?.message || 'השליחה נכשלה בצד השרת');
-//         }
-
-//         // הצלחה: סגירת טעינה והצגת מודל הצלחה
-//         loadingModal.classList.remove('show');
-//         document.getElementById('successModal').classList.add('show');
-
-//         // אופציונלי: פתיחת האירוע ביומן אם חזר קישור
-//         if (result.calendarLink) {
-//         console.log('Calendar event:', result.calendarLink);
-//         }
-        
+    if (!container.classList.contains('has-selections')) {
+        return '';
+    }
     
-//         // המתנה קצרה ואז הצגת הצלחה
-//         setTimeout(() => {
-//             // הסתרת מודל טעינה
-//             loadingModal.classList.remove('show');
-            
-//             // הצגת מודל הצלחה
-//             const successModal = document.getElementById('successModal');
-//             successModal.classList.add('show');
-            
-//         }, 2500); // 2.5 שניות המתנה
-        
-//     } catch (error) {
-//         console.error('Error:', error);
-        
-//         // הסתרת מודל טעינה במקרה של שגיאה
-//         const loadingModal = document.getElementById('loadingModal');
-//         loadingModal.classList.remove('show');
-        
-//         alert('אירעה שגיאה בשליחת הטופס. אנא נסה שוב.');
+    const tags = container.querySelectorAll('.defect-tag');
+    const defects = Array.from(tags).map(tag => tag.textContent);
+    
+    return defects.join(', ');
+}
+
+
+// /**
+//  * Collect selected defects from the defect selector
+//  */
+// function collectDefectDetails() {
+//     const container = document.getElementById('selectedDefects');
+//     if (!container || !container.classList.contains('has-selections')) {
+//         return '';
 //     }
-// });
+    
+//     const tags = container.querySelectorAll('.defect-tag');
+//     const defects = Array.from(tags).map(tag => tag.textContent);
+    
+//     return defects.join(', ');
+// }
+
+/**
+ * Reset defect selections
+ */
+function resetDefectSelections() {
+    const container = document.getElementById('selectedDefects');
+    if (container) {
+        container.innerHTML = '<div class="selected-defects-placeholder">לא נבחרו תקלות</div>';
+        container.classList.remove('has-selections');
+    }
+}
 
 // ✨ פונקציה חדשה לטיפול בכתובות עם טקסט מקורי
 function processAddress(fieldId) {
@@ -209,7 +186,7 @@ function collectFormData() {
             driveType: defectiveCarTypeField?.dataset.driveType || '',
             gearType: defectiveCarTypeField?.dataset.gearType || '',
 
-            defectDetails: document.getElementById('defectDetails').value,
+            defectDetails: collectDefectDetails(),
             // ✨ שימוש בפונקציה החדשה לכתובות
             source: processAddress('defectiveSource'),
             destination: processAddress('defectiveDestination'),
@@ -377,6 +354,7 @@ function collectFormData() {
         }
             
             console.log('💰 פירוט מחיר מפורט:', formData.priceBredown);
+            console.log('🔍 נתוני רכב תקול:', formData.defectiveCar);
         } else {
             console.warn('getPriceBreakdown function not available');
         }
@@ -551,9 +529,6 @@ function resetFormKeepUserData() {
     // רדיו: אפס הכל - אף טיר לא נבחר
     const priceRadios = document.querySelectorAll('input[name="priceType"]');
     priceRadios.forEach(r => r.checked = false);
-    // אבל עדיין להציג המלצה ויזואלית
-    // const regularRadio = document.getElementById('price-regular');
-    // if (regularRadio) regularRadio.checked = true;
 
     // הסרת בחירה ויזואלית מכרטיסים ישנים
     document.querySelectorAll('.price-card-label').forEach(lbl => lbl.classList.remove('selected'));
@@ -614,5 +589,7 @@ function resetFormKeepUserData() {
     if (typeof setupPhoneSanitization === 'function') setupPhoneSanitization();
     if (typeof setupAddressTracking === 'function') setupAddressTracking();
 
+    // איפוס בחירות התקלות
+    resetDefectSelections();
     console.log('✅ הטופס אופס (כולל תמחור) — פרטי המשתמש נשמרו');
 }
