@@ -1,3 +1,6 @@
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHgdnLK7cSmgUYmRjrEyQ12N6sSm1K8StmpFEhfrjasrXqQzycaYM18P07VPE6XlRs/exec";
+
+
 const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
