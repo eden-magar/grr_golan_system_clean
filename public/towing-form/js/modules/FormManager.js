@@ -1167,6 +1167,7 @@ class FormManager {
             }
 
             const result = await sender(formData);
+            console.log("📩 Result from server:", result);
 
             // הצליח
             if (result && result.success !== false) {

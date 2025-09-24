@@ -298,6 +298,7 @@ app.post("/api/submit-towing", async (req, res) => {
     // const text = await response.text();
     // res.status(200).send(text);
     const text = await response.text();
+    console.log("📤 Apps Script response text:", text);
 
     try {
     const json = JSON.parse(text);
