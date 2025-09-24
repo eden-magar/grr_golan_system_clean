@@ -1,4 +1,8 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyI7t2J_4jj4-NSZdlMnxo3O-RHdMF385HEkCHg6r7EKSoOs7zBOr3ZDN2tsZOSSoo/exec";
+// --- SHIM לבטיחות (מונע קריסה אחרי שליחה) ---
+window.setupVehicleLookup = window.setupVehicleLookup ||
+  (window.vehicleManager?.setupVehicleLookup?.bind(window.vehicleManager) ||
+   function(){ /* no-op */ });
+
 
 function sanitizeText(text) {
     if (!text) return text;
@@ -7,74 +11,74 @@ function sanitizeText(text) {
         .trim();
 }
 
-// מאזין לכפתור השליחה הסופי
-document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
-    e.preventDefault();
+// // מאזין לכפתור השליחה הסופי
+// document.getElementById('confirmSubmit').addEventListener('click', async function(e) {
+//     e.preventDefault();
     
-    try {
-        // הצגת מודל טעינה
-        const loadingModal = document.getElementById('loadingModal');
-        loadingModal.classList.add('show');
+//     try {
+//         // הצגת מודל טעינה
+//         const loadingModal = document.getElementById('loadingModal');
+//         loadingModal.classList.add('show');
         
-        // איסוף נתוני הטופס
-        const formData = collectFormData();
+//         // איסוף נתוני הטופס
+//         const formData = collectFormData();
 
-        console.log('price debug', {
-        hiddenPrice: document.getElementById('price')?.value,
-        sentPaymentPrice: formData?.payment?.price,
-        finalPriceLogic: formData?.pricing?.finalPrice,
-        finalTier: formData?.pricing?.finalTier
-        });
+//         console.log('price debug', {
+//         hiddenPrice: document.getElementById('price')?.value,
+//         sentPaymentPrice: formData?.payment?.price,
+//         finalPriceLogic: formData?.pricing?.finalPrice,
+//         finalTier: formData?.pricing?.finalTier
+//         });
         
-        // יצירת חלון popup קטן שיסגר מיד (פתרון לבעיית CORS)
-        // פותחים חלון פופ־אפ זעיר
-        const popup = window.open('', 'formSubmit', 'width=1,height=1,left=9999,top=9999');
+//         // --- שליחה דרך ה-API (במקום פופ־אפ Apps Script) ---
+//         const sender =
+//         (window.apiManager?.submitTowingOrder) ||
+//         (window.apiManager?.submitTowingForm)  ||
+//         (window.apiManager?.sendOrder)         ||
+//         (window.apiManager?.createCalendarEvent);
 
-        // בונים DOM במקום להזריק מחרוזת HTML
-        const doc = popup.document;
-        doc.open();
-        doc.write('<!doctype html><html><head><meta charset="utf-8"></head><body></body></html>');
-        doc.close();
+//         if (typeof sender !== 'function') {
+//         throw new Error('No submit function found on apiManager');
+//         }
 
-        const form = doc.createElement('form');
-        form.method = 'POST';
-        form.action = APPS_SCRIPT_URL;
+//         const result = await sender(formData);
 
-        const hidden = doc.createElement('input');
-        hidden.type = 'hidden';
-        hidden.name = 'data';
-        hidden.value = JSON.stringify(formData);
+//         // צפי למבנה תשובה כמו { success: true, eventId, calendarLink }
+//         if (!result || result.success === false) {
+//         throw new Error(result?.message || 'השליחה נכשלה בצד השרת');
+//         }
 
-        form.appendChild(hidden);
-        doc.body.appendChild(form);
-        form.submit();
+//         // הצלחה: סגירת טעינה והצגת מודל הצלחה
+//         loadingModal.classList.remove('show');
+//         document.getElementById('successModal').classList.add('show');
 
+//         // אופציונלי: פתיחת האירוע ביומן אם חזר קישור
+//         if (result.calendarLink) {
+//         console.log('Calendar event:', result.calendarLink);
+//         }
         
-        // המתנה קצרה ואז הצגת הצלחה
-        setTimeout(() => {
-            // הסתרת מודל טעינה
-            loadingModal.classList.remove('show');
+    
+//         // המתנה קצרה ואז הצגת הצלחה
+//         setTimeout(() => {
+//             // הסתרת מודל טעינה
+//             loadingModal.classList.remove('show');
             
-            // הצגת מודל הצלחה
-            const successModal = document.getElementById('successModal');
-            successModal.classList.add('show');
+//             // הצגת מודל הצלחה
+//             const successModal = document.getElementById('successModal');
+//             successModal.classList.add('show');
             
-            // סגירת החלון אם עדיין פתוח
-            if (!popup.closed) {
-                popup.close();
-            }
-        }, 2500); // 2.5 שניות המתנה
+//         }, 2500); // 2.5 שניות המתנה
         
-    } catch (error) {
-        console.error('Error:', error);
+//     } catch (error) {
+//         console.error('Error:', error);
         
-        // הסתרת מודל טעינה במקרה של שגיאה
-        const loadingModal = document.getElementById('loadingModal');
-        loadingModal.classList.remove('show');
+//         // הסתרת מודל טעינה במקרה של שגיאה
+//         const loadingModal = document.getElementById('loadingModal');
+//         loadingModal.classList.remove('show');
         
-        alert('אירעה שגיאה בשליחת הטופס. אנא נסה שוב.');
-    }
-});
+//         alert('אירעה שגיאה בשליחת הטופס. אנא נסה שוב.');
+//     }
+// });
 
 // ✨ פונקציה חדשה לטיפול בכתובות עם טקסט מקורי
 function processAddress(fieldId) {
@@ -146,8 +150,9 @@ function collectPricingData() {
 
 
 // פונקציה לאיסוף הנתונים מהטופס
-function collectFormData() {
+// עדכון לפונקציה collectFormData ב-calendar-integration.js
 
+function collectFormData() {
     // קבלת זמן נוכחי
     const now = new Date();
     const currentTime = now.toTimeString().substring(0, 5); // פורמט של HH:MM
@@ -176,6 +181,7 @@ function collectFormData() {
     const secondDefectiveCarForm = document.getElementById('secondDefectiveCarForm');
     const hasSecondCar = secondDefectiveCarForm && !secondDefectiveCarForm.classList.contains('hidden');
     formData.hasSecondCar = hasSecondCar;
+    
     // הוספת מקור המידע לכל רכב
     formData.dataSource_defective = document.getElementById('dataSource_defective')?.value || '';
     formData.dataSource_defective2 = document.getElementById('dataSource_defective2')?.value || '';
@@ -328,8 +334,53 @@ function collectFormData() {
         };
     }
 
-    // איסוף נתוני תמחור
+    // ✨ איסוף נתוני תמחור מה-PricingManager
     formData.pricing = collectPricingData();
+
+    // ✨ הוספת נתוני מרחק מה-PricingManager
+    if (window.pricingManager && typeof window.pricingManager.getDistanceData === 'function') {
+        formData.distanceData = window.pricingManager.getDistanceData();
+    }
+
+    // ✨ איסוף פירוט תמחור מפורט - גרסה סופית
+    if (window.pricingManager && typeof window.pricingManager.getPricingData === 'function') {
+        const pricingDetails = window.pricingManager.getPricingData();
+        console.log('🔍 pricingDetails:', JSON.stringify(pricingDetails, null, 2));
+
+        // ✨ שימוש בפירוט המדויק מה-PricingManager
+        if (typeof window.pricingManager.getPriceBreakdown === 'function') {
+            const breakdown = window.pricingManager.getPriceBreakdown();
+            const isManualMode = window.pricingManager.isManualMode();
+            
+            if (isManualMode) {
+                // במחיר ידני - רק המחיר הסופי
+                formData.priceBredown = {
+                    totalPrice: breakdown.finalTotal,
+                    isManual: true
+                };
+            } else {
+                // במחיר אוטומטי - פירוט מלא   
+            formData.priceBredown = {
+                vehicleBasePrice: breakdown.vehicleBasePrice,
+                vehicleDescription: breakdown.vehicleDescription,
+                travelDistance: breakdown.travelDistance,
+                travelPrice: breakdown.travelPrice,
+                workFees: breakdown.workFees,
+                timeSurcharge: breakdown.timeSurcharge,
+                areaSurcharge: breakdown.outskirtsAmount,
+                totalPrice: breakdown.finalTotal,
+                // נתונים למע"מ
+                totalBeforeVAT: breakdown.subtotalBeforeVAT,
+                vatAmount: breakdown.vatAmount,
+                vatPercentage: 18
+            };
+        }
+            
+            console.log('💰 פירוט מחיר מפורט:', formData.priceBredown);
+        } else {
+            console.warn('getPriceBreakdown function not available');
+        }
+    }
 
     // קבלת מחיר סופי - עדיפות למחיר ידני
     const priceField = document.getElementById('price');
@@ -350,19 +401,23 @@ function collectFormData() {
     const selectedPaymentType = getSelectedPaymentType();
     formData.payment = {
         paymentType: selectedPaymentType,
-        idNumber: document.getElementById('idNumber').value || '',
-        creditCard: {
-            number: document.getElementById('cardNumber').value || '',
-            expiry: document.getElementById('cardExpiry').value || '',
-            cvv: document.getElementById('cardCvv').value || ''
-        },
-        // שימוש במחיר הסופי המתוקן
         price: finalPrice > 0 ? finalPrice : formData.totalPrice || undefined
     };
 
+    // הוספת פרטי אשראי אם נבחר סוג תשלום אשראי
+    if (selectedPaymentType === 'credit') {
+        formData.payment.idNumber = document.getElementById('idNumber').value || '';
+        formData.payment.creditCard = {
+            number: document.getElementById('cardNumber').value || '',
+            expiry: document.getElementById('cardExpiry').value || '',
+            cvv: document.getElementById('cardCvv').value || '',
+            holderPhone: document.getElementById('cardHolderPhone').value || ''
+        };
+        console.log('Credit card data:', formData.payment.creditCard); // הוסיפי את זה
+    }
+
     return formData;
 }
-
 
 
 function getSelectedPaymentType() {
@@ -489,11 +544,16 @@ function resetFormKeepUserData() {
     const outskirts = document.getElementById('isOutskirts');
     if (outskirts) outskirts.checked = false;
 
-    // רדיו: החזר ל"רגיל"
+    // איפוס מצב השטחים במערכת התמחור
+    if (window.pricingManager) {
+        window.pricingManager.state.outskirts = false;
+    }
+    // רדיו: אפס הכל - אף טיר לא נבחר
     const priceRadios = document.querySelectorAll('input[name="priceType"]');
     priceRadios.forEach(r => r.checked = false);
-    const regularRadio = document.getElementById('price-regular');
-    if (regularRadio) regularRadio.checked = true;
+    // אבל עדיין להציג המלצה ויזואלית
+    // const regularRadio = document.getElementById('price-regular');
+    // if (regularRadio) regularRadio.checked = true;
 
     // הסרת בחירה ויזואלית מכרטיסים ישנים
     document.querySelectorAll('.price-card-label').forEach(lbl => lbl.classList.remove('selected'));
@@ -527,14 +587,21 @@ function resetFormKeepUserData() {
     }
 
     // רענון המלצה על מחיר לפי זמן נוכחי (ללא סכומים)
-    const now = new Date();
-    if (typeof applyRecommendedHighlight === 'function' && typeof getRecommendedTier === 'function') {
-        const recommendedTier = getRecommendedTier(now);
-        applyRecommendedHighlight(recommendedTier);
-        console.log('הודגש טיר מומלץ:', recommendedTier);
+    if (window.pricingManager && typeof window.pricingManager.refreshRecommendedTier === 'function') {
+        window.pricingManager.refreshRecommendedTier();
+        console.log('רענון המלצת מחיר בוצע');
     }
 
+    // איפוס הפירוט המפורט ב-PricingManager
+    if (window.pricingManager && typeof window.pricingManager.resetPriceBreakdown === 'function') {
+        window.pricingManager.resetPriceBreakdown();
+        console.log('איפוס פירוט מחיר בוצע');
+    }
 
+    // איפוס מצב השטחים במערכת התמחור
+    if (window.pricingManager) {
+        window.pricingManager.state.outskirts = false;
+    }
 
     // איפוס כפתורי תשלום
     document.querySelectorAll('.payment-btn').forEach(btn => btn.classList.remove('active'));
@@ -544,8 +611,8 @@ function resetFormKeepUserData() {
     // 🔧 הגדרה מחדש של המאזינים אחרי הניקוי
     console.log('🔄 מגדיר מחדש מאזיני רכב...');
     setupVehicleLookup();
-    setupPhoneSanitization();
-    setupAddressTracking();
+    if (typeof setupPhoneSanitization === 'function') setupPhoneSanitization();
+    if (typeof setupAddressTracking === 'function') setupAddressTracking();
 
     console.log('✅ הטופס אופס (כולל תמחור) — פרטי המשתמש נשמרו');
 }

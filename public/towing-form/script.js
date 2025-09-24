@@ -979,39 +979,39 @@ async function checkAdminStatus() {
     }
 }
 
-// פונקציה לבדיקה ולוג - לצורך פיתוח ובדיקה
-function testVehicleBasePrice() {
-    console.log('🧪 בדיקת פונקציית מחיר בסיס:');
+// // פונקציה לבדיקה ולוג - לצורך פיתוח ובדיקה
+// function testVehicleBasePrice() {
+//     console.log('🧪 בדיקת פונקציית מחיר בסיס:');
     
-    const result = getVehicleBasePrice('defective');
-    console.log('תוצאה:', result);
+//     const result = getVehicleBasePrice('defective');
+//     console.log('תוצאה:', result);
     
-    const available = isVehicleDataAvailable('defective');
-    console.log('נתונים זמינים:', available);
+//     const available = isVehicleDataAvailable('defective');
+//     console.log('נתונים זמינים:', available);
     
-    return result;
-}
+//     return result;
+// }
 
-// פונקציה לבדיקה ולוג - לצורך פיתוח ובדיקה
-async function testDistanceCalculation() {
-    try {
-        console.log('🧪 בדיקת חישוב מרחק:');
+// // פונקציה לבדיקה ולוג - לצורך פיתוח ובדיקה
+// async function testDistanceCalculation() {
+//     try {
+//         console.log('🧪 בדיקת חישוב מרחק:');
         
-        // נסה לקבל כתובות מהטופס
-        const addresses = getAddressesForCalculation('defective');
-        console.log('כתובות:', addresses);
+//         // נסה לקבל כתובות מהטופס
+//         const addresses = getAddressesForCalculation('defective');
+//         console.log('כתובות:', addresses);
         
-        // חשב מרחק
-        const result = await calculateDistance(addresses.source, addresses.destination);
-        console.log('תוצאת חישוב מרחק:', result);
+//         // חשב מרחק
+//         const result = await calculateDistance(addresses.source, addresses.destination);
+//         console.log('תוצאת חישוב מרחק:', result);
         
-        return result;
+//         return result;
         
-    } catch (error) {
-        console.error('❌ שגיאה בבדיקת מרחק:', error.message);
-        return null;
-    }
-}
+//     } catch (error) {
+//         console.error('❌ שגיאה בבדיקת מרחק:', error.message);
+//         return null;
+//     }
+// }
 
 // פונקציה לעדכון שדה המחיר בטופס
 function updatePriceField(priceData) {
@@ -1333,12 +1333,12 @@ async function calculateAndUpdatePrice(context = 'defective') {
 }
 
 // פונקציה לבדיקה ולוג - לצורך פיתוח ובדיקה
-async function testFullPriceCalculation() {
-    console.log('🧪 בדיקת חישוב מחיר מלא:');
-    const result = await calculateAndUpdatePrice('defective');
-    console.log('תוצאה סופית:', result);
-    return result;
-}
+// async function testFullPriceCalculation() {
+//     console.log('🧪 בדיקת חישוב מחיר מלא:');
+//     const result = await calculateAndUpdatePrice('defective');
+//     console.log('תוצאה סופית:', result);
+//     return result;
+// }
 
 // פונקציה לבדיקה אם כל הנתונים זמינים לחישוב מחיר
 function canCalculatePrice(context = 'defective') {
@@ -1438,7 +1438,7 @@ function setupAutomaticPriceCalculation() {
 
 // פונקציה חדשה לאיפוס מחיר
 function resetPriceField() {
-    console.log('🔴 resetPriceField נקרא - מתחיל איפוס');
+    // console.log('🔴 resetPriceField נקרא - מתחיל איפוס');
     
     const priceField = document.getElementById('price');
     if (priceField) {
@@ -1613,10 +1613,10 @@ function initializeAutomaticPricing() {
 }
 
 // פונקציה לבדיקה - להפעלה ידנית
-function testAutomaticPricing() {
-    console.log('🧪 בדיקת מערכת חישוב אוטומטי:');
-    initializeAutomaticPricing();
-}
+// function testAutomaticPricing() {
+//     console.log('🧪 בדיקת מערכת חישוב אוטומטי:');
+//     initializeAutomaticPricing();
+// }
 
 // פונקציה לאיפוס שדות כרטיס אשראי
 function clearCreditCardFields() {
@@ -2490,42 +2490,3 @@ function getDistanceErrorMessage(status) {
     
     return errorMessages[status] || `שגיאה לא מוכרת: ${status}`;
 }
-
-// פונקציה לקבלת כתובות מהטופס
-// function getAddressesForCalculation(context = 'defective') {
-//     let sourceFieldId, destinationFieldId;
-    
-//     if (context === 'defective') {
-//         sourceFieldId = 'defectiveSource';
-//         destinationFieldId = 'defectiveDestination';
-//     } else if (context === 'defective2') {
-//         sourceFieldId = 'defectiveSource2';
-//         destinationFieldId = 'defectiveDestination2';
-//     } else {
-//         throw new Error('קונטקסט לא נתמך');
-//     }
-    
-//     const sourceField = document.getElementById(sourceFieldId);
-//     const destField = document.getElementById(destinationFieldId);
-    
-//     if (!sourceField || !destField) {
-//         throw new Error('שדות כתובת לא נמצאו');
-//     }
-    
-//     // נעדיף כתובות פיזיות אם זמינות, אחרת נשתמש בטקסט שהוזן
-//     const sourceAddress = sourceField.dataset.physicalAddress || sourceField.value;
-//     const destAddress = destField.dataset.physicalAddress || destField.value;
-    
-//     // הורדנו את הבדיקה מכאן - תיעשה בפונקציה הקוראת
-//     return {
-//         source: (sourceAddress || '').trim(),
-//         destination: (destAddress || '').trim(),
-//         sourceIsGoogle: sourceField.dataset.isGoogleAddress === 'true',
-//         destIsGoogle: destField.dataset.isGoogleAddress === 'true'
-//     };
-// }
-
-
-
-
-

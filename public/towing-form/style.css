@@ -1511,3 +1511,89 @@ textarea {
 #price-manual:checked + .price-card-label .manual-input-wrap {
   display: block;
 }
+/* חלון מידע מרחק - גרסה קומפקטית */
+.distance-info-box {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 8px 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.distance-info-box.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.distance-info-box.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.info-box-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.info-box-header i {
+    margin-left: 6px;
+    color: #007bff;
+    font-size: 14px;
+}
+
+.distance-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.distance-km {
+    font-size: 18px;
+    font-weight: bold;
+    color: #28a745;
+    white-space: nowrap;
+}
+
+.distance-details {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.distance-detail-item {
+    white-space: nowrap;
+}
+
+.distance-detail-item .label {
+    font-weight: 500;
+}
+
+.distance-detail-item .value {
+    font-weight: 400;
+}
+
+/* רספונסיבי */
+@media (max-width: 768px) {
+    .distance-info-box {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+    
+    .distance-km {
+        font-size: 16px;
+    }
+    
+    .distance-details {
+        font-size: 11px;
+    }
+}

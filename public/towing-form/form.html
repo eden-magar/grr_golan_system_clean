@@ -207,7 +207,16 @@
                                 title="אנא הכנס כתובת יעד" required>
                             </div>
                         </div>
-
+                        <!-- חלון מידע מרחק -->
+                        <div id="distanceDisplay" class="distance-info-box" style="display: none;">
+                            <div class="info-box-header">
+                                <i class="fas fa-route"></i>
+                                <span>מידע מרחק</span>
+                            </div>
+                            <div class="info-box-content">
+                                <!-- התוכן יתמלא על ידי JavaScript -->
+                            </div>
+                        </div>
                         <div class="contacts-grid">
                             <div class="contact-card">
                                 <h4>איש קשר במקום</h4>
@@ -578,7 +587,7 @@
                         </label>
                         <div class="pricing-options">
                             <div class="price-card" data-type="regular">
-                                <input type="radio" name="priceType" value="regular" id="price-regular" checked>
+                                <input type="radio" name="priceType" value="regular" id="price-regular">
                                 <label for="price-regular" class="price-card-label">
                                     <div class="price-title">רגיל</div>
                                     <div class="price-amount" id="price-regular-amount">0₪</div>
@@ -654,16 +663,6 @@
                         <!-- פרטי אשראי - מוצגים רק עבור אשראי -->
                         <div id="creditCardSection" class="credit-card-section hidden">
                             <div class="form-group">
-                                <label for="idNumber">
-                                    <i class="fas fa-id-card"></i>
-                                    מספר תעודת זהות:
-                                </label>
-                                <input type="text" id="idNumber" name="idNumber" 
-                                    placeholder="הזן מספר תעודת זהות" maxlength="9"
-                                    pattern="[0-9]*">
-                            </div>
-
-                            <div class="form-group">
                                 <label>
                                     <i class="fas fa-credit-card"></i>
                                     פרטי כרטיס אשראי:
@@ -690,6 +689,24 @@
                                                 placeholder="000" maxlength="4"
                                                 pattern="[0-9]*">
                                         </div>
+                                    </div>
+                                    <div class="card-row">
+                                        <div class="card-field">
+                                            <label for="idNumber">מספר ת.ז:</label>
+                                            <input type="text" id="idNumber" name="idNumber" 
+                                                placeholder="123456789" maxlength="9"
+                                                pattern="[0-9]*">
+                                        </div>
+                                        <div class="card-field">
+                                            <label for="cardHolderPhone">טלפון בעל הכרטיס:</label>
+                                            <input type="tel" id="cardHolderPhone" name="cardHolderPhone" 
+                                                placeholder="050-0000000" maxlength="12">
+                                        </div>
+                                    </div>
+ 
+
+
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -967,15 +984,35 @@
             </button>
         </div>
     </div>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDODJL79CEmfHOVZ175QqalS-wvtANy6hE&libraries=places"></script>
-    <script src="address-autocomplete.js"></script>
-    <script src="script.js"></script>
-    <script>
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'index.html';
-        }
-    </script>
-    <script src="calendar-integration.js"></script>
+    <script src="js/config/constants.js?v=2" defer></script>
+    <script src="js/utils/formatters.js" defer></script>
+    <script src="js/utils/validators.js" defer></script>
+    <script src="js/utils/helpers.js" defer></script>
+
+<script 
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDODJL79CEmfHOVZ175QqalS-wvtANy6hE&libraries=places&language=he&region=IL" 
+  defer>
+</script>
+    <!-- תלויות בסיס -->
+<script src="js/modules/ApiManager.js" defer></script>
+<script src="js/modules/AddressManager.js" defer></script>
+<script src="js/modules/VehicleManager.js" defer></script>
+<script src="js/modules/PricingManager.js" defer></script>
+
+<!-- חייב לבוא לפני FormManager: גלובליות כמו collectFormData/resetFormKeepUserData -->
+<script src="calendar-integration.js?v=2" defer></script>
+
+<!-- אחריו ה־FormManager כדי להשתמש בגלובליות -->
+<script src="js/modules/FormManager.js" defer></script>
+
+<!-- לבסוף ה־main שמחבר הכל/מאזינים כלליים -->
+<script src="js/main.js" defer></script>
+
+<script>
+  function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+  }
+</script>
 </body>
 </html>
