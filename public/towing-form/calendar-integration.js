@@ -57,6 +57,32 @@ function resetDefectSelections() {
     }
 }
 
+/**
+ * Collect selected tows from the tow selector
+ */
+function collectTowSelection() {
+    const container = document.getElementById('selectedTow');
+    if (!container || !container.classList.contains('has-selection')) {
+        return '';
+    }
+    
+    const tags = container.querySelectorAll('.tow-tag');
+    const tows = Array.from(tags).map(tag => tag.textContent);
+    
+    return tows.join(', ');
+}
+
+/**
+ * Reset tow selections
+ */
+function resetTowSelection() {
+    const container = document.getElementById('selectedTow');
+    if (container) {
+        container.innerHTML = '<div class="selected-tow-placeholder">לא נבחר גרר</div>';
+        container.classList.remove('has-selection');
+    }
+}
+
 // ✨ פונקציה חדשה לטיפול בכתובות עם טקסט מקורי
 function processAddress(fieldId) {
     const field = document.getElementById(fieldId);
@@ -147,6 +173,7 @@ function collectFormData() {
         executionDate: executionDate,
         executionTime: currentTime, // משתמשים בזמן הנוכחי עבור שעת הביצוע
         towingType: document.getElementById('towingType').value,
+        towSelection: collectTowSelection(),
         notes: document.getElementById('notes').value,
         submittedBy: localStorage.getItem('userEmail') || 'לא ידוע',
         company: localStorage.getItem('userCompany') || 'לא ידוע', // הוספת שם החברה
@@ -187,6 +214,7 @@ function collectFormData() {
             gearType: defectiveCarTypeField?.dataset.gearType || '',
 
             defectDetails: collectDefectDetails(),
+            towSelection: collectTowSelection(),
             // ✨ שימוש בפונקציה החדשה לכתובות
             source: processAddress('defectiveSource'),
             destination: processAddress('defectiveDestination'),
@@ -355,6 +383,8 @@ function collectFormData() {
             
             console.log('💰 פירוט מחיר מפורט:', formData.priceBredown);
             console.log('🔍 נתוני רכב תקול:', formData.defectiveCar);
+            console.log('🔍 נתוני בחירת גרר:', formData.towSelection);
+
         } else {
             console.warn('getPriceBreakdown function not available');
         }
@@ -591,5 +621,10 @@ function resetFormKeepUserData() {
 
     // איפוס בחירות התקלות
     resetDefectSelections();
+    resetTowSelection();
     console.log('✅ הטופס אופס (כולל תמחור) — פרטי המשתמש נשמרו');
 }
+
+// חשיפת הפונקציות גלובלית
+window.collectDefectDetails = collectDefectDetails;
+window.collectTowSelection = collectTowSelection;

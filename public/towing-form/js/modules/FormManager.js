@@ -35,6 +35,7 @@ class FormManager {
         this.setupCreditCardFormatting();
         this.setupPaymentTypeButtons();
         this.setupDefectSelector();
+        this.setupTowSelector();
         this.initializeDateTime();
         this.checkCompanySpecificFeatures();
         this.checkAdminStatus();
@@ -827,20 +828,13 @@ class FormManager {
             destContactPhone: 'טלפון איש קשר ביעד'
         };
 
-        // for (const [id, label] of Object.entries(summaryFields)) {
-        //     const inputElement = document.getElementById(id);
-        //     const summaryElement = document.getElementById(`summary-${id}`);
-            
-        //     if (inputElement && summaryElement) {
-        //         summaryElement.textContent = inputElement.value || 'לא הוזן';
-        //     }
-        // }
+
         for (const [id, label] of Object.entries(summaryFields)) {
             let inputValue = '';
             
             if (id === 'defectDetails') {
                 // Handle defect details specially
-                inputValue = collectDefectDetails();
+                inputValue = window.collectDefectDetails ? window.collectDefectDetails() : '';
             } else {
                 const inputElement = document.getElementById(id);
                 inputValue = inputElement ? inputElement.value : '';
@@ -850,6 +844,12 @@ class FormManager {
             if (summaryElement) {
                 summaryElement.textContent = inputValue || 'לא הוזן';
             }
+        }
+        // Add tow selection to summary
+        const towSummary = document.getElementById('summary-towSelection');
+        if (towSummary) {
+            const towSelection = window.collectTowSelection ? window.collectTowSelection() : '';
+            towSummary.textContent = towSelection || 'לא נבחר גרר';
         }
         
         // Handle second car if visible
@@ -1402,6 +1402,123 @@ class FormManager {
         if (!defectBtn) return;
         
         defectBtn.addEventListener('click', () => this.showDefectModal());
+    }
+
+    /**
+     * Setup tow selector functionality
+     */
+    setupTowSelector() {
+        const towBtn = document.getElementById('towSelectorBtn');
+        if (!towBtn) return;
+        
+        towBtn.addEventListener('click', () => this.showTowModal());
+    }
+
+    /**
+     * Show tow selection modal
+     */
+    showTowModal() {
+        this.createTowModal();
+    }
+
+    /**
+     * Create tow modal
+     */
+    createTowModal() {
+        // Remove existing modal if present
+        const existing = document.getElementById('towModal');
+        if (existing) existing.remove();
+        
+        // Create modal HTML
+        const modal = document.createElement('div');
+        modal.id = 'towModal';
+        modal.className = 'tow-modal';
+        
+        modal.innerHTML = `
+            <div class="tow-modal-content">
+                <div class="tow-modal-header">
+                    <h3 class="tow-modal-title">בחר גרר מתאים</h3>
+                    <button class="tow-modal-close" onclick="this.closest('.tow-modal').remove()">×</button>
+                </div>
+                <div class="tow-options">
+                    <div class="tow-option" data-tow="flatbed">
+                        <i class="fas fa-truck-loading"></i>
+                        <span>מובילית</span>
+                    </div>
+                    <div class="tow-option" data-tow="wheel-lift">
+                        <i class="fas fa-cog"></i>
+                        <span>רמ-סע</span>
+                    </div>
+                    <div class="tow-option" data-tow="glasses">
+                        <i class="fas fa-glasses"></i>
+                        <span>משקפיים</span>
+                    </div>
+                    <div class="tow-option" data-tow="dolly">
+                        <i class="fas fa-dolly"></i>
+                        <span>דולי</span>
+                    </div>
+                </div>
+                <div class="tow-modal-actions">
+                    <button class="tow-modal-btn tow-modal-cancel" onclick="this.closest('.tow-modal').remove()">ביטול</button>
+                    <button class="tow-modal-btn tow-modal-confirm" onclick="window.formManager.confirmTowSelection()">אישור</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Show modal with animation
+        setTimeout(() => modal.classList.add('show'), 10);
+        
+        // Setup option clicks
+        this.setupTowOptions();
+    }
+
+    /**
+     * Setup tow option clicks (multiple selection)
+     */
+    setupTowOptions() {
+        const options = document.querySelectorAll('.tow-option');
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                // Toggle selection for current option
+                option.classList.toggle('selected');
+            });
+        });
+    }
+
+    /**
+     * Confirm tow selection and close modal
+     */
+    confirmTowSelection() {
+        const selectedOptions = document.querySelectorAll('.tow-option.selected');
+        const selectedTows = [];
+        
+        selectedOptions.forEach(option => {
+            selectedTows.push(option.querySelector('span').textContent);
+        });
+        
+        this.updateSelectedTow(selectedTows);
+        document.getElementById('towModal').remove();
+    }
+
+    /**
+     * Update the display of selected tow
+     */
+    updateSelectedTow(tows) {
+        const container = document.getElementById('selectedTow');
+        if (!container) return;
+        
+        if (tows.length === 0) {
+            container.innerHTML = '<div class="selected-tow-placeholder">לא נבחר גרר</div>';
+            container.classList.remove('has-selection');
+        } else {
+            const tagsHtml = tows.map(tow => 
+                `<span class="tow-tag">${tow}</span>`
+            ).join('');
+            container.innerHTML = tagsHtml;
+            container.classList.add('has-selection');
+        }
     }
 
     /**

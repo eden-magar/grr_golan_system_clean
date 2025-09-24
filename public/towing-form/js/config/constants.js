@@ -4,7 +4,7 @@
  */
 
 // ---- Apps Script URL (define once) ----
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbws2SD_kiPYJMu2yIq5gY7qp1q037X8p4j0V3Pb5L2CQ9nDmuVazlGS6-FZjZLyVRjc/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqlSua38mtwNvY9chTOWhqDM87VT-WKqsE5SH328HJ2Xbe3KeJcNHnIEj0RdbWGXht/exec";
 window.APPS_SCRIPT_URL = APPS_SCRIPT_URL; // expose globally
 
 // ---- LocalStorage keys (define once) ----

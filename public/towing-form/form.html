@@ -179,8 +179,35 @@
                                 <input type="text" id="defectiveCarCode" name="defectiveCarCode">
                             </div>
                         </div>
-                        
+
                         <div class="form-group">
+                            <label>
+                                <i class="fas fa-exclamation-circle"></i>
+                                פירוט התקלה וסוג גרר:
+                            </label>
+                            <div class="defect-tow-row">
+                                <div class="defect-section">
+                                    <button type="button" id="defectSelectorBtn" class="defect-selector-btn">
+                                        <i class="fas fa-list"></i>
+                                        בחר תקלות
+                                    </button>
+                                    <div id="selectedDefects" class="selected-defects">
+                                        <div class="selected-defects-placeholder">לא נבחרו תקלות</div>
+                                    </div>
+                                </div>
+                                <div class="tow-section">
+                                    <button type="button" id="towSelectorBtn" class="tow-selector-btn">
+                                        <i class="fas fa-truck"></i>
+                                        בחר גרר מתאים
+                                    </button>
+                                    <div id="selectedTow" class="selected-tow">
+                                        <div class="selected-tow-placeholder">לא נבחר גרר</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- <div class="form-group">
                             <label>
                                 <i class="fas fa-exclamation-circle"></i>
                                 פירוט התקלה:
@@ -192,7 +219,7 @@
                             <div id="selectedDefects" class="selected-defects">
                                 <div class="selected-defects-placeholder">לא נבחרו תקלות</div>
                             </div>
-                        </div>
+                        </div> -->
 
                         <div class="form-grid">
                             <div class="form-group">
