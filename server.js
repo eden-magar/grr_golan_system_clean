@@ -295,8 +295,18 @@ app.post("/api/submit-towing", async (req, res) => {
       body: new URLSearchParams({ data: JSON.stringify(req.body) })
     });
 
+    // const text = await response.text();
+    // res.status(200).send(text);
     const text = await response.text();
-    res.status(200).send(text);
+
+    try {
+    const json = JSON.parse(text);
+    res.status(200).json(json);  // מחזיר JSON אמיתי ללקוח
+    } catch {
+    // אם זה לא JSON (למשל HTML), נחזיר עטוף
+    res.status(200).json({ success: false, raw: text });
+    }
+
 
   } catch (err) {
     console.error("❌ Error forwarding to Apps Script:", err);
