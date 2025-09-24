@@ -1167,7 +1167,20 @@ class FormManager {
             }
 
             const result = await sender(formData);
-            console.log("📩 Result from server:", result);
+
+            // בוחרים פונקציית שליחה זמינה על apiManager
+            // const sender =
+            //     (window.apiManager?.submitTowingOrder) ||
+            //     (window.apiManager?.submitTowingForm)  ||
+            //     (window.apiManager?.sendOrder)         ||
+            //     (window.apiManager?.createCalendarEvent);
+
+            // if (typeof sender !== 'function') {
+            //     throw new Error('No submit function found on apiManager');
+            // }
+
+            // const result = await sender(formData);
+            // console.log("📩 Result from server:", result);
 
             // הצליח
             if (result && result.success !== false) {

@@ -118,18 +118,17 @@ class ApiManager {
     }
 
     /**
-     * Submit towing form data to Google Apps Script
+     * Submit towing form data (goes through server to Calendar + Sheets)
      * @param {object} formData - Complete form data
-     * @returns {Promise<void>} - Submits via popup window
+     * @returns {Promise<object>} - Response from server
      */
     async submitTowingForm(formData) {
         try {
-            // שליחה ישירה ל-Google Apps Script
-            const response = await fetch("/api/submit-towing", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData)
-        });
+            const response = await fetch(window.TOWING_SUBMIT_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+            });
 
             console.log('🔍 תגובת השרת:', response);
 
