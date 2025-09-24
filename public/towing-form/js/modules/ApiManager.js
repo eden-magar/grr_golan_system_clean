@@ -125,13 +125,11 @@ class ApiManager {
     async submitTowingForm(formData) {
         try {
             // שליחה ישירה ל-Google Apps Script
-            const response = await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `data=${encodeURIComponent(JSON.stringify(formData))}`
-            });
+            const response = await fetch("/api/submit-towing", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+        });
 
             console.log('🔍 תגובת השרת:', response);
 

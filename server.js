@@ -5,6 +5,7 @@ const lockfile = require('proper-lockfile');
 const path = require('path');
 const fs = require('fs').promises;
 const multer = require('multer');
+const fetch = require("node-fetch");
 const upload = multer();
 
 const app = express();
@@ -285,6 +286,24 @@ app.post('/api/delete-user', async (req, res) => {
         res.status(500).json({ success: false, message: 'שגיאה במחיקת המשתמש' });
     }
 });
+
+app.post("/api/submit-towing", async (req, res) => {
+  try {
+    const response = await fetch("https://script.google.com/macros/s/AKfycbzqlSua38mtwNvY9chTOWhqDM87VT-WKqsE5SH328HJ2Xbe3KeJcNHnIEj0RdbWGXht/exec", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ data: JSON.stringify(req.body) })
+    });
+
+    const text = await response.text();
+    res.status(200).send(text);
+
+  } catch (err) {
+    console.error("❌ Error forwarding to Apps Script:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
 
 // נתיב לדף האדמין
 app.get('/admin', (req, res) => {
