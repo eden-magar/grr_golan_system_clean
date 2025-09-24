@@ -289,25 +289,21 @@ app.post('/api/delete-user', async (req, res) => {
 
 app.post("/api/submit-towing", async (req, res) => {
   try {
-    const response = await fetch("https://script.google.com/macros/s/AKfycbzqlSua38mtwNvY9chTOWhqDM87VT-WKqsE5SH328HJ2Xbe3KeJcNHnIEj0RdbWGXht/exec", {
+    const response = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ data: JSON.stringify(req.body) })
     });
 
-    // const text = await response.text();
-    // res.status(200).send(text);
     const text = await response.text();
     console.log("📤 Apps Script response text:", text);
 
     try {
-    const json = JSON.parse(text);
-    res.status(200).json(json);  // מחזיר JSON אמיתי ללקוח
+      const json = JSON.parse(text);
+      res.status(200).json(json);
     } catch {
-    // אם זה לא JSON (למשל HTML), נחזיר עטוף
-    res.status(200).json({ success: false, raw: text });
+      res.status(200).json({ success: false, raw: text });
     }
-
 
   } catch (err) {
     console.error("❌ Error forwarding to Apps Script:", err);
