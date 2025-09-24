@@ -287,8 +287,8 @@ app.post('/api/delete-user', async (req, res) => {
     }
 });
 
-const CALENDAR_URL = process.env.CALENDAR_URL;
-const SHEETS_URL   = process.env.SHEETS_URL;
+const CALENDAR_URL = process.env.CALENDAR_URL?.trim();
+const SHEETS_URL   = process.env.SHEETS_URL?.trim();
 
 console.log("📌 CALENDAR_URL:", CALENDAR_URL);
 console.log("📌 SHEETS_URL:", SHEETS_URL);
