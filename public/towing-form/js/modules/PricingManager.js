@@ -89,8 +89,13 @@ class PricingManager {
         const toggle = document.getElementById('isOutskirts');
         if (!toggle) return;
 
+        // 🔧 תיקון: הגדרת ערך התחלתי מהצ'קבוקס
+        this.state.outskirts = toggle.checked;
+        console.log('🏠 ערך התחלתי של שטחים:', this.state.outskirts);
+
         toggle.addEventListener('change', () => {
             this.state.outskirts = toggle.checked;
+            console.log('🏠 שטחים השתנה ל:', this.state.outskirts);
             this.recalculatePrices();
         });
     }
@@ -514,14 +519,63 @@ class PricingManager {
         const sourceValue = sourceField.value?.trim() || '';
         const destValue = destField.value?.trim() || '';
 
-        const sourceAddress = sourceValue ? (sourceField.dataset.physicalAddress || sourceValue) : '';
-        const destAddress = destValue ? (destField.dataset.physicalAddress || destValue) : '';
+        // If field is empty, return empty - this preserves original reset behavior
+        if (!sourceValue || !destValue) {
+            return {
+                source: '',
+                destination: ''
+            };
+        }
+
+        // Check if we have coordinates from pin drop
+        const sourceLat = sourceField.dataset.lat;
+        const sourceLng = sourceField.dataset.lng;
+        const destLat = destField.dataset.lat;
+        const destLng = destField.dataset.lng;
+
+        let sourceAddress, destAddress;
+
+        // Use coordinates if available from pin drop, otherwise use text/physicalAddress
+        if (sourceLat && sourceLng && sourceField.dataset.isPinDropped === 'true') {
+            sourceAddress = `${sourceLat},${sourceLng}`;
+        } else {
+            sourceAddress = sourceField.dataset.physicalAddress || sourceValue;
+        }
+
+        if (destLat && destLng && destField.dataset.isPinDropped === 'true') {
+            destAddress = `${destLat},${destLng}`;
+        } else {
+            destAddress = destField.dataset.physicalAddress || destValue;
+        }
 
         return {
             source: sourceAddress,
             destination: destAddress
         };
     }
+    // /**
+    //  * Get addresses for calculation
+    //  * @returns {object} - Source and destination addresses
+    //  */
+    // getAddressesForCalculation() {
+    //     const sourceField = document.getElementById('defectiveSource');
+    //     const destField = document.getElementById('defectiveDestination');
+
+    //     if (!sourceField || !destField) {
+    //         throw new Error('Address fields not found');
+    //     }
+
+    //     const sourceValue = sourceField.value?.trim() || '';
+    //     const destValue = destField.value?.trim() || '';
+
+    //     const sourceAddress = sourceValue ? (sourceField.dataset.physicalAddress || sourceValue) : '';
+    //     const destAddress = destValue ? (destField.dataset.physicalAddress || destValue) : '';
+
+    //     return {
+    //         source: sourceAddress,
+    //         destination: destAddress
+    //     };
+    // }
 
     /**
      * Update price display in UI

@@ -12,8 +12,8 @@ const upload = multer();
 const DEV_MODE = process.env.DEV_MODE === 'true';
 const MOCK_SERVICES = process.env.MOCK_SERVICES === 'true' || DEV_MODE;
 
-console.log(`🔧 מצב פיתוח: ${DEV_MODE ? 'פעיל' : 'לא פעיל'}`);
-console.log(`🎭 שירותים מדומים: ${MOCK_SERVICES ? 'פעיל' : 'לא פעיל'}`);
+// console.log(`🔧 מצב פיתוח: ${DEV_MODE ? 'פעיל' : 'לא פעיל'}`);
+// console.log(`🎭 שירותים מדומים: ${MOCK_SERVICES ? 'פעיל' : 'לא פעיל'}`);
 
 // פונקציית עזר ליצירת תגובות מדומות
 function createMockResponse(formData, serviceName) {
@@ -346,8 +346,8 @@ app.post('/api/delete-user', async (req, res) => {
 const CALENDAR_URL = process.env.CALENDAR_URL?.trim();
 const SHEETS_URL   = process.env.SHEETS_URL?.trim();
 
-console.log("📌 CALENDAR_URL:", CALENDAR_URL);
-console.log("📌 SHEETS_URL:", SHEETS_URL);
+// console.log("📌 CALENDAR_URL:", CALENDAR_URL);
+// console.log("📌 SHEETS_URL:", SHEETS_URL);
 
 app.post("/api/submit-towing", async (req, res) => {
   try {

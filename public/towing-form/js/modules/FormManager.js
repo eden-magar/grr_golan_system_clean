@@ -36,6 +36,7 @@ class FormManager {
         this.setupPaymentTypeButtons();
         this.setupDefectSelector();
         this.setupTowSelector();
+        this.setupPinDropButtons();
         this.initializeDateTime();
         this.checkCompanySpecificFeatures();
         this.checkAdminStatus();
@@ -896,49 +897,6 @@ class FormManager {
     /**
      * Update second car source summary
      */
-    
-//   updateSecondCarSourceSummary(shareSource) {
-//           const sourceElement = document.getElementById('summary-defectiveSource2');
-//           const contactNameElement = document.getElementById('summary-contactName2');
-//           const contactPhoneElement = document.getElementById('summary-contactPhone2');
-          
-//           if (shareSource) {
-//               if (sourceElement) sourceElement.textContent = 'זהה לרכב הראשון';
-//               if (contactNameElement) contactNameElement.textContent = 'זהה לרכב הראשון';
-//               if (contactPhoneElement) contactPhoneElement.textContent = 'זהה לרכב הראשון';
-//           } else {
-//               const sourceInput = document.getElementById('defectiveSource2');
-//               const contactNameInput = document.getElementById('contactName2');
-//               const contactPhoneInput = document.getElementById('contactPhone2');
-              
-//               if (sourceElement) sourceElement.textContent = sourceInput?.value || 'לא הוזן';
-//               if (contactNameElement) contactNameElement.textContent = contactNameInput?.value || 'לא הוזן';
-//               if (contactPhoneElement) contactPhoneElement.textContent = contactPhoneInput?.value || 'לא הוזן';
-//           }
-//       }
-
-    /**
-     * Update second car destination summary
-     */
-    // updateSecondCarDestinationSummary(shareDestination) {
-    //     const destElement = document.getElementById('summary-defectiveDestination2');
-    //     const destContactNameElement = document.getElementById('summary-destContactName2');
-    //     const destContactPhoneElement = document.getElementById('summary-destContactPhone2');
-        
-    //     if (shareDestination) {
-    //         if (destElement) destElement.textContent = 'זהה לרכב הראשון';
-    //         if (destContactNameElement) destContactNameElement.textContent = 'זהה לרכב הראשון';
-    //         if (destContactPhoneElement) destContactPhoneElement.textContent = 'זהה לרכב הראשון';
-    //     } else {
-    //         const destInput = document.getElementById('defectiveDestination2');
-    //         const destContactNameInput = document.getElementById('destContactName2');
-    //         const destContactPhoneInput = document.getElementById('destContactPhone2');
-            
-    //         if (destElement) destElement.textContent = destInput?.value || 'לא הוזן';
-    //         if (destContactNameElement) destContactNameElement.textContent = destContactNameInput?.value || 'לא הוזן';
-    //         if (destContactPhoneElement) destContactPhoneElement.textContent = destContactPhoneInput?.value || 'לא הוזן';
-    //     }
-    // }
 
     updateSecondCarSourceSummary(shareSource) {
         const sourceElement = document.getElementById('summary-defectiveSource2');
@@ -1167,20 +1125,6 @@ class FormManager {
             }
 
             const result = await sender(formData);
-
-            // בוחרים פונקציית שליחה זמינה על apiManager
-            // const sender =
-            //     (window.apiManager?.submitTowingOrder) ||
-            //     (window.apiManager?.submitTowingForm)  ||
-            //     (window.apiManager?.sendOrder)         ||
-            //     (window.apiManager?.createCalendarEvent);
-
-            // if (typeof sender !== 'function') {
-            //     throw new Error('No submit function found on apiManager');
-            // }
-
-            // const result = await sender(formData);
-            // console.log("📩 Result from server:", result);
 
             // הצליח
             if (result && result.success !== false) {
@@ -1668,6 +1612,15 @@ class FormManager {
             ).join('');
             container.innerHTML = tagsHtml;
             container.classList.add('has-selections');
+        }
+    }
+
+    /**
+     * Setup pin drop buttons
+     */
+    setupPinDropButtons() {
+        if (window.addressManager && typeof window.addressManager.setupPinDropButtons === 'function') {
+            window.addressManager.setupPinDropButtons();
         }
     }
 }

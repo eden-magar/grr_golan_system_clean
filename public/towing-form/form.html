@@ -227,16 +227,29 @@
                                     <i class="fas fa-map-marker-alt"></i>
                                     מוצא:
                                 </label>
-                                <input type="text" id="defectiveSource" name="defectiveSource" minlength="3"
-                                    title="אנא הכנס כתובת מוצא" required>
+                                <div class="address-input-with-pin">
+                                    <input type="text" id="defectiveSource" name="defectiveSource" minlength="3"
+                                        title="אנא הכנס כתובת מוצא" required>
+                                    <button type="button" class="pin-drop-btn" data-target="defectiveSource">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        הנח סיכה
+                                    </button>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>
                                     <i class="fas fa-map-pin"></i>
                                     יעד:
                                 </label>
-                                <input type="text" id="defectiveDestination" name="defectiveDestination" minlength="3"
-                                title="אנא הכנס כתובת יעד" required>
+                                <div class="address-input-with-pin">
+                                    <input type="text" id="defectiveDestination" name="defectiveDestination" minlength="3"
+                                    title="אנא הכנס כתובת יעד" required>
+                                    <button type="button" class="pin-drop-btn" data-target="defectiveDestination">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        הנח סיכה
+                                    </button>
+                                </div>
+                                
                             </div>
                         </div>
                         <!-- חלון מידע מרחק -->
@@ -1014,6 +1027,12 @@
             <button id="successOkButton" class="success-button">
                 אישור
             </button>
+        </div>
+    </div>
+    <!-- מודל הצבת סיכה במפה -->
+    <div id="pinDropModal" class="pin-drop-modal">
+        <div class="pin-drop-modal-content">
+            <!-- התוכן יתמלא ב-JavaScript -->
         </div>
     </div>
     <script src="js/config/constants.js?v=2" defer></script>

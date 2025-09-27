@@ -88,20 +88,37 @@ function processAddress(fieldId) {
     const field = document.getElementById(fieldId);
     if (!field) return { address: '', isGoogleAddress: false };
     
+    const isPinDropped = field.dataset.isPinDropped === 'true';
+    const lat = field.dataset.lat;
+    const lng = field.dataset.lng;
+    
+    if (isPinDropped && lat && lng) {
+        // Pin drop - send coordinates to Google Apps Script
+        const cleanAddress = field.dataset.physicalAddress || field.value.replace(' (מיקום מדויק)', '');
+        
+        return {
+            address: cleanAddress,
+            physicalAddress: cleanAddress,
+            isGoogleAddress: true,
+            isPinDropped: true,
+            lat: parseFloat(lat),
+            lng: parseFloat(lng)
+        };
+    }
+    
+    // Regular address handling (keep existing logic)
     const hasChanged = field.dataset.hasChanged === 'true';
     const originalText = field.dataset.originalText;
     const physicalAddress = field.dataset.physicalAddress;
     const currentValue = field.value;
     
-    let displayAddress;
-    let addressForWaze;
+    let displayAddress, addressForWaze;
     
     if (hasChanged && originalText && physicalAddress) {
-        // אם היה שינוי, הצג: "טקסט מקורי - כתובת פיזית"
-        displayAddress = `${originalText} - ${physicalAddress}`;
-        addressForWaze = physicalAddress; // קישור Waze לכתובת הפיזית
+    // Show only the clean physical address, not the duplicate
+        displayAddress = physicalAddress;
+        addressForWaze = physicalAddress;
     } else {
-        // אם אין שינוי, השתמש בערך הנוכחי
         displayAddress = currentValue;
         addressForWaze = currentValue;
     }
@@ -114,11 +131,17 @@ function processAddress(fieldId) {
 }
 
 function collectPricingData() {
-  const isOutskirts = !!document.getElementById('isOutskirts')?.checked;
+  // 🔧 תיקון: שימוש ב-PricingManager state במקום קריאה ישירה לצ'קבוקס
+  const isOutskirts = window.pricingManager ? 
+    window.pricingManager.isOutskirts() : 
+    !!document.getElementById('isOutskirts')?.checked;
+    
   const selectedTier = document.querySelector('input[name="priceType"]:checked')?.value || 'regular';
   const autoRecommendedTier = getRecommendedTier(new Date());
 
-  // אם מצב ידני פעיל – נשתמש בסכום הידני
+  console.log('🏠 collectPricingData - isOutskirts:', isOutskirts);
+
+  // אם מצב ידני פעיל — נשתמש בסכום הידני
   const manualOn = (typeof isManualMode === 'function') && isManualMode();
   const manualVal = document.getElementById('customPrice')?.value?.trim();
   const manualAmount = manualOn && manualVal ? Number(manualVal.replace(/[^\d]/g,'')) || 0 : null;
@@ -139,7 +162,7 @@ function collectPricingData() {
 
   return {
     outskirts: isOutskirts,
-    selectedTier,            // מה שהמשתמש סימן ידנית (אם לא ידני – אחד מהרדיו)
+    selectedTier,            // מה שהמשתמש סימן ידנית (אם לא ידני — אחד מהרדיו)
     autoRecommendedTier,     // מה מומלץ לפי הזמן
     finalTier,               // 'manual' או אחד מהטירים
     finalPrice,              // הסכום הסופי שנשלח ליומן
@@ -341,6 +364,8 @@ function collectFormData() {
 
     // ✨ איסוף נתוני תמחור מה-PricingManager
     formData.pricing = collectPricingData();
+    // הוספת נתוני שטחים
+    formData.isOutskirts = document.getElementById('isOutskirts')?.checked || false;
 
     // ✨ הוספת נתוני מרחק מה-PricingManager
     if (window.pricingManager && typeof window.pricingManager.getDistanceData === 'function') {
@@ -443,7 +468,6 @@ document.getElementById('successOkButton').addEventListener('click', function() 
     resetFormKeepUserData();
 });
 
-// תחליף את הפונקציה resetFormKeepUserData בקובץ calendar-integration.js עם הגרסה הזו:
 
 function resetFormKeepUserData() {
     // שמירה על נתוני המשתמש לפני איפוס (רק פרטי משתמש!)
@@ -473,6 +497,11 @@ function resetFormKeepUserData() {
             delete field.dataset.isGoogleAddress;
             delete field.dataset.hasChanged;
             delete field.dataset.originalText;
+            if (fieldId === 'defectiveSource' || fieldId === 'defectiveDestination') {
+                delete field.dataset.lat;
+                delete field.dataset.lng;
+                delete field.dataset.isPinDropped;
+            }
             console.log(`🧹 נוקה שדה כתובת: ${fieldId}`);
         }
     });
@@ -601,6 +630,22 @@ function resetFormKeepUserData() {
     if (window.pricingManager && typeof window.pricingManager.resetPriceBreakdown === 'function') {
         window.pricingManager.resetPriceBreakdown();
         console.log('איפוס פירוט מחיר בוצע');
+    }
+
+    // איפוס נתוני מרחק ותצוגה
+    if (window.pricingManager) {
+        // איפוס נתוני המרחק מה-state
+        window.pricingManager.state.distanceData = null;
+        
+        // הסתרת תצוגת המרחק
+        if (typeof window.pricingManager.hideDistanceInfo === 'function') {
+            window.pricingManager.hideDistanceInfo();
+        }
+        
+        // איפוס מצב השטחים (כפול ביטחון)
+        window.pricingManager.state.outskirts = false;
+        
+        console.log('איפוס נתוני מרחק ותצוגה בוצע');
     }
 
     // איפוס מצב השטחים במערכת התמחור

@@ -439,6 +439,253 @@ class AddressManager {
     isGoogleMapsAvailable() {
         return !!(window.google && window.google.maps);
     }
+
+    /**
+     * Setup pin drop buttons
+     */
+    setupPinDropButtons() {
+        const pinButtons = document.querySelectorAll('.pin-drop-btn');
+        pinButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetFieldId = button.dataset.target;
+                this.showPinDropModal(targetFieldId);
+            });
+        });
+    }
+
+    /**
+     * Show pin drop modal for specific field
+     * @param {string} fieldId - Target field ID
+     */
+    showPinDropModal(fieldId) {
+        const modal = this.createPinDropModal(fieldId);
+        document.body.appendChild(modal);
+        
+        // Show modal with animation
+        setTimeout(() => modal.classList.add('show'), 10);
+        
+        // Initialize map after modal is visible
+        setTimeout(() => this.initializeMap(fieldId), 300);
+    }
+
+    /**
+     * Create pin drop modal
+     * @param {string} fieldId - Target field ID
+     * @returns {HTMLElement} - Modal element
+     */
+    createPinDropModal(fieldId) {
+        // Remove existing modal if present
+        const existing = document.getElementById('pinDropModalActive');
+        if (existing) existing.remove();
+        
+        const modal = document.createElement('div');
+        modal.id = 'pinDropModalActive';
+        modal.className = 'pin-drop-modal';
+        
+        const fieldLabel = fieldId === 'defectiveSource' ? 'מוצא' : 'יעד';
+        
+        modal.innerHTML = `
+            <div class="pin-drop-modal-content">
+                <div class="pin-drop-modal-header">
+                    <h3 class="pin-drop-modal-title">בחר מיקום ${fieldLabel}</h3>
+                    <button class="pin-drop-modal-close" onclick="this.closest('.pin-drop-modal').remove()">×</button>
+                </div>
+                <div id="pinDropMap" class="pin-drop-map"></div>
+                <div class="pin-drop-modal-actions">
+                    <button class="pin-drop-modal-btn pin-drop-modal-cancel" onclick="this.closest('.pin-drop-modal').remove()">ביטול</button>
+                    <button class="pin-drop-modal-btn pin-drop-modal-confirm" onclick="window.addressManager.confirmPinDrop('${fieldId}')">אישור מיקום</button>
+                </div>
+            </div>
+        `;
+        
+        return modal;
+    }
+
+    /**
+     * Initialize Google Map in modal
+     * @param {string} fieldId - Target field ID
+     */
+    initializeMap(fieldId) {
+        if (!window.google || !window.google.maps) {
+            console.error('Google Maps not loaded');
+            return;
+        }
+
+        const mapContainer = document.getElementById('pinDropMap');
+        if (!mapContainer) return;
+
+        // Get current field value for initial position
+        const field = document.getElementById(fieldId);
+        const currentValue = field ? field.value.trim() : '';
+        
+        // Default to center of Israel
+        let initialPosition = { lat: 32.0853, lng: 34.7818 };
+        
+        // Try to get position from existing coordinates
+        if (field && field.dataset.lat && field.dataset.lng) {
+            initialPosition = {
+                lat: parseFloat(field.dataset.lat),
+                lng: parseFloat(field.dataset.lng)
+            };
+        }
+
+        // Create map
+        const map = new google.maps.Map(mapContainer, {
+            zoom: 15,
+            center: initialPosition,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            gestureHandling: 'greedy'  // מאפשר גלילה ללא Ctrl
+        });
+
+        // Create draggable marker
+        const marker = new google.maps.Marker({
+            position: initialPosition,
+            map: map,
+            draggable: true,
+            title: 'גרור אותי למיקום הרצוי'
+        });
+
+        // Store map and marker for later use
+        this.currentMap = map;
+        this.currentMarker = marker;
+        this.currentFieldId = fieldId;
+
+        // If we have a current address, try to geocode it
+        if (currentValue && !field.dataset.lat) {
+            this.geocodeAddress(currentValue, map, marker);
+        }
+
+        // Add click listener to map
+        map.addListener('click', (e) => {
+            marker.setPosition(e.latLng);
+        });
+    }
+
+    /**
+     * Geocode address to position map
+     * @param {string} address - Address to geocode
+     * @param {google.maps.Map} map - Map instance
+     * @param {google.maps.Marker} marker - Marker instance
+     */
+    geocodeAddress(address, map, marker) {
+        if (!this.geocoder) return;
+
+        this.geocoder.geocode({
+            address: address,
+            componentRestrictions: { country: 'IL' }
+        }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+                const location = results[0].geometry.location;
+                map.setCenter(location);
+                marker.setPosition(location);
+            }
+        });
+    }
+
+    /**
+     * Confirm pin drop and update field
+     * @param {string} fieldId - Target field ID
+     */
+
+    confirmPinDrop(fieldId) {
+        if (!this.currentMarker) return;
+
+        const position = this.currentMarker.getPosition();
+        const lat = position.lat();
+        const lng = position.lng();
+
+        // Reverse geocode to get address
+        this.reverseGeocode(lat, lng, (address) => {
+            this.updateFieldWithPinDrop(fieldId, lat, lng, address);
+            
+            // Close modal
+            const modal = document.getElementById('pinDropModalActive');
+            if (modal) modal.remove();
+            
+            // Trigger change event and force price recalculation
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.dispatchEvent(new Event('input', { bubbles: true }));
+                field.dispatchEvent(new Event('blur', { bubbles: true }));
+                
+                // Force immediate price calculation if PricingManager is available
+                setTimeout(() => {
+                    if (window.pricingManager && typeof window.pricingManager.debouncedCalculation === 'function') {
+                        window.pricingManager.debouncedCalculation(100);
+                    }
+                }, 100);
+            }
+        });
+    }
+
+    /**
+     * Reverse geocode coordinates to address
+     * @param {number} lat - Latitude
+     * @param {number} lng - Longitude
+     * @param {function} callback - Callback with address
+     */
+
+    reverseGeocode(lat, lng, callback) {
+        if (!this.geocoder) {
+            callback('מיקום מדויק');
+            return;
+        }
+
+        this.geocoder.geocode({
+            location: { lat: lat, lng: lng }
+        }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+                callback(results[0].formatted_address);
+            } else {
+                callback('מיקום מדויק');
+            }
+        });
+    }
+
+    /**
+     * Update field with pin drop data
+     * @param {string} fieldId - Field ID
+     * @param {number} lat - Latitude
+     * @param {number} lng - Longitude
+     * @param {string} address - Reverse geocoded address
+     */
+    updateFieldWithPinDrop(fieldId, lat, lng, address) {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+
+    // Update field value and datasets
+    field.value = address + ' (מיקום מדויק)';
+    field.dataset.lat = lat.toString();
+    field.dataset.lng = lng.toString();
+    field.dataset.isPinDropped = 'true';
+    field.dataset.isGoogleAddress = 'true';
+    field.dataset.physicalAddress = address;
+}
+
+    /**
+     * Clear pin drop data from field
+     * @param {string} fieldId - Field ID to clear
+     */
+    clearPinDropData(fieldId) {
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+        
+        delete field.dataset.lat;
+        delete field.dataset.lng;
+        delete field.dataset.isPinDropped;
+        field.dataset.isGoogleAddress = 'false';
+    }
+
+    /**
+     * Clear all pin drop data
+     */
+    clearAllPinDrops() {
+        this.addressFields.forEach(fieldId => {
+            this.clearPinDropData(fieldId);
+        });
+    }
+
 }
 
 // Create singleton instance
