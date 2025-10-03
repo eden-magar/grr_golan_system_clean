@@ -104,9 +104,9 @@ class AddressAutocomplete {
         });
         
         // מאזין לבחירת מקום
-        autocomplete.addListener('place_changed', () => {
+        autocomplete.addListener('place_changed', async () => {
             const place = autocomplete.getPlace();
-            this.handlePlaceSelection(place, input);
+            await this.handlePlaceSelection(place, input);
         });
         
         // מאזינים נוספים
@@ -168,66 +168,202 @@ class AddressAutocomplete {
     /**
      * ✨ טיפול בבחירת מקום - עם שמירת טקסט מקורי
      */
-    handlePlaceSelection(place, input) {
-        if (!place.formatted_address && !place.name) {
-            console.warn('מקום לא מלא נבחר');
-            return;
+
+    async handlePlaceSelection(place, input) {
+    if (!place.place_id && !place.formatted_address && !place.name) {
+        console.warn('מקום לא מלא נבחר');
+        return;
+    }
+
+    // קבלת הטקסט המקורי שהמשתמש הקליד
+    const originalText = this.originalTexts.get(input.id) || '';
+    let selectedAddress = '';
+
+    try {
+        let details = place;
+
+        // אם יש place_id – נבקש פרטים מלאים
+        if (place.place_id) {
+            details = await this.getPlaceDetails(place.place_id);
         }
-        
-        // קבלת הטקסט המקורי שהמשתמש הקליד
-        const originalText = this.originalTexts.get(input.id) || '';
-        
-        // בחירת הכתובת הטובה ביותר
-        let selectedAddress = '';
-        
-        if (place.name && place.formatted_address) {
-            // אם יש שם עסק וכתובת - בדוק איזה יותר מתאים
-            if (this.isBusinessQuery(originalText)) {
-                selectedAddress = `${place.name}, ${place.formatted_address}`;
-            } else {
-                selectedAddress = place.formatted_address;
-            }
-        } else if (place.name) {
-            selectedAddress = place.name;
+
+        // בחירת הערך הנכון לתצוגה
+        if (details.formatted_address && details.formatted_address !== 'ישראל') {
+            // כתובת אמיתית
+            selectedAddress = details.formatted_address;
+        } else if (details.name) {
+            // אם הכתובת היא רק "ישראל" – נשתמש בשם
+            selectedAddress = details.name;
         } else {
-            selectedAddress = place.formatted_address;
+            selectedAddress = originalText; // fallback
         }
-        
+
         // ✨ בדיקה אם הטקסט המקורי שונה מהכתובת החדשה
         const hasChanged = originalText && originalText.trim() !== selectedAddress.trim();
-        
+
         if (hasChanged) {
-            // שמירת הטקסט המקורי והכתובת הפיזית
             input.dataset.originalText = originalText;
             input.dataset.physicalAddress = selectedAddress;
             input.dataset.hasChanged = 'true';
         } else {
-            // אם אין שינוי, נקה את הנתונים הנוספים
             input.dataset.hasChanged = 'false';
             delete input.dataset.originalText;
             delete input.dataset.physicalAddress;
         }
-        
+
         // מילוי השדה
         input.value = selectedAddress;
         input.dataset.isGoogleAddress = 'true';
-        
+
+        // שמירת מידע נוסף
+        input.dataset.placeId = details.place_id || '';
+        if (details.geometry && details.geometry.location) {
+            input.dataset.lat = details.geometry.location.lat();
+            input.dataset.lng = details.geometry.location.lng();
+        }
+
         // אירוע שינוי לטופס
         input.dispatchEvent(new Event('change', { bubbles: true }));
-        
-        // שמירת מידע נוסף על המקום (אופציונלי)
-        input.dataset.placeId = place.place_id;
-        if (place.geometry && place.geometry.location) {
-            input.dataset.lat = place.geometry.location.lat();
-            input.dataset.lng = place.geometry.location.lng();
-        }
-        
-        // מעבר לשדה הבא
-        this.focusNextField(input);
-        
-        // הסתרת הצעות
-        this.hideAllSuggestions();
+
+    } catch (err) {
+        console.error('שגיאה בקבלת פרטי מקום:', err);
     }
+
+    // מעבר לשדה הבא
+    this.focusNextField(input);
+
+    // הסתרת הצעות
+    this.hideAllSuggestions();
+}
+
+    // async handlePlaceSelection(place, input) {
+    //     if (!place.place_id) {
+    //         console.warn('לא נמצא Place ID, שימוש בנתונים חלקיים');
+    //     }
+
+    //     // קבלת הטקסט המקורי שהמשתמש הקליד
+    //     const originalText = this.originalTexts.get(input.id) || '';
+    //     let selectedAddress = '';
+
+    //     try {
+    //         let details = place;
+
+    //         // אם יש place_id – נבקש פרטים מלאים
+    //         if (place.place_id) {
+    //             details = await this.getPlaceDetails(place.place_id);
+    //         }
+
+    //         if (details.name && details.formatted_address) {
+    //             if (this.isBusinessQuery(originalText)) {
+    //                 selectedAddress = `${details.name}, ${details.formatted_address}`;
+    //             } else {
+    //                 selectedAddress = details.formatted_address;
+    //             }
+    //         } else if (details.name) {
+    //             selectedAddress = details.name;
+    //         } else {
+    //             selectedAddress = details.formatted_address || '';
+    //         }
+
+    //         // ✨ בדיקה אם הטקסט המקורי שונה מהכתובת החדשה
+    //         const hasChanged = originalText && originalText.trim() !== selectedAddress.trim();
+
+    //         if (hasChanged) {
+    //             input.dataset.originalText = originalText;
+    //             input.dataset.physicalAddress = selectedAddress;
+    //             input.dataset.hasChanged = 'true';
+    //         } else {
+    //             input.dataset.hasChanged = 'false';
+    //             delete input.dataset.originalText;
+    //             delete input.dataset.physicalAddress;
+    //         }
+
+    //         // מילוי השדה
+    //         input.value = selectedAddress;
+    //         input.dataset.isGoogleAddress = 'true';
+
+    //         // שמירת מידע נוסף
+    //         input.dataset.placeId = details.place_id || '';
+    //         if (details.geometry && details.geometry.location) {
+    //             input.dataset.lat = details.geometry.location.lat();
+    //             input.dataset.lng = details.geometry.location.lng();
+    //         }
+
+    //         // אירוע שינוי לטופס
+    //         input.dispatchEvent(new Event('change', { bubbles: true }));
+
+    //     } catch (err) {
+    //         console.error('שגיאה בקבלת פרטי מקום:', err);
+    //     }
+
+    //     // מעבר לשדה הבא
+    //     this.focusNextField(input);
+
+    //     // הסתרת הצעות
+    //     this.hideAllSuggestions();
+    // }
+
+
+    // handlePlaceSelection(place, input) {
+    //     if (!place.formatted_address && !place.name) {
+    //         console.warn('מקום לא מלא נבחר');
+    //         return;
+    //     }
+        
+    //     // קבלת הטקסט המקורי שהמשתמש הקליד
+    //     const originalText = this.originalTexts.get(input.id) || '';
+        
+    //     // בחירת הכתובת הטובה ביותר
+    //     let selectedAddress = '';
+        
+    //     if (place.name && place.formatted_address) {
+    //         // אם יש שם עסק וכתובת - בדוק איזה יותר מתאים
+    //         if (this.isBusinessQuery(originalText)) {
+    //             selectedAddress = `${place.name}, ${place.formatted_address}`;
+    //         } else {
+    //             selectedAddress = place.formatted_address;
+    //         }
+    //     } else if (place.name) {
+    //         selectedAddress = place.name;
+    //     } else {
+    //         selectedAddress = place.formatted_address;
+    //     }
+        
+    //     // ✨ בדיקה אם הטקסט המקורי שונה מהכתובת החדשה
+    //     const hasChanged = originalText && originalText.trim() !== selectedAddress.trim();
+        
+    //     if (hasChanged) {
+    //         // שמירת הטקסט המקורי והכתובת הפיזית
+    //         input.dataset.originalText = originalText;
+    //         input.dataset.physicalAddress = selectedAddress;
+    //         input.dataset.hasChanged = 'true';
+    //     } else {
+    //         // אם אין שינוי, נקה את הנתונים הנוספים
+    //         input.dataset.hasChanged = 'false';
+    //         delete input.dataset.originalText;
+    //         delete input.dataset.physicalAddress;
+    //     }
+        
+    //     // מילוי השדה
+    //     input.value = selectedAddress;
+    //     input.dataset.isGoogleAddress = 'true';
+        
+    //     // אירוע שינוי לטופס
+    //     input.dispatchEvent(new Event('change', { bubbles: true }));
+        
+    //     // שמירת מידע נוסף על המקום (אופציונלי)
+    //     input.dataset.placeId = place.place_id;
+    //     if (place.geometry && place.geometry.location) {
+    //         input.dataset.lat = place.geometry.location.lat();
+    //         input.dataset.lng = place.geometry.location.lng();
+    //     }
+        
+    //     // מעבר לשדה הבא
+    //     this.focusNextField(input);
+        
+    //     // הסתרת הצעות
+    //     this.hideAllSuggestions();
+    // }
     
     /**
      * בדיקה אם השאילתה מחפשת עסק

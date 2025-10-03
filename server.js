@@ -55,10 +55,10 @@ async function saveMockData(formData, serviceName) {
         
         await fs.writeFile(filepath, JSON.stringify(mockData, null, 2), 'utf8');
         
-        console.log(`💾 נתונים נשמרו: ${filename}`);
+        console.log(`💾 Data saved: ${filename}`);
         return true;
     } catch (error) {
-        console.error('שגיאה בשמירת נתונים מדומים:', error);
+        console.error('Error saving mock data:', error);
         return false;
     }
 }
@@ -99,7 +99,7 @@ app.post('/api/admin/check', async (req, res) => {
         if (!email) {
             return res.json({
                 success: false,
-                error: 'לא נשלח מייל'
+                error: 'Email not provided'
             });
         }
 
@@ -118,7 +118,7 @@ app.post('/api/admin/check', async (req, res) => {
         console.error('Error in admin check:', error);
         res.json({
             success: false,
-            error: 'שגיאה בבדיקת הרשאות'
+            error: 'Error checking permissions'
         });
     }
 });
@@ -346,81 +346,68 @@ app.post('/api/delete-user', async (req, res) => {
 const CALENDAR_URL = process.env.CALENDAR_URL?.trim();
 const SHEETS_URL   = process.env.SHEETS_URL?.trim();
 
-// console.log("📌 CALENDAR_URL:", CALENDAR_URL);
-// console.log("📌 SHEETS_URL:", SHEETS_URL);
 
 app.post("/api/submit-towing", async (req, res) => {
   try {
-    console.log("📥 התקבלה בקשת שליחה");
-    
-    // אם אנחנו במצב פיתוח/מדומה
+    console.log("📥 Received form submission");
+    // console.log("📥 Full req.body received from client:", JSON.stringify(req.body, null, 2));
+
+    // מצב פיתוח / שירותים מדומים
     if (MOCK_SERVICES) {
-      console.log("🎭 מצב פיתוח - לא שולח לגוגל");
-      
+      console.log("🎭 Development mode - not sending to Google");
       const formData = req.body;
-      
-      // שמירה מקומית של הנתונים
+
       await saveMockData(formData, 'calendar');
       await saveMockData(formData, 'sheets');
-      
-      // החזרת תגובה מדומה מוצלחת
+
       const mockResponse = createMockResponse(formData, 'development');
-      
-      console.log("✅ נתונים נשמרו במצב פיתוח");
+      console.log("✅ Data saved in development mode");
       return res.status(200).json(mockResponse);
     }
-    
-    // אם אנחנו במצב רגיל - הקוד המקורי
-    const payload = { data: JSON.stringify(req.body) };
-    
-    console.log("📤 שולח לגוגל במצב רגיל...");
 
-    // שליחה במקביל לשני ה-WebApps
+    // מצב פרודקשן — שולחים ל־Apps Script
+    // console.log("📥 Raw req.body before encoding:", JSON.stringify(req.body, null, 2));
+
+    const encodedBody = "data=" + encodeURIComponent(JSON.stringify(req.body));
+    // console.log("📦 Payload that will be sent to Google (urlencoded):", encodedBody);
+
+    if (!process.env.CALENDAR_URL || !process.env.SHEETS_URL) {
+      console.error("❌ Missing CALENDAR_URL or SHEETS_URL in env");
+      return res.status(500).json({ success: false, message: "Server config error (missing URLs)" });
+    }
+
+    console.log("📤 Sending to Google in production mode...");
+
+    // שימי לב: רק fetch-ים בתוך Promise.all (בלי console.log בתוך המערך)
     const [calendarResp, sheetsResp] = await Promise.all([
       fetch(process.env.CALENDAR_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(payload)
+        body: encodedBody
       }),
       fetch(process.env.SHEETS_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(payload)
+        body: encodedBody
       })
     ]);
 
-    // טיפול בתגובת היומן
-    const calendarText = await calendarResp.text();
-    console.log("📅 תגובת יומן:", calendarText);
+    // אופציונלי: לבדוק סטטוסים ולהדפיס טקסט שגיאה במקרה הצורך
+    const calOk = calendarResp.ok;
+    const shOk  = sheetsResp.ok;
+    // console.log("🗓️ Calendar status:", calendarResp.status, "📄 Sheets status:", sheetsResp.status);
 
-    let json;
-    try {
-      json = JSON.parse(calendarText);
-    } catch {
-      json = { success: false, raw: calendarText };
+    if (!calOk || !shOk) {
+      const calText = await calendarResp.text().catch(() => "");
+      const shText  = await sheetsResp.text().catch(() => "");
+      console.error("❌ Google responses:", { calOk, calStatus: calendarResp.status, calText, shOk, shStatus: sheetsResp.status, shText });
+      return res.status(502).json({ success: false, message: "Google Apps Script error" });
     }
 
-    // בדיקת תגובת הגיליון
-    const sheetsText = await sheetsResp.text();
-    console.log("📊 תגובת גיליון:", sheetsResp.status, sheetsText);
-
-    // מחזירים לקוח רק את תגובת היומן
-    res.status(200).json(json);
+    res.status(200).json({ success: true, message: "נשלח בהצלחה" });
 
   } catch (err) {
-    console.error("❌ שגיאה בשליחה:", err);
-    
-    // אם אנחנו במצב פיתוח, נחזיר תגובה מדומה גם על שגיאה
-    if (MOCK_SERVICES) {
-      const mockErrorResponse = {
-        success: true,
-        message: "נתונים נשמרו מקומית (גם עם שגיאת רשת)",
-        mockMode: true,
-        originalError: err.message
-      };
-      return res.status(200).json(mockErrorResponse);
-    }
-    
+    console.error("❌ Error sending data:", err);
     res.status(500).json({ success: false, message: "שגיאת שרת" });
   }
 });
@@ -445,8 +432,8 @@ app.post('/api/vehicles/save', async (req, res) => {
             });
         }
 
-        console.log('=== SAVE REQUEST at', new Date().toISOString(), '===');
-        console.log('Request key:', key);
+        // console.log('=== SAVE REQUEST at', new Date().toISOString(), '===');
+        // console.log('Request key:', key);
 
         const filename = path.join(__dirname, 'public', 'shared', 'vehicle_data.json');
         const backupDir = path.join(__dirname, 'public', 'shared', 'backups');
@@ -471,7 +458,7 @@ app.post('/api/vehicles/save', async (req, res) => {
             if (!backupExists) {
                 try {
                     await fs.copyFile(filename, backupName);
-                    console.log('Created daily backup:', backupName);
+                    // console.log('Created daily backup:', backupName);
                     
                     // מחיקת backups ישנים (רק 5 אחרונים)
                     const backupFiles = await fs.readdir(backupDir);
@@ -486,7 +473,7 @@ app.post('/api/vehicles/save', async (req, res) => {
                         const toDelete = validBackups.slice(0, validBackups.length - 5);
                         for (const oldBackup of toDelete) {
                             await fs.unlink(path.join(backupDir, oldBackup));
-                            console.log('Deleted old backup:', oldBackup);
+                            // console.log('Deleted old backup:', oldBackup);
                         }
                     }
                 } catch (backupError) {
@@ -558,7 +545,7 @@ app.post('/api/vehicles/save', async (req, res) => {
                 // debug - וידוא שמירה
                 console.log('=== SAVE COMPLETED SUCCESSFULLY ===');
                 const stats = await fs.stat(filename);
-                console.log('File size after save:', stats.size, 'bytes');
+                // console.log('File size after save:', stats.size, 'bytes');
                 
                 res.json({ 
                     success: true, 
@@ -581,7 +568,7 @@ app.post('/api/vehicles/save', async (req, res) => {
         console.error('General error in save operation:', error);
         res.json({ 
             success: false, 
-            error: 'שגיאה כללית בשמירה' 
+            error: "General error saving data" 
         });
     }
 });

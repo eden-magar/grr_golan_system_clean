@@ -99,15 +99,14 @@ class TowingFormApp {
             }
 
             // Verify with server
-            const result = await apiManager.checkAuth(userEmail);
+            const result = await fetch('../api/check-auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: userEmail })
+            }).then(response => response.json());
 
-            if (window.apiManager) {
-                window.apiManager.submitTowingOrder =
-                window.apiManager.submitTowingOrder ||
-                window.apiManager.sendOrder ||
-                window.apiManager.createCalendarEvent;
-            }
-            
             if (!result.success) {
                 localStorage.removeItem(STORAGE_KEYS.USER_EMAIL);
                 localStorage.removeItem(STORAGE_KEYS.USER_COMPANY);
@@ -188,6 +187,8 @@ class TowingFormApp {
                     case 'form':
                         this.managers.form = new FormManager();
                         this.managers.form.init();
+                        window.formManager = this.managers.form;
+                        this.initializeFormReset();
                         break;
                 }
                 
@@ -561,6 +562,18 @@ class TowingFormApp {
             console.log('Application destroyed');
         } catch (error) {
             console.error('Error during cleanup:', error);
+        }
+    }
+
+    /**
+     * Initialize form reset functionality
+     */
+    initializeFormReset() {
+        // חיבור פונקציית האיפוס הגלובלית לפונקציה שלנו
+        if (typeof window.resetFormKeepUserData === 'function') {
+            window.resetFormToInitialState = window.resetFormKeepUserData;
+        } else if (this.managers.form && typeof this.managers.form.resetForm === 'function') {
+            window.resetFormToInitialState = this.managers.form.resetForm.bind(this.managers.form);
         }
     }
 }

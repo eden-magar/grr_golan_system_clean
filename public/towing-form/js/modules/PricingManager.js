@@ -7,6 +7,7 @@ class PricingManager {
         this.state = {
             basePrice: 0,
             outskirts: false,
+            fromGarage: false,
             selectedTier: '',
             calculatedPrices: {
                 regular: 0,
@@ -15,6 +16,7 @@ class PricingManager {
             },
             finalPrice: 0,
             manualMode: false,
+            discountEnabled: false,
             distanceData: null,
             
             // ✨ הוספת מבנה פירוט מחיר חדש
@@ -43,11 +45,13 @@ class PricingManager {
     init() {
         this.initializeGoogleMaps();
         this.setupPriceChoiceHandlers();
-        this.setupOutskirtsToggle();
+        // this.setupOutskirtsToggle();
         this.setupManualPriceMode();
         this.setupAutomaticCalculation();
         this.ensureHiddenPriceField();
         this.refreshRecommendedTier();
+        // this.setupGarageToggle();
+        this.setupDiscountToggle();
     }
 
     /**
@@ -86,20 +90,34 @@ class PricingManager {
      * Setup outskirts toggle functionality
      */
     setupOutskirtsToggle() {
-        const toggle = document.getElementById('isOutskirts');
-        if (!toggle) return;
-
-        // 🔧 תיקון: הגדרת ערך התחלתי מהצ'קבוקס
-        this.state.outskirts = toggle.checked;
-        console.log('🏠 ערך התחלתי של שטחים:', this.state.outskirts);
-
-        toggle.addEventListener('change', () => {
-            this.state.outskirts = toggle.checked;
-            console.log('🏠 שטחים השתנה ל:', this.state.outskirts);
-            this.recalculatePrices();
-        });
+    console.log('=== setupOutskirtsToggle STARTED ===');
+    const toggle = document.getElementById('isOutskirts');
+    console.log('Toggle element:', toggle);
+    
+    if (!toggle) {
+        console.error('❌ isOutskirts not found');
+        return;
     }
 
+    const updateOutskirts = () => {
+        console.log('📢 updateOutskirts called');
+        const newValue = toggle.value === 'true';
+        console.log('Current state:', this.state.outskirts, '→ New value:', newValue);
+        
+        if (this.state.outskirts !== newValue) {
+            this.state.outskirts = newValue;
+            console.log('✅ State updated, calling recalculatePrices');
+            this.recalculatePrices();
+        } else {
+            console.log('⏭️ No change, skipping recalculate');
+        }
+    };
+
+    toggle.addEventListener('change', () => {
+        console.log('🔔 Change event on isOutskirts');
+        updateOutskirts();
+    });
+}
     /**
      * Setup manual price mode
      */
@@ -248,7 +266,7 @@ class PricingManager {
     }
 
     /**
-     * Calculate total price including base price and distance
+     * Calculate total price including base price, distance, and stops
      * @returns {object} - Calculation result
      */
     async calculateTotalPrice() {
@@ -256,39 +274,97 @@ class PricingManager {
             // Get base price from vehicle
             const vehicleData = vehicleManager.getVehicleBasePrice('defective');
             
-            // Get addresses
-            const addresses = this.getAddressesForCalculation();
+            // Get route points
+            const routeData = this.getAddressesForCalculation();
             
-            // Calculate distance
-            const distanceData = await this.calculateDistance(addresses.source, addresses.destination);
+            // Calculate total distance for entire route
+            let distanceData;
             
-            // שמירת נתוני המרחק ב-state
+            if (routeData.routePoints.length < 2) {
+                throw new Error('נדרש לפחות מוצא ויעד');
+            }
+            
+            // Calculate distance for each segment
+            let totalDistance = 0;
+            let totalDuration = 0;
+            const segments = [];
+
+            console.log('🔍 Checking garage state:', this.state.fromGarage);
+            // ⭐ הוסף את זה - אם יוצאים מחניון
+            if (this.state.fromGarage) {
+                console.log('🚗 ADDING GARAGE TO ROUTE!');
+                const garageAddress = "המרכבה 47, חולון";
+                const firstPoint = routeData.routePoints[0]; // המוצא
+                
+                if (firstPoint && firstPoint.address) {
+                    const fromGarage = await this.calculateDistance(garageAddress, firstPoint.address);
+                    
+                    totalDistance += fromGarage.distanceKm;
+                    totalDuration += fromGarage.durationValue;
+                    
+                    segments.push({
+                        from: 'חניון גרר גולן',
+                        to: firstPoint.label,
+                        distance: fromGarage.distanceKm
+                    });
+                    
+                    console.log('🚗 יציאה מחניון:', fromGarage.distanceKm, 'ק"מ');
+                }
+            }
+            
+            for (let i = 0; i < routeData.routePoints.length - 1; i++) {
+                const from = routeData.routePoints[i];
+                const to = routeData.routePoints[i + 1];
+                
+                const segmentDistance = await this.calculateDistance(from.address, to.address);
+                
+                totalDistance += segmentDistance.distanceKm;
+                totalDuration += segmentDistance.durationValue;
+                
+                segments.push({
+                    from: from.label,
+                    to: to.label,
+                    distance: segmentDistance.distanceKm
+                });
+            }
+            
+            distanceData = {
+                success: true,
+                distanceKm: totalDistance,
+                distanceText: `${totalDistance} ק"מ`,
+                duration: `${Math.round(totalDuration / 60)} דקות`,
+                durationValue: totalDuration,
+                segments: segments
+            };
+            
+            // Save distance data to state
             this.state.distanceData = distanceData;
             
             // Calculate travel price
             const travelPrice = distanceData.distanceKm * PRICING_CONFIG.TRAVEL_PRICE_PER_KM;
             
-            // 1. בסיס + נסיעה
+            // 1. Base + Travel (ללא עצירות)
             const baseSubtotal = vehicleData.price + travelPrice;
             
-            // 2. תוספת שטחים (אם יש)
+            // 2. Outskirts addition (if applicable)
             const afterOutskirts = this.state.outskirts ? 
                 Math.round(baseSubtotal * PRICING_CONFIG.OUTSKIRTS_MULTIPLIER) : 
                 baseSubtotal;
-                console.log('🔍 Debug outskirts calculation:');
-                console.log('- baseSubtotal:', baseSubtotal);
-                console.log('- this.state.outskirts:', this.state.outskirts);
-                console.log('- OUTSKIRTS_MULTIPLIER:', PRICING_CONFIG.OUTSKIRTS_MULTIPLIER);
-                console.log('- afterOutskirts result:', afterOutskirts);
             
-            // 3. תוספות זמן (על הסכום לפני מע"מ)
+            console.log('💰 Price calculation:');
+            console.log('- Base:', vehicleData.price);
+            console.log('- Travel:', travelPrice);
+            console.log('- Subtotal:', baseSubtotal);
+            console.log('- After outskirts:', afterOutskirts);
+            
+            // 3. Time surcharges (on subtotal before VAT)
             const tierPricesBeforeVAT = {
                 regular: afterOutskirts,
                 plus25: Math.round(afterOutskirts * PRICING_CONFIG.TIER_MULTIPLIERS.plus25),
                 plus50: Math.round(afterOutskirts * PRICING_CONFIG.TIER_MULTIPLIERS.plus50)
             };
             
-            // 4. מע"מ על כל טיר
+            // 4. VAT on each tier
             const tierPrices = {
                 regular: Math.round(tierPricesBeforeVAT.regular * PRICING_CONFIG.VAT_RATE),
                 plus25: Math.round(tierPricesBeforeVAT.plus25 * PRICING_CONFIG.VAT_RATE),
@@ -296,23 +372,22 @@ class PricingManager {
             };
 
             // Update state
-            this.state.basePrice = tierPrices.regular; // המחיר הרגיל הסופי
+            this.state.basePrice = tierPrices.regular;
             this.state.calculatedPrices = tierPrices;
 
-            // עדכון פירוט המחיר עם הנתונים החדשים
+            // Update price breakdown with new data
             this.updatePriceBreakdown({
                 success: true,
                 basePrice: vehicleData.price,
                 vehicleType: vehicleData.description,
                 distanceKm: distanceData.distanceKm,
                 travelPrice: travelPrice,
-                // נתונים נוספים לפירוט מדויק
                 baseSubtotal: baseSubtotal,
                 afterOutskirts: afterOutskirts,
                 tierPricesBeforeVAT: tierPricesBeforeVAT
             });
 
-            // הצגת הקילומטרים ב-UI
+            // Display distance info
             this.displayDistanceInfo(distanceData);
 
             return {
@@ -335,90 +410,18 @@ class PricingManager {
 
         } catch (error) {
             console.error('Price calculation error:', error);
-            // במקרה של שגיאה, נסתיר את הצגת המרחק וננקה את הפירוט
+            
+            // Show error to user if it's about empty stops
+            if (error.message.includes('עצירה')) {
+                showNotification(error.message, 'error', 5000);
+            }
+            
             this.hideDistanceInfo();
             this.resetPriceBreakdown();
             return { success: false, error: error.message };
         }
     }
-
-    // /**
-    //  * Calculate total price including base price and distance
-    //  * @returns {object} - Calculation result
-    //  */
-    // async calculateTotalPrice() {
-    //     try {
-    //         // Get base price from vehicle
-    //         const vehicleData = vehicleManager.getVehicleBasePrice('defective');
-            
-    //         // Get addresses
-    //         const addresses = this.getAddressesForCalculation();
-            
-    //         // Calculate distance
-    //         const distanceData = await this.calculateDistance(addresses.source, addresses.destination);
-            
-    //         // שמירת נתוני המרחק ב-state
-    //         this.state.distanceData = distanceData;
-            
-    //         // Calculate travel price
-    //         const travelPrice = distanceData.distanceKm * PRICING_CONFIG.TRAVEL_PRICE_PER_KM;
-            
-    //         // Calculate base total (before tier multipliers)
-    //         const subtotal = vehicleData.price + travelPrice;
-    //         const baseWithVAT = Math.round(subtotal * PRICING_CONFIG.VAT_RATE);
-            
-    //         // Apply outskirts multiplier if needed
-    //         const baseEffective = Math.round(baseWithVAT * (this.state.outskirts ? PRICING_CONFIG.OUTSKIRTS_MULTIPLIER : 1));
-            
-    //         // Calculate tier prices
-    //         const tierPrices = {
-    //             regular: baseEffective,
-    //             plus25: Math.round(baseEffective * PRICING_CONFIG.TIER_MULTIPLIERS.plus25),
-    //             plus50: Math.round(baseEffective * PRICING_CONFIG.TIER_MULTIPLIERS.plus50)
-    //         };
-
-    //         // Update state
-    //         this.state.basePrice = baseEffective;
-    //         this.state.calculatedPrices = tierPrices;
-
-    //         // ✨ NEW: עדכון פירוט המחיר
-    //         this.updatePriceBreakdown({
-    //             success: true,
-    //             basePrice: vehicleData.price,
-    //             vehicleType: vehicleData.description,
-    //             distanceKm: distanceData.distanceKm,
-    //             travelPrice: travelPrice
-    //         });
-
-    //         // הצגת הקילומטרים ב-UI
-    //         this.displayDistanceInfo(distanceData);
-
-    //         return {
-    //             success: true,
-    //             basePrice: vehicleData.price,
-    //             vehicleType: vehicleData.description,
-    //             distanceKm: distanceData.distanceKm,
-    //             distanceText: distanceData.distanceText,
-    //             duration: distanceData.duration,
-    //             travelPrice: travelPrice,
-    //             subtotal: subtotal,
-    //             withVAT: baseWithVAT,
-    //             finalPrices: tierPrices,
-    //             calculation: {
-    //                 base: `${vehicleData.description}: ${vehicleData.price}₪`,
-    //                 travel: `${distanceData.distanceKm} ק"מ × ${PRICING_CONFIG.TRAVEL_PRICE_PER_KM}₪ = ${travelPrice}₪`,
-    //                 total: `סה"כ: ${baseEffective}₪`
-    //             }
-    //         };
-
-    //     } catch (error) {
-    //         console.error('Price calculation error:', error);
-    //         // במקרה של שגיאה, נסתיר את הצגת המרחק וננקה את הפירוט
-    //         this.hideDistanceInfo();
-    //         this.resetPriceBreakdown(); // ✨ NEW: איפוס הפירוט בשגיאה
-    //         return { success: false, error: error.message };
-    //     }
-    // }
+    
 
     displayDistanceInfo(distanceData) {
         const distanceDisplay = document.getElementById('distanceDisplay');
@@ -509,74 +512,38 @@ class PricingManager {
      * @returns {object} - Source and destination addresses
      */
     getAddressesForCalculation() {
-        const sourceField = document.getElementById('defectiveSource');
-        const destField = document.getElementById('defectiveDestination');
+        if (window.formManager && typeof window.formManager.collectRoutePoints === 'function') {
+            const routePoints = window.formManager.collectRoutePoints();
 
-        if (!sourceField || !destField) {
-            throw new Error('Address fields not found');
-        }
+            console.log('🧭 Route order for calculation:', 
+                routePoints.map(p => `${p.type}(${p.address.slice(0,20)}...)`).join(' → ')
+            );
 
-        const sourceValue = sourceField.value?.trim() || '';
-        const destValue = destField.value?.trim() || '';
-
-        // If field is empty, return empty - this preserves original reset behavior
-        if (!sourceValue || !destValue) {
             return {
-                source: '',
-                destination: ''
+                routePoints,
+                hasStops: false,
+                stopsCount: 0,
+                source: routePoints.find(p => p.type === 'source')?.address || '',
+                destination: routePoints.find(p => p.type === 'destination')?.address || ''
             };
         }
 
-        // Check if we have coordinates from pin drop
-        const sourceLat = sourceField.dataset.lat;
-        const sourceLng = sourceField.dataset.lng;
-        const destLat = destField.dataset.lat;
-        const destLng = destField.dataset.lng;
-
-        let sourceAddress, destAddress;
-
-        // Use coordinates if available from pin drop, otherwise use text/physicalAddress
-        if (sourceLat && sourceLng && sourceField.dataset.isPinDropped === 'true') {
-            sourceAddress = `${sourceLat},${sourceLng}`;
-        } else {
-            sourceAddress = sourceField.dataset.physicalAddress || sourceValue;
-        }
-
-        if (destLat && destLng && destField.dataset.isPinDropped === 'true') {
-            destAddress = `${destLat},${destLng}`;
-        } else {
-            destAddress = destField.dataset.physicalAddress || destValue;
-        }
-
+        // Fallback
+        const sourceField = document.getElementById('defectiveSource');
+        const destField = document.getElementById('defectiveDestination');
+        
         return {
-            source: sourceAddress,
-            destination: destAddress
+            routePoints: [
+                { type: 'source', address: sourceField?.value || '', label: 'מוצא' },
+                { type: 'destination', address: destField?.value || '', label: 'יעד' }
+            ],
+            hasStops: false,
+            stopsCount: 0,
+            source: sourceField?.value || '',
+            destination: destField?.value || ''
         };
     }
-    // /**
-    //  * Get addresses for calculation
-    //  * @returns {object} - Source and destination addresses
-    //  */
-    // getAddressesForCalculation() {
-    //     const sourceField = document.getElementById('defectiveSource');
-    //     const destField = document.getElementById('defectiveDestination');
-
-    //     if (!sourceField || !destField) {
-    //         throw new Error('Address fields not found');
-    //     }
-
-    //     const sourceValue = sourceField.value?.trim() || '';
-    //     const destValue = destField.value?.trim() || '';
-
-    //     const sourceAddress = sourceValue ? (sourceField.dataset.physicalAddress || sourceValue) : '';
-    //     const destAddress = destValue ? (destField.dataset.physicalAddress || destValue) : '';
-
-    //     return {
-    //         source: sourceAddress,
-    //         destination: destAddress
-    //     };
-    // }
-
+   
     /**
      * Update price display in UI
      * @param {object} priceData - Calculation result
@@ -584,17 +551,28 @@ class PricingManager {
     updatePriceDisplay(priceData) {
         if (!priceData.success) return;
 
+        // חישוב מחירים (עם או בלי הנחה)
+        let displayPrices = priceData.finalPrices;
+        
+        if (this.state.discountEnabled) {
+            displayPrices = {
+                regular: Math.round(priceData.finalPrices.regular * 0.9),
+                plus25: Math.round(priceData.finalPrices.plus25 * 0.9),
+                plus50: Math.round(priceData.finalPrices.plus50 * 0.9)
+            };
+        }
+
         // Update tier price displays
         const regularEl = document.getElementById('price-regular-amount');
         const plus25El = document.getElementById('price-plus25-amount');
         const plus50El = document.getElementById('price-plus50-amount');
 
-        if (regularEl) regularEl.textContent = formatCurrency(priceData.finalPrices.regular);
-        if (plus25El) plus25El.textContent = formatCurrency(priceData.finalPrices.plus25);
-        if (plus50El) plus50El.textContent = formatCurrency(priceData.finalPrices.plus50);
+        if (regularEl) regularEl.textContent = formatCurrency(displayPrices.regular);
+        if (plus25El) plus25El.textContent = formatCurrency(displayPrices.plus25);
+        if (plus50El) plus50El.textContent = formatCurrency(displayPrices.plus50);
 
         // Update state
-        this.state.calculatedPrices = priceData.finalPrices;
+        this.state.calculatedPrices = priceData.finalPrices; // המחירים המקוריים
     }
 
     /**
@@ -621,71 +599,108 @@ class PricingManager {
         this.hideDistanceInfo();
     }
 
-
     recalculatePrices() {
         console.log('🔄 recalculatePrices started');
+        console.log('- state.fromGarage:', this.state.fromGarage);
         console.log('- state.outskirts:', this.state.outskirts);
-        
-        // אם אין עדיין breakdown מלא, חזרי לחישוב מלא
+
+        // אם אין עדיין חישוב בסיסי, לא נמשיך
         if (!this.state.breakdown.baseSubtotal) {
+            console.warn("⚠️ אין baseSubtotal - מריצים חישוב מלא מחדש");
+            this.calculateAndUpdatePrice(); // ← כאן תריצי את החישוב הראשי שלך
             return;
         }
-        
-        // עבוד עם הבסיס הנכון (לפני מע"מ ושטחים)
-        const baseSubtotal = this.state.breakdown.baseSubtotal; // 640
-        
-        // חשב מחדש שטחים
-        const afterOutskirts = this.state.outskirts ? 
-            Math.round(baseSubtotal * PRICING_CONFIG.OUTSKIRTS_MULTIPLIER) : 
-            baseSubtotal;
-        
+
+        let baseSubtotal = this.state.breakdown.baseSubtotal;
+
+        // אם הגרירה מהחניון – נוסיף חישוב מרחק נוסף
+        if (this.state.fromGarage) {
+            console.log("🚚 חישוב כולל חניון (המרכבה 47 חולון)");
+            // כאן אפשר או להוסיף ק"מ קבוע או להריץ חישוב מסלול נוסף
+            // לדוגמה: נוסיף 10 ק"מ קבועים
+            baseSubtotal += 10 * PRICING_CONFIG.KM_RATE;
+        }
+
+        // שטחים
+        let afterOutskirts = this.state.outskirts
+            ? Math.round(baseSubtotal * PRICING_CONFIG.OUTSKIRTS_MULTIPLIER)
+            : baseSubtotal;
+
         console.log('- baseSubtotal:', baseSubtotal);
         console.log('- afterOutskirts:', afterOutskirts);
-        
-        // עדכן את הפירוט
-        this.state.breakdown.outskirtsAmount = afterOutskirts - baseSubtotal;
+
+        // עדכן breakdown
         this.state.breakdown.afterOutskirts = afterOutskirts;
-        
-        // חשב מחדש טיירים
+
+        // חישוב טיירים לפני מע״מ
         const tierPricesBeforeVAT = {
             regular: afterOutskirts,
             plus25: Math.round(afterOutskirts * PRICING_CONFIG.TIER_MULTIPLIERS.plus25),
             plus50: Math.round(afterOutskirts * PRICING_CONFIG.TIER_MULTIPLIERS.plus50)
         };
-        
+
+        // חישוב אחרי מע״מ
         const tierPrices = {
             regular: Math.round(tierPricesBeforeVAT.regular * PRICING_CONFIG.VAT_RATE),
             plus25: Math.round(tierPricesBeforeVAT.plus25 * PRICING_CONFIG.VAT_RATE),
             plus50: Math.round(tierPricesBeforeVAT.plus50 * PRICING_CONFIG.VAT_RATE)
         };
 
-        // עדכן המצב
+        // עדכון state
         this.state.breakdown.tierPricesBeforeVAT = tierPricesBeforeVAT;
         this.state.calculatedPrices = tierPrices;
         this.state.basePrice = tierPrices.regular;
-        
+
+        // עדכון תצוגה
         this.updatePriceDisplay({ success: true, finalPrices: tierPrices });
         this.updateFinalPrice();
     }
-    // /**
-    //  * Recalculate prices (for outskirts toggle)
-    //  */
+
+
     // recalculatePrices() {
-
-    //     if (this.state.basePrice > 0) {
-    //         // Recalculate based on current base price
-    //         const baseEffective = Math.round(this.state.basePrice * (this.state.outskirts ? PRICING_CONFIG.OUTSKIRTS_MULTIPLIER : 1));
-            
-    //         const tierPrices = {
-    //             regular: baseEffective,
-    //             plus25: Math.round(baseEffective * PRICING_CONFIG.TIER_MULTIPLIERS.plus25),
-    //             plus50: Math.round(baseEffective * PRICING_CONFIG.TIER_MULTIPLIERS.plus50)
-    //         };
-
-    //         this.state.calculatedPrices = tierPrices;
-    //         this.updatePriceDisplay({ success: true, finalPrices: tierPrices });
-    //         this.updateFinalPrice();
+    //     console.log('🔄 recalculatePrices started');
+    //     console.log('- state.outskirts:', this.state.outskirts);
+        
+    //     // אם אין עדיין breakdown מלא, חזרי לחישוב מלא
+    //     if (!this.state.breakdown.baseSubtotal) {
+    //         return;
     //     }
+        
+    //     // עבוד עם הבסיס הנכון (לפני מע"מ ושטחים)
+    //     const baseSubtotal = this.state.breakdown.baseSubtotal; // 640
+        
+    //     // חשב מחדש שטחים
+    //     const afterOutskirts = this.state.outskirts ? 
+    //         Math.round(baseSubtotal * PRICING_CONFIG.OUTSKIRTS_MULTIPLIER) : 
+    //         baseSubtotal;
+        
+    //     console.log('- baseSubtotal:', baseSubtotal);
+    //     console.log('- afterOutskirts:', afterOutskirts);
+        
+    //     // עדכן את הפירוט
+    //     this.state.breakdown.outskirtsAmount = afterOutskirts - baseSubtotal;
+    //     this.state.breakdown.afterOutskirts = afterOutskirts;
+        
+    //     // חשב מחדש טיירים
+    //     const tierPricesBeforeVAT = {
+    //         regular: afterOutskirts,
+    //         plus25: Math.round(afterOutskirts * PRICING_CONFIG.TIER_MULTIPLIERS.plus25),
+    //         plus50: Math.round(afterOutskirts * PRICING_CONFIG.TIER_MULTIPLIERS.plus50)
+    //     };
+        
+    //     const tierPrices = {
+    //         regular: Math.round(tierPricesBeforeVAT.regular * PRICING_CONFIG.VAT_RATE),
+    //         plus25: Math.round(tierPricesBeforeVAT.plus25 * PRICING_CONFIG.VAT_RATE),
+    //         plus50: Math.round(tierPricesBeforeVAT.plus50 * PRICING_CONFIG.VAT_RATE)
+    //     };
+
+    //     // עדכן המצב
+    //     this.state.breakdown.tierPricesBeforeVAT = tierPricesBeforeVAT;
+    //     this.state.calculatedPrices = tierPrices;
+    //     this.state.basePrice = tierPrices.regular;
+        
+    //     this.updatePriceDisplay({ success: true, finalPrices: tierPrices });
+    //     this.updateFinalPrice();
     // }
 
     /**
@@ -802,7 +817,13 @@ class PricingManager {
                 priceField.value = '';
             }
         } else {
-            const amount = this.state.calculatedPrices[this.state.selectedTier] || 0;
+            let amount = this.state.calculatedPrices[this.state.selectedTier] || 0;
+            
+            // החלת הנחה אם מופעלת
+            if (this.state.discountEnabled) {
+                amount = Math.round(amount * 0.9);
+            }
+            
             this.state.finalPrice = amount;
             priceField.value = amount.toString();
         }
@@ -814,31 +835,6 @@ class PricingManager {
 
         priceField.dataset.manuallyEdited = this.state.manualMode ? 'true' : 'false';
     }
-
-    // /**
-    //  * Update final price in hidden field
-    //  */
-    // updateFinalPrice() {
-    //     const priceField = document.getElementById('price');
-    //     if (!priceField) return;
-
-    //     if (this.state.manualMode) {
-    //         const manualInput = document.getElementById('customPrice');
-    //         const manualValue = manualInput?.value?.trim();
-    //         if (manualValue && !isNaN(Number(manualValue))) {
-    //             this.state.finalPrice = Number(manualValue);
-    //             priceField.value = this.state.finalPrice.toString();
-    //         } else {
-    //             priceField.value = '';
-    //         }
-    //     } else {
-    //         const amount = this.state.calculatedPrices[this.state.selectedTier] || 0;
-    //         this.state.finalPrice = amount;
-    //         priceField.value = amount.toString();
-    //     }
-
-    //     priceField.dataset.manuallyEdited = this.state.manualMode ? 'true' : 'false';
-    // }
 
     /**
      * Ensure hidden price field exists
@@ -870,8 +866,8 @@ class PricingManager {
             finalPrice: this.state.finalPrice,
             calculatedPrices: { ...this.state.calculatedPrices },
             autoRecommendedTier: this.getRecommendedTier(),
-            // ✨ הוספת נתוני מרחק
-            distanceData: this.state.distanceData ? { ...this.state.distanceData } : null
+            distanceData: this.state.distanceData ? { ...this.state.distanceData } : null,
+            discountEnabled: this.state.discountEnabled  // הוספת מצב הנחה
         };
     }
 
@@ -922,53 +918,53 @@ getSelectedTier() {
     }
 
     /**
- * Update price breakdown with detailed components
- * @param {object} data - Calculation data
- */
-updatePriceBreakdown(data) {
-    if (!data || !data.success) {
-        this.resetPriceBreakdown();
-        return;
+     * Update price breakdown with detailed components
+     * @param {object} data - Calculation data
+     */
+    updatePriceBreakdown(data) {
+        if (!data || !data.success) {
+            this.resetPriceBreakdown();
+            return;
+        }
+
+        // Calculate outskirts amount
+        const outskirtsAmount = data.afterOutskirts - data.baseSubtotal;
+        
+        // Update breakdown according to correct order
+        this.state.breakdown = {
+            vehicleBasePrice: data.basePrice || 0,
+            vehicleDescription: data.vehicleType || 'גרירת רכב',
+            travelDistance: data.distanceKm || 0,
+            travelPrice: data.travelPrice || 0,
+            workFees: 0, // Always 0
+            
+            // Totals according to calculation stages
+            baseSubtotal: data.baseSubtotal || 0,                    // Base + Travel + Stops
+            outskirtsAmount: outskirtsAmount,                        // Outskirts addition
+            afterOutskirts: data.afterOutskirts || 0,               // After outskirts
+            
+            // Tier data (before VAT)
+            tierPricesBeforeVAT: data.tierPricesBeforeVAT || {
+                regular: 0,
+                plus25: 0, 
+                plus50: 0
+            },
+            
+            // Currently selected tier
+            selectedTier: this.state.selectedTier,
+            
+            // Time surcharge and VAT will be calculated based on selected tier
+            timeSurcharge: 0,        // Calculated in updateFinalPrice
+            subtotalBeforeVAT: 0,    // Calculated in updateFinalPrice  
+            vatAmount: 0,            // Calculated in updateFinalPrice
+            finalTotal: 0            // Calculated in updateFinalPrice
+        };
+        
+        // Update for current tier
+        this.updateBreakdownForSelectedTier();
+
+        console.log('💰 Price breakdown updated:', this.state.breakdown);
     }
-
-    // חישוב תוספת שטחים
-    const outskirtsAmount = data.afterOutskirts - data.baseSubtotal;
-    
-    // עדכון נתוני הפירוט לפי הסדר הנכון
-    this.state.breakdown = {
-        vehicleBasePrice: data.basePrice || 0,
-        vehicleDescription: data.vehicleType || 'גרירת רכב',
-        travelDistance: data.distanceKm || 0,
-        travelPrice: data.travelPrice || 0,
-        workFees: 0, // כרגע תמיד 0
-        
-        // סכומים לפי שלבי החישוב
-        baseSubtotal: data.baseSubtotal || 0,                    // בסיס + נסיעה
-        outskirtsAmount: outskirtsAmount,                        // תוספת שטחים
-        afterOutskirts: data.afterOutskirts || 0,               // אחרי שטחים
-        
-        // נתוני טיירים (לפני מע"מ)
-        tierPricesBeforeVAT: data.tierPricesBeforeVAT || {
-            regular: 0,
-            plus25: 0, 
-            plus50: 0
-        },
-        
-        // הטיר שנבחר כרגע
-        selectedTier: this.state.selectedTier,
-        
-        // חישוב תוספת זמן ומע"מ יעשה בהמשך בהתבסס על הטיר שנבחר
-        timeSurcharge: 0,        // יחושב ב-updateFinalPrice
-        subtotalBeforeVAT: 0,    // יחושב ב-updateFinalPrice  
-        vatAmount: 0,            // יחושב ב-updateFinalPrice
-        finalTotal: 0            // יחושב ב-updateFinalPrice
-    };
-    
-    // עדכון הטיר הנוכחי
-    this.updateBreakdownForSelectedTier();
-
-    console.log('💰 עודכן פירוט מחיר:', this.state.breakdown);
-}
 
 
 
@@ -1015,66 +1011,124 @@ updatePriceBreakdown(data) {
             breakdown.finalTotal = afterVAT;
         }
     }
+    /**
+     * Setup garage toggle functionality
+     */
+    setupGarageToggle() {
+    console.log('=== setupGarageToggle STARTED ===');
+    const toggle = document.getElementById('isFromGarage');
+    console.log('Toggle element:', toggle);
+    
+    if (!toggle) {
+        console.error('❌ isFromGarage not found');
+        return;
+    }
 
-// /**
-//  * Update price breakdown with detailed components
-//  * @param {object} data - Calculation data
-//  */
-// updatePriceBreakdown(data) {
-//     if (!data || !data.success) {
-//         this.resetPriceBreakdown();
-//         return;
-//     }
-
-//     // עדכון נתוני הפירוט
-//     this.state.breakdown = {
-//         vehicleBasePrice: data.basePrice || 0,
-//         vehicleDescription: data.vehicleType || 'גרירת רכב',
-//         travelDistance: data.distanceKm || 0,
-//         travelPrice: data.travelPrice || 0,
-//         workFees: 0, // כרגע תמיד 0
-//         subtotalBeforeVAT: Math.round((data.basePrice || 0) + (data.travelPrice || 0)),
-//         vatAmount: 0, // יחושב אחרי הוספת מע"מ
-//         subtotalWithVAT: 0, // יחושב אחרי הוספת מע"מ
-//         outskirtsAmount: 0, // יחושב לפי הגדרת שטחים
-//         timeSurcharge: 0, // יחושב לפי הטיר שנבחר
-//         finalTotal: this.state.finalPrice
-//     };
-
-//     // חישוב מע"מ על הסכום הבסיסי
-//     const vatAmount = Math.round(this.state.breakdown.subtotalBeforeVAT * 0.18);
-//     this.state.breakdown.vatAmount = vatAmount;
-//     this.state.breakdown.subtotalWithVAT = this.state.breakdown.subtotalBeforeVAT + vatAmount;
-
-//     console.log('💰 עודכן פירוט מחיר:', this.state.breakdown);
-// }
-
-/**
- * Reset price breakdown to empty state
- */
-resetPriceBreakdown() {
-    this.state.breakdown = {
-        vehicleBasePrice: 0,
-        vehicleDescription: '',
-        travelDistance: 0,
-        travelPrice: 0,
-        workFees: 0,
-        subtotalBeforeVAT: 0,
-        vatAmount: 0,
-        subtotalWithVAT: 0,
-        outskirtsAmount: 0,
-        timeSurcharge: 0,
-        finalTotal: 0
+    const updateGarage = () => {
+        console.log('📢 updateGarage called');
+        const newValue = toggle.value === 'true';
+        console.log('Current state:', this.state.fromGarage, '→ New value:', newValue);
+        
+        if (this.state.fromGarage !== newValue) {
+            this.state.fromGarage = newValue;
+            console.log('✅ State updated, calling debouncedCalculation');
+            this.debouncedCalculation(500);
+        } else {
+            console.log('⏭️ No change, skipping recalculate');
+        }
     };
+
+    toggle.addEventListener('change', () => {
+        console.log('🔔 Change event on isFromGarage');
+        updateGarage();
+    });
 }
 
-/**
- * Get current price breakdown for form submission
- * @returns {object} - Price breakdown object
- */
-getPriceBreakdown() {
-    return { ...this.state.breakdown };
-}
+    /**
+     * Setup discount toggle functionality
+     */
+    setupDiscountToggle() {
+        const discountBtn = document.getElementById('discountToggle');
+        if (!discountBtn) return;
+
+        discountBtn.addEventListener('click', () => {
+            this.toggleDiscount();
+        });
+    }
+
+    /**
+     * Toggle discount on/off
+     */
+    toggleDiscount() {
+        // לא ניתן להפעיל הנחה במחיר ידני
+        if (this.state.manualMode) {
+            console.log('לא ניתן להפעיל הנחה במחיר ידני');
+            return;
+        }
+
+        // בדיקה שיש מחירים מחושבים
+        if (this.state.calculatedPrices.regular === 0) {
+            console.log('יש לחשב מחיר תחילה כדי להפעיל הנחה');
+            return;
+        }
+
+        // החלפת מצב הנחה
+        this.state.discountEnabled = !this.state.discountEnabled;
+        
+        // עדכון תצוגת הכפתור
+        this.updateDiscountButtonDisplay();
+        
+        // עדכון מחירים
+        this.updatePriceDisplay({ 
+            success: true, 
+            finalPrices: this.state.calculatedPrices 
+        });
+        this.updateFinalPrice();
+    }
+
+    /**
+     * Update discount button display
+     */
+    updateDiscountButtonDisplay() {
+        const discountBtn = document.getElementById('discountToggle');
+        if (!discountBtn) return;
+
+        if (this.state.discountEnabled) {
+            discountBtn.classList.add('active');
+            discountBtn.innerHTML = '<i class="fas fa-percent"></i> הנחה מופעלת';
+        } else {
+            discountBtn.classList.remove('active');
+            discountBtn.innerHTML = '<i class="fas fa-percent"></i> הנחה 10%';
+        }
+    }
+
+
+    /**
+     * Reset price breakdown to empty state
+     */
+    resetPriceBreakdown() {
+        this.state.breakdown = {
+            vehicleBasePrice: 0,
+            vehicleDescription: '',
+            travelDistance: 0,
+            travelPrice: 0,
+            workFees: 0,
+            subtotalBeforeVAT: 0,
+            vatAmount: 0,
+            subtotalWithVAT: 0,
+            outskirtsAmount: 0,
+            timeSurcharge: 0,
+            finalTotal: 0
+        };
+    }
+
+    /**
+     * Get current price breakdown for form submission
+     * @returns {object} - Price breakdown object
+     */
+    getPriceBreakdown() {
+        return { ...this.state.breakdown };
+    }
 
 }
 

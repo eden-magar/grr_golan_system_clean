@@ -50,6 +50,21 @@ body {
   margin: 0 auto;
 }
 
+/* הרחבה למסכי מחשב */
+@media (min-width: 1200px) {
+  .main-content {
+    max-width: 1400px;
+  }
+  
+  .vehicle-column {
+    padding: 2rem;
+  }
+  
+  .two-column-layout {
+    gap: 3rem;
+  }
+}
+
 .form-card {
   background: var(--white);
   border-radius: 12px;
@@ -420,16 +435,6 @@ textarea {
   box-shadow: 0 4px 12px rgba(56, 161, 105, 0.2);
 }
 
-/* Car Summary Box - מסגרות לרכב בסיכום */
-.car-summary-box {
-  border: 1px solid #c8d6e5;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 20px;
-  background-color: #f7fafc;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
 .car-summary-box h3 {
   margin-top: 0;
   color: var(--primary-dark);
@@ -438,35 +443,8 @@ textarea {
   margin-bottom: 15px;
 }
 
-.second-car-box {
-  border-color: #a3c2e6;
-  background-color: #f0f7ff;
-}
-
 .second-car-box h3 {
   border-bottom-color: #5d9ce6;
-}
-
-/* Additional Fields - שדות נוספים */
-.additional-fields {
-  border-right: 3px solid var(--primary);
-  padding-right: 15px;
-  margin: 15px 0;
-}
-
-#secondDefectiveCarForm {
-  border-top: 1px dashed #cbd5e0;
-  padding-top: 20px;
-  margin-top: 20px;
-}
-
-/* Choice Options - אפשרויות בחירה */
-.share-options {
-  background-color: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border: 1px solid var(--border);
 }
 
 .share-options h4 {
@@ -481,25 +459,6 @@ textarea {
   font-weight: bold;
 }
 
-.choice-buttons {
-  display: flex;
-  margin-bottom: 10px;
-}
-
-.choice-btn {
-  flex: 1;
-  padding: 10px;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  margin-left: 5px;
-  border-radius: 4px;
-  transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .choice-btn:last-child {
   margin-left: 0;
 }
@@ -512,17 +471,6 @@ textarea {
   background-color: var(--primary);
   color: white;
   border-color: var(--primary-dark);
-}
-
-.preview-text {
-  font-size: 0.9em;
-  color: #4a5568;
-  margin-top: 5px;
-  margin-right: 28px;
-  padding: 5px 10px;
-  background-color: #edf2f7;
-  border-radius: 4px;
-  display: none;
 }
 
 /* Error Messages */
@@ -596,6 +544,10 @@ textarea {
   .contacts-grid {
     grid-template-columns: 1fr;
   }
+
+  .travel-pills {
+        justify-content: center;
+    }
 
   .form-section {
     padding: 1rem;
@@ -678,7 +630,6 @@ textarea {
 }
 
 /* ===== השלמה אוטומטית לכתובות ===== */
-
 /* Container לשדה כתובת עם השלמה אוטומטית */
 .address-input-container {
     position: relative;
@@ -819,7 +770,6 @@ textarea {
 }
 
 /* הוסף את זה לקובץ style.css */
-
 /* עיצוב שדות כרטיס אשראי */
 .credit-card-fields {
     border: 1px solid #ddd;
@@ -976,7 +926,6 @@ textarea {
 }
 
 /* ===== מודלים - טעינה והצלחה ===== */
-
 /* מודל טעינה */
 .loading-modal {
     position: fixed;
@@ -1339,7 +1288,6 @@ textarea {
     z-index: 1;
 }
 
-
 /* ===== אזור ״שטחים״ – יישור ונראות יפים ===== */
 /* עיצוב חכם לפי מבנה קיים – בלי לשנות HTML */
 .form-group:has(.toggle-container) {
@@ -1407,42 +1355,9 @@ textarea {
   transform: translateX(-28px);
 }
 
-/* נעדכן רק את הקבוצה של השטחים */
-.form-group.toggle-outskirts {
-  display: flex;
-  align-items: center;
-  gap: 10px;            /* רווח קטן בין טקסט לטוגל */
-  background: #f8f9fa;
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  justify-content: flex-start; /* לא לפזר לצדדים */
-}
-
 .form-group.toggle-outskirts label {
   margin-bottom: 0; /* שלא ירד שורה */
 }
-
-
-
-/* שדה המחיר הידני מוסתר עד שהכרטיס נבחר */
-/* .manual-input-wrap { 
-  display: none; 
-  margin-top: 8px; 
-} */
-/* #customPrice {
-  width: 100%;
-  padding: 10px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  text-align: center;
-  font-weight: 600;
-} */
-/* .manual-hint {
-  font-size: 11px;
-  color: #777;
-  margin-top: 4px;
-} */
 
 /* כשנבחר הכרטיס הידני – מציגים את השדה */
 #price-manual:checked + .price-card-label .manual-input-wrap {
@@ -1536,7 +1451,6 @@ textarea {
 }
 
 /* ===== מערכת בחירת תקלות ===== */
-
 /* כפתור פתיחת בחירת תקלות */
 .defect-selector-btn {
     display: flex;
@@ -1797,7 +1711,6 @@ textarea {
 }
 
 /* ===== מערכת בחירת גרר ===== */
-
 /* כפתור פתיחת בחירת גרר */
 .tow-selector-btn {
     display: flex;
@@ -2011,7 +1924,6 @@ textarea {
 }
 
 /* ===== מערכת "הנח סיכה" ===== */
-
 /* Container עבור שדה כתובת עם כפתור pin */
 .address-input-with-pin {
     display: flex;
@@ -2201,4 +2113,542 @@ textarea {
     .pin-drop-modal-btn {
         width: 100%;
     }
+}
+
+/* רספונסיבי למובייל */
+@media (max-width: 768px) {
+    .inline-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* פריסה פשוטה - שורות משותפות */
+.inline-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.inline-row .form-group {
+    flex: 1;
+}
+
+/* רספונסיבי למובייל */
+@media (max-width: 768px) {
+    .inline-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* אפשרויות נסיעה - פריסה בשורה אחת */
+/* .distance-options {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.distance-options h4 {
+    margin: 0 0 1rem 0;
+    color: var(--primary);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.distance-options-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.form-group.toggle-garage,
+.form-group.toggle-outskirts {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--white);
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 200px;
+} */
+
+/* תגיות pills להפעלה/כיבוי */
+.travel-pills {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.pill-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: #f1f3f5;
+    border: 2px solid #dee2e6;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.pill-toggle i {
+    font-size: 0.8rem;
+}
+
+.pill-toggle:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.pill-toggle.active {
+    background: #4CAF50 !important;
+    border-color: #4CAF50 !important;
+    color: white !important;
+}
+
+.pill-toggle.active:hover {
+    background: #45a049;
+}
+
+.pill-toggle:active {
+    transform: scale(0.95);
+}
+
+.form-group.toggle-garage label,
+.form-group.toggle-outskirts label {
+    margin-bottom: 0;
+    flex: 1;
+}
+
+.discount-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.discount-btn {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.discount-btn:hover {
+    background: #e9ecef;
+}
+
+.discount-btn.active {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+#formError {
+    display: none;
+}
+
+#adminDashboard {
+    display: none; /* ברירת מחדל */
+}
+#adminDashboard.visible {
+    display: inline-flex;
+}
+
+.section-divider {
+    margin: 1.5rem 0;
+    border: none;
+    border-top: 1px dashed var(--border);
+}
+
+.copy-client-btn {
+    padding: 0.5rem 0.8rem;
+    background: #eff6ff;
+    border: 1px solid #3b82f6;
+    border-radius: 4px;
+    color: #3b82f6;
+    cursor: pointer;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.copy-client-btn:hover {
+    background: #dbeafe;
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+.copy-client-btn i {
+    margin-left: 0.3rem;
+}
+
+/* ===== פריסה מקבילה - תקין/תקול ===== */
+.two-column-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.vehicle-column {
+    background: var(--background);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px solid var(--border);
+}
+
+.column-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    border-radius: 10px 10px 0 0;
+    font-weight: 600;
+}
+
+.working-header {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.defective-header {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    color: white;
+}
+
+.column-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.column-divider {
+    margin: 1.5rem 0;
+    border: none;
+    border-top: 1px dashed #cbd5e0;
+}
+
+.contact-section h5 {
+    color: var(--primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.contact-card.compact {
+    background: var(--white);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border);
+}
+
+.contact-card.compact h6 {
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem 0;
+}
+
+.copy-address-btn {
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+.full-width-section {
+    margin-top: 2rem;
+}
+
+/* רספונסיביות - מובייל */
+@media (max-width: 968px) {
+    .two-column-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .vehicle-column {
+        padding: 1rem;
+    }
+    
+    .column-header {
+        margin: -1rem -1rem 1rem -1rem;
+        padding: 0.75rem;
+    }
+}
+
+/* שיפור פוקוס לנגישות */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* שורה משותפת לתקלה + גרר */
+.defect-tow-inline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* כתובת עם פעולות בצד */
+.address-input-with-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.address-input-with-actions .address-input-with-pin {
+    flex: 1;
+}
+
+.copy-from-working-btn {
+    padding: 0.75rem 1rem;
+    background: #e3f2fd;
+    border: 1px solid #2196F3;
+    border-radius: 8px;
+    color: #1976d2;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.copy-from-working-btn:hover {
+    background: #bbdefb;
+    border-color: #1976d2;
+}
+
+.copy-from-working-btn i {
+    font-size: 0.9rem;
+}
+
+/* רספונסיבי - מובייל */
+@media (max-width: 968px) {
+    .defect-tow-inline {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .address-input-with-actions {
+        flex-direction: column;
+    }
+    
+    .copy-from-working-btn {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+/* ===== פריסה מקבילה - תקין/תקול ===== */
+.two-column-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.vehicle-column {
+    background: var(--background);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px solid var(--border);
+}
+
+.column-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    border-radius: 10px 10px 0 0;
+    font-weight: 600;
+}
+
+.working-header {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.defective-header {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    color: white;
+}
+
+.column-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.column-divider {
+    margin: 1.5rem 0;
+    border: none;
+    border-top: 1px dashed #cbd5e0;
+}
+
+.contact-section h5 {
+    color: var(--primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.contact-card.compact {
+    background: var(--white);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border);
+}
+
+.contact-card.compact h6 {
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem 0;
+}
+
+.full-width-section {
+    margin-top: 2rem;
+}
+
+/* שורה משותפת לתקלה + גרר */
+.defect-tow-inline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* כתובת עם פעולות בצד */
+.address-input-with-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.address-input-with-actions .address-input-with-pin {
+    flex: 1;
+}
+
+.copy-from-working-btn {
+    padding: 0.75rem 1rem;
+    background: #e3f2fd;
+    border: 1px solid #2196F3;
+    border-radius: 8px;
+    color: #1976d2;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.copy-from-working-btn:hover {
+    background: #bbdefb;
+    border-color: #1976d2;
+    transform: translateY(-1px);
+}
+
+.copy-from-working-btn i {
+    font-size: 0.9rem;
+}
+
+/* הרחבה למסכי מחשב */
+@media (min-width: 1200px) {
+    .main-content {
+        max-width: 1400px;
+    }
+    
+    .vehicle-column {
+        padding: 2rem;
+    }
+    
+    .two-column-layout {
+        gap: 3rem;
+    }
+}
+
+/* רספונסיבי - מובייל */
+@media (max-width: 968px) {
+    .two-column-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .vehicle-column {
+        padding: 1rem;
+    }
+    
+    .column-header {
+        margin: -1rem -1rem 1rem -1rem;
+        padding: 0.75rem;
+    }
+    
+    .defect-tow-inline {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .address-input-with-actions {
+        flex-direction: column;
+    }
+    
+    .copy-from-working-btn {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+.copy-working-dest-btn {
+    padding: 0.5rem 0.8rem;
+    background: #f0fdf4;
+    border: 1px solid #4ade80;
+    border-radius: 4px;
+    color: #16a34a;
+    cursor: pointer;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.copy-working-dest-btn:hover {
+    background: #dcfce7;
+    border-color: #22c55e;
+    color: #15803d;
+}
+
+.copy-working-dest-btn i {
+    margin-left: 0.3rem;
 }

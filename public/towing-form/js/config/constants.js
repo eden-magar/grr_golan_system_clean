@@ -7,6 +7,10 @@
 const TOWING_SUBMIT_URL = "/api/submit-towing";
 window.TOWING_SUBMIT_URL = TOWING_SUBMIT_URL;
 
+// כתובת חניון גרר גולן
+const GARAGE_ADDRESS = "המרכבה 47, חולון";
+window.GARAGE_ADDRESS = GARAGE_ADDRESS;
+
 // ---- LocalStorage keys (define once) ----
 const STORAGE_KEYS = {
   USER_EMAIL: "userEmail",

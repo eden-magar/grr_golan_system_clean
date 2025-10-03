@@ -82,12 +82,11 @@
                                       <div class="inline-row">
                                           <div class="form-group">
                                               <label for="executionDate">תאריך ביצוע:</label>
-                                              <input type="date" id="executionDate" name="executionDate" lang="he-IL">
+                                              <input type="date" id="executionDate" name="executionDate">
                                           </div>
                                           <div class="form-group">
                                               <label for="executionTime">שעת ביצוע:</label>
-                                            <input type="time" id="executionTime" name="executionTime" step="900" placeholder="בחר שעה">
-                                              <!-- <input type="time" id="executionTime" name="executionTime" value="09:00"> -->
+                                              <input type="time" id="executionTime" name="executionTime" value="09:00">
                                           </div>
                                       </div>
                                   </div>
@@ -235,231 +234,169 @@
                     </div>
 
                     <!-- טופס תקין-תקול -->
-                     <div id="workingDefectiveForm" class="form-section hidden">
-                    <h3>מסירת רכב תקין ואיסוף רכב תקול</h3>
-                    
-                    <!-- פריסה מקבילה: שתי עמודות -->
-                    <div class="two-column-layout">
+                    <div id="workingDefectiveForm" class="form-section hidden">
+                        <h3>מסירת רכב תקין</h3>
                         
-                        <!-- עמודה שמאלית: רכב תקין -->
-                        <div class="vehicle-column working-vehicle">
-                            <div class="column-header working-header">
-                                <i class="fas fa-car"></i>
-                                <h4>רכב תקין</h4>
-                            </div>
-                            
-                            <!-- פרטי רכב תקין -->
+                        <!-- מספר רכב + סוג רכב + קוד רכב בשורה אחת -->
+                        <div class="inline-row">
                             <div class="form-group">
                                 <label for="workingCarNumber">
                                     <i class="fas fa-car"></i>
                                     מספר רכב:
                                 </label>
-                                <input type="text" id="workingCarNumber" name="workingCarNumber" 
-                                    minlength="5" maxlength="10" tabindex="1">
+                                <input type="text" id="workingCarNumber" name="workingCarNumber" minlength="5" maxlength="10">
                             </div>
-                            
                             <div class="form-group">
                                 <label for="workingCarType">
                                     <i class="fas fa-info-circle"></i>
                                     סוג רכב:
                                 </label>
-                                <input type="text" id="workingCarType" name="workingCarType" 
-                                    minlength="2" tabindex="2">
+                                <input type="text" id="workingCarType" name="workingCarType" minlength="2">
                             </div>
-                            
                             <div class="form-group">
                                 <label for="workingCarCode">
                                     <i class="fas fa-key"></i>
                                     קוד רכב:
                                 </label>
-                                <input type="text" id="workingCarCode" name="workingCarCode" tabindex="3">
+                                <input type="text" id="workingCarCode" name="workingCarCode">
                             </div>
-                            
-                            <!-- בחירת גרר -->
-                            <!-- תקלה + גרר (רק גרר בתקין) -->
-                            <div class="defect-tow-inline">
-                                <div></div> <!-- בלוק ריק במקום תקלה -->
-                                
-                                <div class="form-group">
-                                    <label>
-                                        <i class="fas fa-truck"></i>
-                                        סוג גרר מתאים:
-                                    </label>
-                                    <button type="button" id="workingTowSelectorBtn" class="tow-selector-btn" tabindex="4">
-                                        <i class="fas fa-truck"></i>
-                                        בחר גרר מתאים
-                                    </button>
-                                    <div id="workingSelectedTow" class="selected-tow">
-                                        <div class="selected-tow-placeholder">לא נבחר גרר</div>
-                                    </div>
-                                </div>
+                        </div>
+
+                        <!-- בחירת גרר -->
+                        <div class="form-group">
+                            <label>
+                                <i class="fas fa-truck"></i>
+                                סוג גרר מתאים:
+                            </label>
+                            <button type="button" id="workingTowSelectorBtn" class="tow-selector-btn">
+                                <i class="fas fa-truck"></i>
+                                בחר גרר מתאים
+                            </button>
+                            <div id="workingSelectedTow" class="selected-tow">
+                                <div class="selected-tow-placeholder">לא נבחר גרר</div>
                             </div>
-                            
-                            <hr class="column-divider">
-                            
-                            <!-- מוצא -->
+                        </div>
+
+                        <hr class="section-divider">
+
+                        <!-- מוצא ויעד רכב תקין -->
+                        <div class="form-grid">
                             <div class="form-group">
                                 <label for="workingSource">
                                     <i class="fas fa-map-marker-alt"></i>
-                                    מוצא:
+                                    מוצא רכב תקין:
                                 </label>
                                 <div class="address-input-with-pin">
-                                    <input type="text" id="workingSource" name="workingSource" 
-                                        minlength="3" tabindex="5">
-                                    <button type="button" class="pin-drop-btn" data-target="workingSource" tabindex="6">
+                                    <input type="text" id="workingSource" name="workingSource" minlength="3">
+                                    <button type="button" class="pin-drop-btn" data-target="workingSource">
                                         <i class="fas fa-map-marker-alt"></i>
                                         הנח סיכה
                                     </button>
                                 </div>
                             </div>
-                            
-                            <!-- יעד -->
+
                             <div class="form-group">
                                 <label for="workingDestination">
                                     <i class="fas fa-map-pin"></i>
-                                    יעד:
+                                    יעד רכב תקין:
                                 </label>
                                 <div class="address-input-with-pin">
-                                    <input type="text" id="workingDestination" name="workingDestination" 
-                                        minlength="3" tabindex="7">
-                                    <button type="button" class="pin-drop-btn" data-target="workingDestination" tabindex="8">
+                                    <input type="text" id="workingDestination" name="workingDestination" minlength="3">
+                                    <button type="button" class="pin-drop-btn" data-target="workingDestination">
                                         <i class="fas fa-map-marker-alt"></i>
                                         הנח סיכה
                                     </button>
                                 </div>
                             </div>
-                            
-                            <hr class="column-divider">
-                            
-                            <!-- אנשי קשר רכב תקין -->
-                            <div class="contact-section">
-                                <h5>אנשי קשר</h5>
-                                
-                                <div class="contact-card compact">
-                                    <h6>איש קשר במוצא</h6>
-                                    <div class="form-group">
-                                        <label>
-                                            <i class="fas fa-user"></i>
-                                            שם:
-                                        </label>
-                                        <input type="text" id="workingSourceContactName" 
-                                            name="workingSourceContactName" tabindex="9">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>
-                                            <i class="fas fa-phone"></i>
-                                            טלפון:
-                                        </label>
-                                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                            <input type="tel" id="workingSourceContactPhone" 
-                                                name="workingSourceContactPhone" style="flex: 1;" tabindex="10">
-                                            <button type="button" class="copy-client-btn" 
-                                                    data-target="workingSourceContact" tabindex="11">
-                                                <i class="fas fa-copy"></i> זהה ללקוח
-                                            </button>
-                                        </div>
+                        </div>
+
+                        <!-- אנשי קשר רכב תקין -->
+                        <div class="contacts-grid">
+                            <div class="contact-card">
+                                <h4>איש קשר במוצא (תקין)</h4>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-user"></i>
+                                        שם:
+                                    </label>
+                                    <input type="text" id="workingSourceContactName" name="workingSourceContactName">
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-phone"></i>
+                                        טלפון:
+                                    </label>
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <input type="tel" id="workingSourceContactPhone" name="workingSourceContactPhone" style="flex: 1;">
+                                        <button type="button" class="copy-client-btn" data-target="workingSourceContact">
+                                            <i class="fas fa-copy"></i> זהה ללקוח
+                                        </button>
                                     </div>
                                 </div>
-                                
-                                <div class="contact-card compact">
-                                    <h6>איש קשר ביעד</h6>
-                                    <div class="form-group">
-                                        <label>
-                                            <i class="fas fa-user"></i>
-                                            שם:
-                                        </label>
-                                        <input type="text" id="workingDestContactName" 
-                                            name="workingDestContactName" tabindex="12">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>
-                                            <i class="fas fa-phone"></i>
-                                            טלפון:
-                                        </label>
-                                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                            <input type="tel" id="workingDestContactPhone" 
-                                                name="workingDestContactPhone" style="flex: 1;" tabindex="13">
-                                            <button type="button" class="copy-client-btn" 
-                                                    data-target="workingDestContact" tabindex="14">
-                                                <i class="fas fa-copy"></i> זהה ללקוח
-                                            </button>
-                                        </div>
+                            </div>
+                            
+                            <div class="contact-card">
+                                <h4>איש קשר ביעד (תקין)</h4>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-user"></i>
+                                        שם:
+                                    </label>
+                                    <input type="text" id="workingDestContactName" name="workingDestContactName">
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-phone"></i>
+                                        טלפון:
+                                    </label>
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <input type="tel" id="workingDestContactPhone" name="workingDestContactPhone" style="flex: 1;">
+                                        <button type="button" class="copy-client-btn" data-target="workingDestContact">
+                                            <i class="fas fa-copy"></i> זהה ללקוח
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- עמודה ימנית: רכב תקול -->
-                        <div class="vehicle-column defective-vehicle">
-                            <div class="column-header defective-header">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <h4>רכב תקול</h4>
-                            </div>
-                            
-                            <!-- פרטי רכב תקול -->
+
+                        <hr class="section-divider">
+
+                        <!-- רכב תקול -->
+                        <h3>פרטי רכב תקול</h3>
+
+                        <!-- מספר רכב + סוג רכב + קוד רכב בשורה אחת -->
+                        <div class="inline-row">
                             <div class="form-group">
                                 <label for="defectiveCarNumber2">
                                     <i class="fas fa-car"></i>
                                     מספר רכב:
                                 </label>
-                                <input type="text" id="defectiveCarNumber2" name="defectiveCarNumber2" 
-                                    minlength="5" maxlength="10" tabindex="15">
+                                <input type="text" id="defectiveCarNumber2" name="defectiveCarNumber2" minlength="5" maxlength="10">
                             </div>
-                            
                             <div class="form-group">
                                 <label for="defectiveCarType2">
                                     <i class="fas fa-info-circle"></i>
                                     סוג רכב:
                                 </label>
-                                <input type="text" id="defectiveCarType2" name="defectiveCarType2" 
-                                    minlength="2" tabindex="16">
+                                <input type="text" id="defectiveCarType2" name="defectiveCarType2" minlength="2">
                             </div>
-                            
                             <div class="form-group">
                                 <label for="defectiveCarCode2">
                                     <i class="fas fa-key"></i>
                                     קוד רכב:
                                 </label>
-                                <input type="text" id="defectiveCarCode2" name="defectiveCarCode2" tabindex="17">
+                                <input type="text" id="defectiveCarCode2" name="defectiveCarCode2">
                             </div>
+                        </div>
 
-                            
-                            <!-- פירוט תקלה + בחירת גרר -->
-                            <div class="defect-tow-inline">
-                                <div class="form-group">
-                                    <label>
-                                        <i class="fas fa-exclamation-circle"></i>
-                                        פירוט התקלה:
-                                    </label>
-                                    <button type="button" id="defectSelector2Btn" class="defect-selector-btn" tabindex="18">
-                                        <i class="fas fa-list"></i>
-                                        בחר תקלות
-                                    </button>
-                                    <div id="selectedDefects2" class="selected-defects">
-                                        <div class="selected-defects-placeholder">לא נבחרו תקלות</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label>
-                                        <i class="fas fa-truck"></i>
-                                        סוג גרר מתאים:
-                                    </label>
-                                    <button type="button" id="defectiveTowSelector2Btn" class="tow-selector-btn" tabindex="19">
-                                        <i class="fas fa-truck"></i>
-                                        בחר גרר מתאים
-                                    </button>
-                                    <div id="selectedTow2" class="selected-tow">
-                                        <div class="selected-tow-placeholder">לא נבחר גרר</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- <div class="form-group">
+                        <!-- פירוט התקלה + בחירת גרר בשורה אחת -->
+                        <div class="inline-row">
+                            <div class="form-group">
                                 <label>
                                     <i class="fas fa-exclamation-circle"></i>
                                     פירוט התקלה:
                                 </label>
-                                <button type="button" id="defectSelector2Btn" class="defect-selector-btn" tabindex="18">
+                                <button type="button" id="defectSelector2Btn" class="defect-selector-btn">
                                     <i class="fas fa-list"></i>
                                     בחר תקלות
                                 </button>
@@ -467,178 +404,120 @@
                                     <div class="selected-defects-placeholder">לא נבחרו תקלות</div>
                                 </div>
                             </div>
-                            
                             <div class="form-group">
                                 <label>
                                     <i class="fas fa-truck"></i>
                                     סוג גרר מתאים:
                                 </label>
-                                <button type="button" id="defectiveTowSelector2Btn" class="tow-selector-btn" tabindex="19">
+                                <button type="button" id="defectiveTowSelector2Btn" class="tow-selector-btn">
                                     <i class="fas fa-truck"></i>
                                     בחר גרר מתאים
                                 </button>
                                 <div id="selectedTow2" class="selected-tow">
                                     <div class="selected-tow-placeholder">לא נבחר גרר</div>
                                 </div>
-                            </div> -->
-                            
-                            <hr class="column-divider">
-                            
-                            <!-- מוצא -->
-                             <div class="form-group">
-                                <label for="defectiveSource2">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    מוצא:
-                                </label>
-                                <div class="address-input-with-actions">
-                                    <div class="address-input-with-pin">
-                                        <input type="text" id="defectiveSource2" name="defectiveSource2" 
-                                            minlength="3" tabindex="20">
-                                        <button type="button" class="pin-drop-btn" data-target="defectiveSource2" tabindex="21">
-                                            <i class="fas fa-map-marker-alt"></i>
-                                            הנח סיכה
-                                        </button>
-                                    </div>
-                                    <button type="button" id="useWorkingDestBtn" class="copy-from-working-btn" tabindex="22">
-                                        <i class="fas fa-copy"></i>
-                                        העתק מיעד תקין
-                                    </button>
-                                </div>
                             </div>
-                            <!-- <div class="form-group">
+                        </div>
+
+                        <hr class="section-divider">
+
+                        <!-- מוצא ויעד רכב תקול -->
+                        <div class="form-grid">
+                            <div class="form-group">
                                 <label for="defectiveSource2">
                                     <i class="fas fa-map-marker-alt"></i>
-                                    מוצא:
+                                    מוצא רכב תקול:
                                 </label>
                                 <div class="address-input-with-pin">
-                                    <input type="text" id="defectiveSource2" name="defectiveSource2" 
-                                        minlength="3" tabindex="20">
-                                    <button type="button" class="pin-drop-btn" data-target="defectiveSource2" tabindex="21">
+                                    <input type="text" id="defectiveSource2" name="defectiveSource2" minlength="3">
+                                    <button type="button" class="pin-drop-btn" data-target="defectiveSource2">
                                         <i class="fas fa-map-marker-alt"></i>
                                         הנח סיכה
                                     </button>
                                 </div>
-                                <button type="button" id="useWorkingDestBtn" class="secondary-btn copy-address-btn" tabindex="22">
+                                <!-- כפתור מיוחד: יעד התקין -->
+                                <button type="button" id="useWorkingDestBtn" class="secondary-btn" style="margin-top: 0.5rem; width: 100%;">
                                     <i class="fas fa-copy"></i>
                                     זהה ליעד הרכב התקין
                                 </button>
-                            </div> -->
-                            
-                            <!-- יעד -->
+                            </div>
+
                             <div class="form-group">
                                 <label for="defectiveDestination2">
                                     <i class="fas fa-map-pin"></i>
-                                    יעד:
+                                    יעד רכב תקול:
                                 </label>
                                 <div class="address-input-with-pin">
-                                    <input type="text" id="defectiveDestination2" name="defectiveDestination2" 
-                                        minlength="3" tabindex="23">
-                                    <button type="button" class="pin-drop-btn" data-target="defectiveDestination2" tabindex="24">
+                                    <input type="text" id="defectiveDestination2" name="defectiveDestination2" minlength="3">
+                                    <button type="button" class="pin-drop-btn" data-target="defectiveDestination2">
                                         <i class="fas fa-map-marker-alt"></i>
                                         הנח סיכה
                                     </button>
                                 </div>
                             </div>
-                            
-                            <hr class="column-divider">
-                            
-                            <!-- אנשי קשר רכב תקול -->
-                            <div class="contact-section">
-                                <h5>אנשי קשר</h5>
+                        </div>
 
-                                <div class="contact-card compact">
-                                    <h6>איש קשר במוצא</h6>
-                                    <div class="form-group">
-                                        <label>
-                                            <i class="fas fa-user"></i>
-                                            שם:
-                                        </label>
-                                        <input type="text" id="defectiveSourceContactName2" 
-                                            name="defectiveSourceContactName2" tabindex="25">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>
-                                            <i class="fas fa-phone"></i>
-                                            טלפון:
-                                        </label>
-                                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                            <input type="tel" id="defectiveSourceContactPhone2" 
-                                                name="defectiveSourceContactPhone2" style="flex: 1;" tabindex="26">
-                                            <button type="button" class="copy-working-dest-btn" tabindex="27">
-                                                <i class="fas fa-copy"></i> העתק מיעד תקין
-                                            </button>
-                                        </div>
+                        <!-- אנשי קשר רכב תקול -->
+                        <div class="contacts-grid">
+                            <div class="contact-card">
+                                <h4>איש קשר במוצא (תקול)</h4>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-user"></i>
+                                        שם:
+                                    </label>
+                                    <input type="text" id="defectiveSourceContactName2" name="defectiveSourceContactName2">
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-phone"></i>
+                                        טלפון:
+                                    </label>
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <input type="tel" id="defectiveSourceContactPhone2" name="defectiveSourceContactPhone2" style="flex: 1;">
+                                        <button type="button" class="copy-client-btn" data-target="defectiveSourceContact2">
+                                            <i class="fas fa-copy"></i> זהה ללקוח
+                                        </button>
                                     </div>
                                 </div>
-                                
-                                <!-- <div class="contact-card compact">
-                                    <h6>איש קשר במוצא</h6>
-                                    <div class="form-group">
-                                        <label>
-                                            <i class="fas fa-user"></i>
-                                            שם:
-                                        </label>
-                                        <input type="text" id="defectiveSourceContactName2" 
-                                            name="defectiveSourceContactName2" tabindex="25">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>
-                                            <i class="fas fa-phone"></i>
-                                            טלפון:
-                                        </label>
-                                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                            <input type="tel" id="defectiveSourceContactPhone2" 
-                                                name="defectiveSourceContactPhone2" style="flex: 1;" tabindex="26">
-                                            <button type="button" class="copy-client-btn" 
-                                                    data-target="defectiveSourceContact2" tabindex="27">
-                                                <i class="fas fa-copy"></i> זהה ללקוח
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div> -->
-                                
-                                <div class="contact-card compact">
-                                    <h6>איש קשר ביעד</h6>
-                                    <div class="form-group">
-                                        <label>
-                                            <i class="fas fa-user"></i>
-                                            שם:
-                                        </label>
-                                        <input type="text" id="defectiveDestContactName2" 
-                                            name="defectiveDestContactName2" tabindex="28">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>
-                                            <i class="fas fa-phone"></i>
-                                            טלפון:
-                                        </label>
-                                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                            <input type="tel" id="defectiveDestContactPhone2" 
-                                                name="defectiveDestContactPhone2" style="flex: 1;" tabindex="29">
-                                            <button type="button" class="copy-client-btn" 
-                                                    data-target="defectiveDestContact2" tabindex="30">
-                                                <i class="fas fa-copy"></i> זהה ללקוח
-                                            </button>
-                                        </div>
+                            </div>
+                            
+                            <div class="contact-card">
+                                <h4>איש קשר ביעד (תקול)</h4>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-user"></i>
+                                        שם:
+                                    </label>
+                                    <input type="text" id="defectiveDestContactName2" name="defectiveDestContactName2">
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="fas fa-phone"></i>
+                                        טלפון:
+                                    </label>
+                                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                        <input type="tel" id="defectiveDestContactPhone2" name="defectiveDestContactPhone2" style="flex: 1;">
+                                        <button type="button" class="copy-client-btn" data-target="defectiveDestContact2">
+                                            <i class="fas fa-copy"></i> זהה ללקוח
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- הערות ומחיר - רוחב מלא -->
-                    <div class="full-width-section">
+
                         <hr class="section-divider">
-                        
+
+                        <!-- הערות -->
                         <div class="form-group">
                             <label>
                                 <i class="fas fa-comment"></i>
                                 הערות נוספות:
                             </label>
-                            <textarea id="workingDefectiveNotes" name="workingDefectiveNotes" 
-                                    rows="3" tabindex="31"></textarea>
+                            <textarea id="workingDefectiveNotes" name="workingDefectiveNotes" rows="3"></textarea>
                         </div>
-                        
+
+                        <!-- הזנת מחיר -->
                         <div class="form-section">
                             <h3>מחיר</h3>
                             <div class="form-group">
@@ -647,11 +526,13 @@
                                     הזן מחיר (בש"ח):
                                 </label>
                                 <input type="number" id="workingDefectivePrice" name="workingDefectivePrice" 
-                                    min="0" step="1" placeholder="למשל: 1250" required tabindex="32">
+                                    min="0" step="1" placeholder="למשל: 1250" required>
                             </div>
                         </div>
+
+
+                        
                     </div>
-                </div>
 
 
 

@@ -14,6 +14,8 @@ class AddressManager {
             'defectiveDestination', 
             'defectiveSource2',
             'defectiveDestination2',
+            'workingSource',          // ← הוסף
+            'workingDestination',     // ← הוסף
             'workingCarSource',
             'workingCarDestination',
             'exchangeDefectiveDestination'
@@ -459,6 +461,18 @@ class AddressManager {
      * @param {string} fieldId - Target field ID
      */
     showPinDropModal(fieldId) {
+        // וודא שהשדה קיים
+        const field = document.getElementById(fieldId);
+        if (!field) {
+            console.error('Field not found:', fieldId);
+            return;
+        }
+        
+        // הוסף זמנית לרשימה אם זה שדה עצירה
+        if (fieldId.startsWith('stopAddress') && !this.addressFields.includes(fieldId)) {
+            this.addressFields.push(fieldId);
+        }
+        
         const modal = this.createPinDropModal(fieldId);
         document.body.appendChild(modal);
         
@@ -483,7 +497,14 @@ class AddressManager {
         modal.id = 'pinDropModalActive';
         modal.className = 'pin-drop-modal';
         
-        const fieldLabel = fieldId === 'defectiveSource' ? 'מוצא' : 'יעד';
+        // קביעת תווית דינמית
+        let fieldLabel = 'מיקום';
+        if (fieldId === 'defectiveSource') fieldLabel = 'מוצא';
+        else if (fieldId === 'defectiveDestination') fieldLabel = 'יעד';
+        else if (fieldId.startsWith('stopAddress')) {
+            const stopNumber = fieldId.replace('stopAddress', '');
+            fieldLabel = `עצירה ${parseInt(stopNumber) + 1}`;
+        }
         
         modal.innerHTML = `
             <div class="pin-drop-modal-content">

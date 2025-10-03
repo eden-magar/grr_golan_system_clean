@@ -40,6 +40,14 @@ class FormManager {
         this.initializeDateTime();
         this.checkCompanySpecificFeatures();
         this.checkAdminStatus();
+        this.setupPriceApprovalToggle();
+        this.setupCopyClientButtons();
+        this.setupTravelPillsNew();
+        this.setupWorkingDefectiveButtons();
+        this.hideAllSubForms();
+        this.hidePricingSections();
+
+
     }
 
     /**
@@ -122,6 +130,7 @@ class FormManager {
                 pricingManager.refreshRecommendedTier();
             });
         });
+        
 
         // Date/time change listeners for price recommendations
         const execDate = document.getElementById('executionDate');
@@ -129,6 +138,53 @@ class FormManager {
         
         if (execDate) execDate.addEventListener('change', () => pricingManager.refreshRecommendedTier());
         if (execTime) execTime.addEventListener('change', () => pricingManager.refreshRecommendedTier());
+
+        // אכיפת פורמט 24 שעות
+        // const execTime = document.getElementById('executionTime');
+        if (execTime) {
+            // הסרת AM/PM על ידי שינוי ה-type זמנית
+            execTime.addEventListener('focus', function() {
+                this.type = 'text';
+                this.placeholder = 'HH:MM';
+            });
+            
+            execTime.addEventListener('blur', function() {
+                // ולידציה שהפורמט תקין
+                const value = this.value;
+                const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+                
+                if (value && timeRegex.test(value)) {
+                    // פורמט תקין - החזר ל-time
+                    this.type = 'time';
+                } else if (value) {
+                    // פורמט לא תקין - נקה
+                    this.value = '09:00';
+                    this.type = 'time';
+                    showNotification('יש להזין שעה בפורמט HH:MM (24 שעות)', 'warning', 3000);
+                } else {
+                    this.type = 'time';
+                }
+            });
+            
+            // ולידציה בזמן הקלדה
+            execTime.addEventListener('input', function() {
+                if (this.type === 'text') {
+                    // הסרת תווים לא מספריים מלבד :
+                    this.value = this.value.replace(/[^0-9:]/g, '');
+                    
+                    // אוטו-הוספת : אחרי 2 ספרות
+                    if (this.value.length === 2 && !this.value.includes(':')) {
+                        this.value += ':';
+                    }
+                    
+                    // הגבלה ל-5 תווים (HH:MM)
+                    if (this.value.length > 5) {
+                        this.value = this.value.substring(0, 5);
+                    }
+                }
+            });
+        }
+
     }
 
     /**
@@ -142,11 +198,15 @@ class FormManager {
         });
     }
 
-    /**
-     * Handle towing type change
-     */
     handleTowingTypeChange() {
         const towingType = this.elements.towingTypeSelect.value;
+                
+        // אם לא נבחר כלום, הסתר הכל
+        if (!towingType) {
+            this.hideAllSubForms();
+            this.hidePricingSections();
+            return;
+        }
         
         // Hide all forms first
         this.hideAllSubForms();
@@ -155,23 +215,119 @@ class FormManager {
         if (towingType === 'defective') {
             this.elements.defectiveCarForm?.classList.remove('hidden');
             this.showAddCarButton();
+            this.showPricingSections();
         } else if (towingType === 'exchange') {
-            this.elements.exchangeForm?.classList.remove('hidden');
+    // הצגת טופס תקין-תקול החדש
+            const workingDefectiveForm = document.getElementById('workingDefectiveForm');
+            if (workingDefectiveForm) {
+                workingDefectiveForm.classList.remove('hidden');
+            }
+            // הסתר מחיר ואישור - לא צריך בתקין-תקול
+            this.hidePricingSections();
         }
         
         updateRequiredFieldsVisibility();
         setTimeout(() => this.setupPhoneSanitization(), 100);
+        
     }
+
+    /**
+     * Clear all form fields when switching between forms
+     */
+    clearAllFormFields() {
+        // שדות רכב תקול (defective)
+        const defectiveFields = ['defectiveCarNumber', 'defectiveCarType', 'defectiveCarCode',
+                                'defectiveSource', 'defectiveDestination',
+                                'contactName1', 'contactPhone1', 'destContactName', 'destContactPhone'];
+        
+        // שדות תקין-תקול (working-defective)
+        const workingDefectiveFields = ['workingCarNumber', 'workingCarType', 'workingCarCode', 
+                                    'workingSource', 'workingDestination',
+                                    'workingSourceContactName', 'workingSourceContactPhone',
+                                    'workingDestContactName', 'workingDestContactPhone',
+                                    'defectiveCarNumber2', 'defectiveCarType2', 'defectiveCarCode2',
+                                    'defectiveSource2', 'defectiveDestination2',
+                                    'defectiveSourceContactName2', 'defectiveSourceContactPhone2',
+                                    'defectiveDestContactName2', 'defectiveDestContactPhone2',
+                                    'workingDefectiveNotes'];
+                                            
+        // נקה הכל
+        [...defectiveFields, ...workingDefectiveFields].forEach(id => {
+            const field = document.getElementById(id);
+            if (field) {
+                if (field.value) {
+                    console.log(`🧹 Clearing field: ${id}`);
+                }
+                field.value = ''; // נקה בכל מקרה, גם אם ריק
+            }
+        });
+        
+        // נקה גם בחירות תקלות וגרר
+        if (typeof resetDefectSelections === 'function') resetDefectSelections();
+        if (typeof resetTowSelection === 'function') resetTowSelection();
+
+        // נקה גם את הבחירות של תקין-תקול
+        const selectedDefects2 = document.getElementById('selectedDefects2');
+        if (selectedDefects2) {
+            selectedDefects2.innerHTML = '<div class="selected-defects-placeholder">לא נבחרו תקלות</div>';
+            selectedDefects2.classList.remove('has-selections');
+        }
+
+        const workingSelectedTow = document.getElementById('workingSelectedTow');
+        if (workingSelectedTow) {
+            workingSelectedTow.innerHTML = '<div class="selected-tow-placeholder">לא נבחר גרר</div>';
+            workingSelectedTow.classList.remove('has-selection');
+        }
+
+        const selectedTow2 = document.getElementById('selectedTow2');
+        if (selectedTow2) {
+            selectedTow2.innerHTML = '<div class="selected-tow-placeholder">לא נבחר גרר</div>';
+            selectedTow2.classList.remove('has-selection');
+        }
+            }
 
     /**
      * Hide all sub-forms
      */
     hideAllSubForms() {
-        this.elements.defectiveCarForm?.classList.add('hidden');
-        this.elements.exchangeForm?.classList.add('hidden');
-        this.elements.secondDefectiveCarForm?.classList.add('hidden');
-        this.hideAddCarButton();
-        vehicleManager.clearDataSource('defective2');
+    this.elements.defectiveCarForm?.classList.add('hidden');
+    this.elements.exchangeForm?.classList.add('hidden');
+    this.elements.secondDefectiveCarForm?.classList.add('hidden');
+    
+    // הוסף את הטופס החדש
+    const workingDefectiveForm = document.getElementById('workingDefectiveForm');
+    if (workingDefectiveForm) {
+        workingDefectiveForm.classList.add('hidden');
+    }
+    
+    this.hideAddCarButton();
+    // vehicleManager.clearDataSource('defective2');
+}
+
+    /**
+     * Show pricing sections (for defective and exchange only)
+     */
+    showPricingSections() {
+        const pricingSection = document.getElementById('pricingSection');
+        const priceApprovalSection = document.getElementById('priceApprovalSection');
+        const travelOptions = document.getElementById('travelOptions');
+        
+        if (pricingSection) pricingSection.classList.remove('hidden');
+        if (priceApprovalSection) priceApprovalSection.classList.remove('hidden');
+        if (travelOptions) travelOptions.classList.remove('hidden');
+    }
+
+    /**
+     * Hide pricing sections
+     */
+    hidePricingSections() {
+        const pricingSection = document.getElementById('pricingSection');
+        const priceApprovalSection = document.getElementById('priceApprovalSection');
+        const travelOptions = document.getElementById('travelOptions');
+        
+        if (pricingSection) pricingSection.classList.add('hidden');
+        if (priceApprovalSection) priceApprovalSection.classList.add('hidden');
+        if (travelOptions) travelOptions.classList.add('hidden');
     }
 
     /**
@@ -393,7 +549,7 @@ class FormManager {
      */
     setupPhoneSanitization() {
         const phoneFields = [
-            'contactPhone1', 'destContactPhone', 'contactPhone2', 'destContactPhone2',
+            'clientPhone','contactPhone1', 'destContactPhone', 'contactPhone2', 'destContactPhone2',
             'workingSourcePhone', 'workingDestPhone', 'garagePhone', 'cardHolderPhone'
         ];
 
@@ -611,7 +767,11 @@ class FormManager {
         const now = new Date();
         const currentDate = now.toISOString().split('T')[0];
         const dateField = document.getElementById('executionDate');
-        if (dateField) dateField.value = currentDate;
+        if (dateField) {
+            dateField.value = currentDate;
+            // אכיפת פורמט יום/חודש/שנה
+            dateField.setAttribute('lang', 'he-IL');
+        }
     }
 
     /**
@@ -696,6 +856,63 @@ class FormManager {
         
         this.showSummary();
     }
+    // handleFormSubmit(e) {
+    //     e.preventDefault();
+        
+    //     this.setDefaultOrderNumber();
+        
+    //     const towingType = this.elements.towingTypeSelect.value;
+        
+    //     // בדיקה מיוחדת לתקין-תקול
+    //     if (towingType === 'exchange') {
+    //         const workingDefectiveForm = document.getElementById('workingDefectiveForm');
+    //         const isNewForm = workingDefectiveForm && !workingDefectiveForm.classList.contains('hidden');
+            
+    //         if (isNewForm) {
+    //             // תקין-תקול - שולחים ישירות בלי דף סיכום
+    //             this.handleFinalSubmit(e);
+    //             return;
+    //         }
+    //     }
+        
+    //     // Validate second car choices if applicable
+    //     if (towingType === 'defective' && 
+    //         this.elements.secondDefectiveCarForm && 
+    //         !this.elements.secondDefectiveCarForm.classList.contains('hidden')) {
+            
+    //         if (!this.validateSecondCarChoices()) {
+    //             return;
+    //         }
+    //     }
+        
+    //     // Ensure pricing data is finalized
+    //     pricingManager.updateFinalPrice();
+        
+    //     this.showSummary();
+    // }
+
+    // handleFormSubmit(e) {
+    //     e.preventDefault();
+        
+    //     this.setDefaultOrderNumber();
+        
+    //     const towingType = this.elements.towingTypeSelect.value;
+        
+    //     // Validate second car choices if applicable
+    //     if (towingType === 'defective' && 
+    //         this.elements.secondDefectiveCarForm && 
+    //         !this.elements.secondDefectiveCarForm.classList.contains('hidden')) {
+            
+    //         if (!this.validateSecondCarChoices()) {
+    //             return;
+    //         }
+    //     }
+        
+    //     // Ensure pricing data is finalized
+    //     pricingManager.updateFinalPrice();
+        
+    //     this.showSummary();
+    // }
 
     /**
      * Validate second car choices
@@ -770,7 +987,9 @@ class FormManager {
      */
     updateBasicSummary() {
         const updates = [
-            { summaryId: 'summary-orderNumber', fieldId: 'orderNumber', default: 'לא הוזן' },
+             { summaryId: 'summary-orderNumber', fieldId: 'orderNumber', default: 'לא הוזן' },
+            { summaryId: 'summary-clientName', fieldId: 'clientName', default: 'לא הוזן' },     
+            { summaryId: 'summary-clientPhone', fieldId: 'clientPhone', default: 'לא הוזן' },  
             { summaryId: 'summary-company', value: localStorage.getItem(STORAGE_KEYS.USER_COMPANY) || 'לא ידוע' },
             { summaryId: 'summary-date', value: this.getDateDisplay() },
             { summaryId: 'summary-time', value: this.getTimeDisplay() },
@@ -807,11 +1026,188 @@ class FormManager {
             summaryDefective?.classList.remove('hidden');
             this.updateDefectiveCarSummary();
         } else if (towingType === 'exchange') {
-            summaryExchange?.classList.remove('hidden');
-            this.updateExchangeSummary();
+            // זה תקין-תקול החדש
+            this.updateWorkingDefectiveSummary();
         }
     }
 
+
+    /**
+     * Update working-defective (תקין-תקול) summary
+     */
+    updateWorkingDefectiveSummary() {
+        // יצירת HTML מותאם אישית לתקין-תקול
+        const summaryContainer = document.getElementById('summary-exchange') || 
+                                document.getElementById('summary-defectiveCar');
+        
+        if (!summaryContainer) return;
+        
+        // נקה תוכן קיים
+        summaryContainer.innerHTML = '';
+        summaryContainer.classList.remove('hidden');
+        
+        // HTML מלא לסיכום תקין-תקול
+        summaryContainer.innerHTML = `
+            <div class="car-summary-box">
+                <h3>רכב תקין - מסירה</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="label">מספר רכב:</span>
+                        <span class="value">${document.getElementById('workingCarNumber')?.value || 'לא הוזן'}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">סוג רכב:</span>
+                        <span class="value">${document.getElementById('workingCarType')?.value || 'לא הוזן'}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">קוד רכב:</span>
+                        <span class="value">${document.getElementById('workingCarCode')?.value || 'לא הוזן'}</span>
+                    </div>
+                </div>
+                <div class="summary-item full-width">
+                    <span class="label">סוג גרר:</span>
+                    <span class="value">${this.getSelectedTowText('workingSelectedTow')}</span>
+                </div>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="label">מוצא:</span>
+                        <span class="value">${document.getElementById('workingSource')?.value || 'לא הוזן'}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">יעד:</span>
+                        <span class="value">${document.getElementById('workingDestination')?.value || 'לא הוזן'}</span>
+                    </div>
+                </div>
+                
+                <h4>אנשי קשר - רכב תקין</h4>
+                <div class="summary-grid">
+                    <div class="contact-summary">
+                        <h5>איש קשר במוצא</h5>
+                        <div class="summary-item">
+                            <span class="label">שם:</span>
+                            <span class="value">${document.getElementById('workingSourceContactName')?.value || 'לא הוזן'}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">טלפון:</span>
+                            <span class="value">${document.getElementById('workingSourceContactPhone')?.value || 'לא הוזן'}</span>
+                        </div>
+                    </div>
+                    <div class="contact-summary">
+                        <h5>איש קשר ביעד</h5>
+                        <div class="summary-item">
+                            <span class="label">שם:</span>
+                            <span class="value">${document.getElementById('workingDestContactName')?.value || 'לא הוזן'}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">טלפון:</span>
+                            <span class="value">${document.getElementById('workingDestContactPhone')?.value || 'לא הוזן'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="car-summary-box">
+                <h3>רכב תקול - איסוף</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="label">מספר רכב:</span>
+                        <span class="value">${document.getElementById('defectiveCarNumber2')?.value || 'לא הוזן'}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">סוג רכב:</span>
+                        <span class="value">${document.getElementById('defectiveCarType2')?.value || 'לא הוזן'}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">קוד רכב:</span>
+                        <span class="value">${document.getElementById('defectiveCarCode2')?.value || 'לא הוזן'}</span>
+                    </div>
+                </div>
+                <div class="summary-item full-width">
+                    <span class="label">פירוט תקלה:</span>
+                    <span class="value">${this.getSelectedDefectsText('selectedDefects2')}</span>
+                </div>
+                <div class="summary-item full-width">
+                    <span class="label">סוג גרר:</span>
+                    <span class="value">${this.getSelectedTowText('selectedTow2')}</span>
+                </div>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="label">מוצא:</span>
+                        <span class="value">${document.getElementById('defectiveSource2')?.value || 'לא הוזן'}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">יעד:</span>
+                        <span class="value">${document.getElementById('defectiveDestination2')?.value || 'לא הוזן'}</span>
+                    </div>
+                </div>
+                
+                <h4>אנשי קשר - רכב תקול</h4>
+                <div class="summary-grid">
+                    <div class="contact-summary">
+                        <h5>איש קשר במוצא</h5>
+                        <div class="summary-item">
+                            <span class="label">שם:</span>
+                            <span class="value">${document.getElementById('defectiveSourceContactName2')?.value || 'לא הוזן'}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">טלפון:</span>
+                            <span class="value">${document.getElementById('defectiveSourceContactPhone2')?.value || 'לא הוזן'}</span>
+                        </div>
+                    </div>
+                    <div class="contact-summary">
+                        <h5>איש קשר ביעד</h5>
+                        <div class="summary-item">
+                            <span class="label">שם:</span>
+                            <span class="value">${document.getElementById('defectiveDestContactName2')?.value || 'לא הוזן'}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">טלפון:</span>
+                            <span class="value">${document.getElementById('defectiveDestContactPhone2')?.value || 'לא הוזן'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="car-summary-box">
+                <h3>מחיר</h3>
+                <div class="summary-item">
+                    <span class="label">מחיר סופי:</span>
+                    <span class="value">${document.getElementById('workingDefectivePrice')?.value || 'לא הוזן'} ₪</span>
+                </div>
+            </div>
+            
+            <div class="summary-item full-width">
+                <span class="label">הערות נוספות:</span>
+                <span class="value">${document.getElementById('workingDefectiveNotes')?.value || 'אין הערות'}</span>
+            </div>
+        `;
+    }
+
+    /**
+     * Get selected defects text from container
+     */
+    getSelectedDefectsText(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return 'לא נבחרו תקלות';
+        
+        const tags = container.querySelectorAll('.defect-tag');
+        if (tags.length === 0) return 'לא נבחרו תקלות';
+        
+        return Array.from(tags).map(tag => tag.textContent).join(', ');
+    }
+
+    /**
+     * Get selected tow text from container
+     */
+    getSelectedTowText(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return 'לא נבחר גרר';
+        
+        const tags = container.querySelectorAll('.tow-tag');
+        if (tags.length === 0) return 'לא נבחר גרר';
+        
+        return Array.from(tags).map(tag => tag.textContent).join(', ');
+    }
     /**
      * Update defective car summary
      */
@@ -1126,6 +1522,9 @@ class FormManager {
 
             const result = await sender(formData);
 
+            console.log('🔍 Result from server:', result);
+            console.log('🔍 Form data sent:', formData);
+
             // הצליח
             if (result && result.success !== false) {
                 this.hideLoadingModal();
@@ -1190,6 +1589,12 @@ class FormManager {
             data.secondCarSourceChoice = sourceChoice?.dataset.target || null;
             data.secondCarDestinationChoice = destChoice?.dataset.target || null;
         }
+
+        // Add working-defective flag if towingType = exchange
+        if (this.elements.towingTypeSelect?.value === 'exchange') {
+            data.isNewWorkingDefective = true;
+        }
+        console.log("📦 Form data collected:", data);
         
         return data;
     }
@@ -1212,12 +1617,6 @@ class FormManager {
         this.loadingModal.classList.add('show');
         }
 
-        hideLoadingModal() {
-        if (this.loadingModal) {
-            this.loadingModal.remove();
-            this.loadingModal = null;
-        }
-        }
 
     /**
      * Hide loading modal
@@ -1322,14 +1721,114 @@ class FormManager {
         
         // Reset pricing
         pricingManager.reset();
+
+        // ✅ איפוס בחירות תקלות וגרר - טופס תקול רגיל
+        const selectedDefects = document.getElementById('selectedDefects');
+        if (selectedDefects) {
+            selectedDefects.innerHTML = '<div class="selected-defects-placeholder">לא נבחרו תקלות</div>';
+            selectedDefects.classList.remove('has-selections');
+        }
         
+        const selectedTow = document.getElementById('selectedTow');
+        if (selectedTow) {
+            selectedTow.innerHTML = '<div class="selected-tow-placeholder">לא נבחר גרר</div>';
+            selectedTow.classList.remove('has-selection');
+        }
+        
+        // ✅ איפוס בחירות תקלות וגרר - תקין-תקול (רכב תקין)
+        const workingSelectedTow = document.getElementById('workingSelectedTow');
+        if (workingSelectedTow) {
+            workingSelectedTow.innerHTML = '<div class="selected-tow-placeholder">לא נבחר גרר</div>';
+            workingSelectedTow.classList.remove('has-selection');
+        }
+        
+        // ✅ איפוס בחירות תקלות וגרר - תקין-תקול (רכב תקול)
+        const selectedDefects2 = document.getElementById('selectedDefects2');
+        if (selectedDefects2) {
+            selectedDefects2.innerHTML = '<div class="selected-defects-placeholder">לא נבחרו תקלות</div>';
+            selectedDefects2.classList.remove('has-selections');
+        }
+        
+        const selectedTow2 = document.getElementById('selectedTow2');
+        if (selectedTow2) {
+            selectedTow2.innerHTML = '<div class="selected-tow-placeholder">לא נבחר גרר</div>';
+            selectedTow2.classList.remove('has-selection');
+        }
+
         // Show main form
         this.showMainForm();
         
         // Re-initialize components
         this.initializeDateTime();
         this.setDefaultOrderNumber();
+
+        // איפוס מצב הצעת מחיר אושרה
+        document.getElementById('priceApprovedYes')?.classList.remove('active');
+        document.getElementById('priceApprovedNo')?.classList.remove('active');
+        document.getElementById('approvedSection')?.classList.add('hidden');
+
+        // איפוס pills
+        document.querySelectorAll('.pill-toggle').forEach(pill => {
+            pill.classList.remove('active');
+        });
+        document.getElementById('isFromGarage').value = 'false';
+        document.getElementById('isOutskirts').value = 'false';
     }
+
+    // resetForm() {
+    //     // Reset all form fields
+    //     if (this.elements.mainForm) {
+    //         this.elements.mainForm.reset();
+    //     }
+        
+    //     // Hide all sub-forms
+    //     this.hideAllSubForms();
+        
+    //     // Reset choice buttons
+    //     document.querySelectorAll('.choice-btn').forEach(btn => {
+    //         btn.classList.remove('selected');
+    //     });
+        
+    //     // Reset payment buttons
+    //     document.querySelectorAll('.payment-btn').forEach(btn => {
+    //         btn.classList.remove('active');
+    //     });
+    //     document.querySelector('.payment-btn[data-payment="cash"]')?.classList.add('active');
+        
+    //     // Hide credit card section
+    //     document.getElementById('creditCardSection')?.classList.add('hidden');
+        
+    //     // Reset date to today
+    //     document.querySelector('[data-target="today"]')?.classList.add('active');
+    //     document.querySelector('[data-target="other-date"]')?.classList.remove('active');
+    //     document.getElementById('datePicker')?.classList.add('hidden');
+        
+    //     // Clear vehicle data
+    //     vehicleManager.clearAllData();
+        
+    //     // Reset pricing
+    //     pricingManager.reset();
+
+
+    //     // Show main form
+    //     this.showMainForm();
+        
+    //     // Re-initialize components
+    //     this.initializeDateTime();
+    //     this.setDefaultOrderNumber();
+
+    //     // איפוס מצב הצעת מחיר אושרה
+    //     document.getElementById('priceApprovedYes')?.classList.remove('active');
+    //     document.getElementById('priceApprovedNo')?.classList.remove('active');
+    //     document.getElementById('approvedSection')?.classList.add('hidden');
+
+    //      // איפוס pills
+    //     document.querySelectorAll('.pill-toggle').forEach(pill => {
+    //         pill.classList.remove('active');
+    //     });
+    //     document.getElementById('isFromGarage').value = 'false';
+    //     document.getElementById('isOutskirts').value = 'false';
+    // }
 
     /**
      * Destroy form manager and clean up
@@ -1373,9 +1872,49 @@ class FormManager {
     }
 
     /**
+     * Setup working-defective form buttons
+     */
+    setupWorkingDefectiveButtons() {
+        // כפתור בחירת גרר לרכב תקין
+        const workingTowBtn = document.getElementById('workingTowSelectorBtn');
+        if (workingTowBtn) {
+            workingTowBtn.addEventListener('click', () => this.showTowModal('workingSelectedTow'));
+        }
+        
+        // כפתור בחירת תקלות לרכב תקול (2)
+        const defect2Btn = document.getElementById('defectSelector2Btn');
+        if (defect2Btn) {
+            defect2Btn.addEventListener('click', () => this.showDefectModal('selectedDefects2'));
+        }
+        
+        // כפתור בחירת גרר לרכב תקול (2)
+        const towDefective2Btn = document.getElementById('defectiveTowSelector2Btn');
+        if (towDefective2Btn) {
+            towDefective2Btn.addEventListener('click', () => this.showTowModal('selectedTow2'));
+        }
+
+        // כפתור "זהה ליעד הרכב התקין"
+        const useWorkingDestBtn = document.getElementById('useWorkingDestBtn');
+        if (useWorkingDestBtn) {
+            useWorkingDestBtn.addEventListener('click', () => {
+                const workingDest = document.getElementById('workingDestination').value;
+                const defectiveSource2 = document.getElementById('defectiveSource2');
+                
+                if (workingDest && defectiveSource2) {
+                    defectiveSource2.value = workingDest;
+                    showNotification('כתובת הועתקה מיעד הרכב התקין', 'success', 2000);
+                } else if (!workingDest) {
+                    showNotification('נא למלא תחילה את יעד הרכב התקין', 'warning', 2000);
+                }
+            });
+        }
+    }
+
+    /**
      * Show tow selection modal
      */
-    showTowModal() {
+    showTowModal(targetContainer = 'selectedTow') {
+        this.currentTowTarget = targetContainer;
         this.createTowModal();
     }
 
@@ -1456,15 +1995,17 @@ class FormManager {
             selectedTows.push(option.querySelector('span').textContent);
         });
         
-        this.updateSelectedTow(selectedTows);
+        // עדכן את הקונטיינר הנכון
+        const targetId = this.currentTowTarget || 'selectedTow';
+        this.updateSelectedTow(selectedTows, targetId);
         document.getElementById('towModal').remove();
     }
 
     /**
      * Update the display of selected tow
      */
-    updateSelectedTow(tows) {
-        const container = document.getElementById('selectedTow');
+    updateSelectedTow(tows, containerId = 'selectedTow') {
+        const container = document.getElementById(containerId);
         if (!container) return;
         
         if (tows.length === 0) {
@@ -1482,7 +2023,8 @@ class FormManager {
     /**
      * Show defect selection modal
      */
-    showDefectModal() {
+    showDefectModal(targetContainer = 'selectedDefects') {
+        this.currentDefectTarget = targetContainer;
         this.createDefectModal();
     }
 
@@ -1592,15 +2134,17 @@ class FormManager {
             }
         });
         
-        this.updateSelectedDefects(selectedDefects);
+        // עדכן את הקונטיינר הנכון
+        const targetId = this.currentDefectTarget || 'selectedDefects';
+        this.updateSelectedDefects(selectedDefects, targetId);
         document.getElementById('defectModal').remove();
     }
 
     /**
      * Update the display of selected defects
      */
-    updateSelectedDefects(defects) {
-        const container = document.getElementById('selectedDefects');
+    updateSelectedDefects(defects, containerId = 'selectedDefects') {
+        const container = document.getElementById(containerId);
         if (!container) return;
         
         if (defects.length === 0) {
@@ -1623,18 +2167,191 @@ class FormManager {
             window.addressManager.setupPinDropButtons();
         }
     }
+
+    /**
+     * Setup price approval toggle functionality
+     */
+    setupPriceApprovalToggle() {
+        const approvedYes = document.getElementById('priceApprovedYes');
+        const approvedNo = document.getElementById('priceApprovedNo');
+        const approvedSection = document.getElementById('approvedSection');
+        const submitBtn = document.getElementById('submitToSummary');
+        const submitBtnText = document.getElementById('submitBtnText');
+
+        if (approvedYes) {
+            approvedYes.addEventListener('click', () => {
+                approvedYes.classList.add('active');
+                approvedNo.classList.remove('active');
+                approvedSection.classList.remove('hidden');
+                if (submitBtnText) submitBtnText.textContent = 'שלח טופס';
+                if (submitBtn) submitBtn.querySelector('i').className = 'fas fa-paper-plane';
+            });
+        }
+
+        if (approvedNo) {
+            approvedNo.addEventListener('click', () => {
+                approvedNo.classList.add('active');
+                approvedYes.classList.remove('active');
+                approvedSection.classList.add('hidden');
+                if (submitBtnText) submitBtnText.textContent = 'הצג הצעת מחיר';
+                if (submitBtn) submitBtn.querySelector('i').className = 'fas fa-calculator';
+            });
+        }
+    }
+
+    /**
+     * Setup copy client details buttons
+     */
+    setupCopyClientButtons() {
+        const copyButtons = document.querySelectorAll('.copy-client-btn');
+        
+        copyButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.target;
+                const clientName = document.getElementById('clientName').value;
+                const clientPhone = document.getElementById('clientPhone').value;
+                
+                // טופס תקול מקורי
+                if (target === 'contact1') {
+                    document.getElementById('contactName1').value = clientName;
+                    document.getElementById('contactPhone1').value = clientPhone;
+                } else if (target === 'contact2') {
+                    document.getElementById('destContactName').value = clientName;
+                    document.getElementById('destContactPhone').value = clientPhone;
+                } else if (target === 'cardholder') {
+                    document.getElementById('cardHolderPhone').value = clientPhone;
+                } else if (target === 'invoice') {
+                    document.getElementById('invoiceName').value = clientName;
+                }
+                // תקין-תקול - רכב תקין
+                else if (target === 'workingSourceContact') {
+                    document.getElementById('workingSourceContactName').value = clientName;
+                    document.getElementById('workingSourceContactPhone').value = clientPhone;
+                } else if (target === 'workingDestContact') {
+                    document.getElementById('workingDestContactName').value = clientName;
+                    document.getElementById('workingDestContactPhone').value = clientPhone;
+                }
+                // תקין-תקול - רכב תקול
+                else if (target === 'defectiveSourceContact2') {
+                    document.getElementById('defectiveSourceContactName2').value = clientName;
+                    document.getElementById('defectiveSourceContactPhone2').value = clientPhone;
+                } else if (target === 'defectiveDestContact2') {
+                    document.getElementById('defectiveDestContactName2').value = clientName;
+                    document.getElementById('defectiveDestContactPhone2').value = clientPhone;
+                }
+                
+                // משוב ויזואלי
+                showNotification('פרטי הלקוח הועתקו', 'success', 2000);
+            });
+        });
+
+        // כפתור מיוחד: העתקה מיעד תקין לאיש קשר במוצא תקול
+        const copyWorkingDestBtn = document.querySelector('.copy-working-dest-btn');
+        if (copyWorkingDestBtn) {
+            copyWorkingDestBtn.addEventListener('click', () => {
+                const workingDestName = document.getElementById('workingDestContactName').value;
+                const workingDestPhone = document.getElementById('workingDestContactPhone').value;
+                
+                document.getElementById('defectiveSourceContactName2').value = workingDestName;
+                document.getElementById('defectiveSourceContactPhone2').value = workingDestPhone;
+                
+                showNotification('פרטי איש הקשר מיעד התקין הועתקו', 'success', 2000);
+            });
+        }
+    }
+
+    collectRoutePoints() {
+        const points = [];
+        
+        // רק מוצא ויעד - ללא עצירות
+        const srcField = document.getElementById('defectiveSource');
+        if (srcField?.value.trim()) {
+            points.push({
+                type: 'source',
+                id: 'source',
+                label: 'מוצא',
+                address: srcField.value
+            });
+        }
+        
+        const destField = document.getElementById('defectiveDestination');
+        if (destField?.value.trim()) {
+            points.push({
+                type: 'destination',
+                id: 'destination',
+                label: 'יעד',
+                address: destField.value
+            });
+        }
+        
+        return points;
+    }
+
+    setupTravelPills() {
+        const garageBtn = document.getElementById("garageToggle");
+        const outskirtsBtn = document.getElementById("outskritsToggle");
+
+        const garageInput = document.getElementById("isFromGarage");
+        const outskirtsInput = document.getElementById("isOutskirts");
+
+        if (garageBtn && garageInput) {
+            garageBtn.addEventListener("click", () => {
+                const newValue = garageInput.value === "true" ? "false" : "true";
+                garageInput.value = newValue;
+                garageBtn.classList.toggle("active", newValue === "true");
+                garageInput.dispatchEvent(new Event("change")); // חשוב: לעדכן PricingManager
+            });
+        }
+
+        if (outskirtsBtn && outskirtsInput) {
+            outskirtsBtn.addEventListener("click", () => {
+                const newValue = outskirtsInput.value === "true" ? "false" : "true";
+                outskirtsInput.value = newValue;
+                outskirtsBtn.classList.toggle("active", newValue === "true");
+                outskirtsInput.dispatchEvent(new Event("change")); // חשוב: לעדכן PricingManager
+            });
+        }
+    }
+
+    setupTravelPillsNew() {
+    console.log("🚀 setupTravelPillsNew started");
+
+    const garageBtn = document.getElementById("garageToggle");
+    const outskirtsBtn = document.getElementById("outskritsToggle");
+
+    // חניון
+    if (garageBtn) {
+        garageBtn.addEventListener("click", () => {
+            garageBtn.classList.toggle("active");
+            const isActive = garageBtn.classList.contains("active");
+            pricingManager.state.fromGarage = isActive;
+            console.log("🏭 fromGarage =", isActive);
+
+            // ✅ קריאה לחישוב מחדש דרך PricingManager
+            pricingManager.calculateAndUpdatePrice();
+        });
+    }
+
+    // שטחים
+    if (outskirtsBtn) {
+        outskirtsBtn.addEventListener("click", () => {
+            outskirtsBtn.classList.toggle("active");
+            const isActive = outskirtsBtn.classList.contains("active");
+            pricingManager.state.outskirts = isActive;
+            console.log("🌍 outskirts =", isActive);
+
+            // ✅ גם פה נחשב מחדש
+            pricingManager.recalculatePrices();
+        });
+    }
+}
 }
 
-
-
 // Initialize form manager when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    window.formManager = new FormManager();
-    window.formManager.init();
-});
+// document.addEventListener('DOMContentLoaded', () => {
+//     window.formManager = new FormManager();
+//     window.formManager.init();
+// });
 
 // Expose methods for global access
 window.FormManager = FormManager;
-
-
-  
