@@ -426,13 +426,42 @@ function collectPricingAndPaymentData() {
     
     let finalPrice = 0;
 
-// בדוק אם זה תקין-תקול עם מחיר ידני
-const workingDefectivePrice = document.getElementById('workingDefectivePrice');
-if (workingDefectivePrice && workingDefectivePrice.value) {
-    finalPrice = Number(workingDefectivePrice.value) || 0;
-} else if (window.pricingManager && typeof window.pricingManager.getFinalPrice === 'function') {
-    finalPrice = window.pricingManager.getFinalPrice();
-}
+    // בדוק אם זה תקין-תקול עם מחיר ידני
+    const workingDefectivePrice = document.getElementById('workingDefectivePrice');
+    if (workingDefectivePrice && workingDefectivePrice.value) {
+        finalPrice = Number(workingDefectivePrice.value) || 0;
+    } else if (window.pricingManager && typeof window.pricingManager.getFinalPrice === 'function') {
+        finalPrice = window.pricingManager.getFinalPrice();
+    }
+
+    // ריענון המלצת מחיר לפי זמן נוכחי (ללא סכומים)
+    if (window.pricingManager && typeof window.pricingManager.refreshRecommendedTier === 'function') {
+        window.pricingManager.refreshRecommendedTier();
+        console.log('ריענון המלצת מחיר בוצע');
+    }
+
+    // וידוא שההמלצה מוצגת גם אם אין עדיין מחירים
+    setTimeout(() => {
+        if (window.pricingManager && typeof window.pricingManager.refreshRecommendedTier === 'function') {
+            window.pricingManager.refreshRecommendedTier();
+        }
+    }, 100);
+
+    // אם המחיר עדיין 0, זה אומר שאין חישוב - אז זה כנראה מחיר ידני ברכב תקול
+    if (finalPrice === 0 && window.pricingManager && window.pricingManager.isManualMode()) {
+        const manualInput = document.getElementById('customPrice');
+        if (manualInput && manualInput.value) {
+            finalPrice = Number(manualInput.value) || 0;
+        }
+    }
+
+// // בדוק אם זה תקין-תקול עם מחיר ידני
+// const workingDefectivePrice = document.getElementById('workingDefectivePrice');
+// if (workingDefectivePrice && workingDefectivePrice.value) {
+//     finalPrice = Number(workingDefectivePrice.value) || 0;
+// } else if (window.pricingManager && typeof window.pricingManager.getFinalPrice === 'function') {
+//     finalPrice = window.pricingManager.getFinalPrice();
+// }
     
     const data = {
         pricing: pricing,
@@ -453,14 +482,15 @@ if (workingDefectivePrice && workingDefectivePrice.value) {
     if (window.pricingManager && typeof window.pricingManager.getDistanceData === 'function') {
         data.distanceData = window.pricingManager.getDistanceData();
     }
-    
+
     if (window.pricingManager && typeof window.pricingManager.getPriceBreakdown === 'function') {
         const breakdown = window.pricingManager.getPriceBreakdown();
         const isManualMode = window.pricingManager.isManualMode();
         
         if (isManualMode) {
+            // אם זה מחיר ידני, השתמש ב-finalPrice שחישבנו למעלה
             data.priceBredown = {
-                totalPrice: breakdown.finalTotal,
+                totalPrice: finalPrice > 0 ? finalPrice : breakdown.finalTotal,
                 isManual: true
             };
         } else {
@@ -479,6 +509,32 @@ if (workingDefectivePrice && workingDefectivePrice.value) {
             };
         }
     }
+    
+    // if (window.pricingManager && typeof window.pricingManager.getPriceBreakdown === 'function') {
+    //     const breakdown = window.pricingManager.getPriceBreakdown();
+    //     const isManualMode = window.pricingManager.isManualMode();
+        
+    //     if (isManualMode) {
+    //         data.priceBredown = {
+    //             totalPrice: breakdown.finalTotal,
+    //             isManual: true
+    //         };
+    //     } else {
+    //         data.priceBredown = {
+    //             vehicleBasePrice: breakdown.vehicleBasePrice,
+    //             vehicleDescription: breakdown.vehicleDescription,
+    //             travelDistance: breakdown.travelDistance,
+    //             travelPrice: breakdown.travelPrice,
+    //             workFees: breakdown.workFees,
+    //             timeSurcharge: breakdown.timeSurcharge,
+    //             areaSurcharge: breakdown.outskirtsAmount,
+    //             totalPrice: breakdown.finalTotal,
+    //             totalBeforeVAT: breakdown.subtotalBeforeVAT,
+    //             vatAmount: breakdown.vatAmount,
+    //             vatPercentage: 18
+    //         };
+    //     }
+    // }
     
     if (selectedPaymentType === 'credit') {
         data.payment.idNumber = document.getElementById('idNumber').value || '';

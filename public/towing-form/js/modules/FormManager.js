@@ -315,7 +315,23 @@ class FormManager {
         if (pricingSection) pricingSection.classList.remove('hidden');
         if (priceApprovalSection) priceApprovalSection.classList.remove('hidden');
         if (travelOptions) travelOptions.classList.remove('hidden');
+        
+        // הוספת המלצה אחרי שהכרטיסים מוצגים
+        if (window.pricingManager && typeof window.pricingManager.refreshRecommendedTier === 'function') {
+            setTimeout(() => {
+                window.pricingManager.refreshRecommendedTier();
+            }, 100);
+        }
     }
+    // showPricingSections() {
+    //     const pricingSection = document.getElementById('pricingSection');
+    //     const priceApprovalSection = document.getElementById('priceApprovalSection');
+    //     const travelOptions = document.getElementById('travelOptions');
+        
+    //     if (pricingSection) pricingSection.classList.remove('hidden');
+    //     if (priceApprovalSection) priceApprovalSection.classList.remove('hidden');
+    //     if (travelOptions) travelOptions.classList.remove('hidden');
+    // }
 
     /**
      * Hide pricing sections
