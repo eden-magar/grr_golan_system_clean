@@ -346,11 +346,40 @@ app.post('/api/delete-user', async (req, res) => {
 const CALENDAR_URL = process.env.CALENDAR_URL?.trim();
 const SHEETS_URL   = process.env.SHEETS_URL?.trim();
 
+// ========== פונקציה לשליחה ל-Google Apps Script ==========
+async function sendToGoogleAppsScript(url, formData) {
+    const encodedData = encodeURIComponent(JSON.stringify(formData));
+    
+    // שליחה ראשונה - תקבל redirect
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "data=" + encodedData,
+        redirect: 'manual' // לא לעקוב אוטומטית
+    });
+    
+    // אם יש redirect, שלח שוב ל-URL החדש
+    if (response.status === 302 || response.status === 301) {
+        const redirectUrl = response.headers.get('location');
+        if (redirectUrl) {
+            console.log(`↪️ Following redirect to: ${redirectUrl.substring(0, 50)}...`);
+            
+            // שליחה שנייה ל-URL של ה-redirect
+            const finalResponse = await fetch(redirectUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "data=" + encodedData
+            });
+            return finalResponse;
+        }
+    }
+    
+    return response;
+}
 
 app.post("/api/submit-towing", async (req, res) => {
   try {
     console.log("📥 Received form submission");
-    // console.log("📥 Full req.body received from client:", JSON.stringify(req.body, null, 2));
 
     // מצב פיתוח / שירותים מדומים
     if (MOCK_SERVICES) {
@@ -365,12 +394,7 @@ app.post("/api/submit-towing", async (req, res) => {
       return res.status(200).json(mockResponse);
     }
 
-    // מצב פרודקשן — שולחים ל־Apps Script
-    // console.log("📥 Raw req.body before encoding:", JSON.stringify(req.body, null, 2));
-
-    const encodedBody = "data=" + encodeURIComponent(JSON.stringify(req.body));
-    // console.log("📦 Payload that will be sent to Google (urlencoded):", encodedBody);
-
+    // בדיקת הגדרות
     if (!process.env.CALENDAR_URL || !process.env.SHEETS_URL) {
       console.error("❌ Missing CALENDAR_URL or SHEETS_URL in env");
       return res.status(500).json({ success: false, message: "Server config error (missing URLs)" });
@@ -378,24 +402,16 @@ app.post("/api/submit-towing", async (req, res) => {
 
     console.log("📤 Sending to Google in production mode...");
 
-    // שימי לב: רק fetch-ים בתוך Promise.all (בלי console.log בתוך המערך)
+    // שליחה ל-Google Apps Script עם טיפול ב-redirect
     const [calendarResp, sheetsResp] = await Promise.all([
-      fetch(process.env.CALENDAR_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: encodedBody
-      }),
-      fetch(process.env.SHEETS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: encodedBody
-      })
+      sendToGoogleAppsScript(process.env.CALENDAR_URL, req.body),
+      sendToGoogleAppsScript(process.env.SHEETS_URL, req.body)
     ]);
 
-    // אופציונלי: לבדוק סטטוסים ולהדפיס טקסט שגיאה במקרה הצורך
     const calOk = calendarResp.ok;
     const shOk  = sheetsResp.ok;
-    // console.log("🗓️ Calendar status:", calendarResp.status, "📄 Sheets status:", sheetsResp.status);
+    
+    console.log("🗓️ Calendar status:", calendarResp.status, "📄 Sheets status:", sheetsResp.status);
 
     if (!calOk || !shOk) {
       const calText = await calendarResp.text().catch(() => "");
@@ -404,6 +420,7 @@ app.post("/api/submit-towing", async (req, res) => {
       return res.status(502).json({ success: false, message: "Google Apps Script error" });
     }
 
+    console.log("✅ Successfully sent to Google");
     res.status(200).json({ success: true, message: "נשלח בהצלחה" });
 
   } catch (err) {
