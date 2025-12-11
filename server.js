@@ -347,35 +347,52 @@ const CALENDAR_URL = process.env.CALENDAR_URL?.trim();
 const SHEETS_URL   = process.env.SHEETS_URL?.trim();
 
 // ========== פונקציה לשליחה ל-Google Apps Script ==========
-async function sendToGoogleAppsScript(url, formData) {
-    const encodedData = encodeURIComponent(JSON.stringify(formData));
-    
-    // שליחה ראשונה - תקבל redirect
-    const response = await fetch(url, {
+app.post("/api/submit-towing", async (req, res) => {
+  try {
+    console.log("📥 Received form submission");
+
+    if (MOCK_SERVICES) {
+      console.log("🎭 Development mode - not sending to Google");
+      const formData = req.body;
+      await saveMockData(formData, 'calendar');
+      await saveMockData(formData, 'sheets');
+      const mockResponse = createMockResponse(formData, 'development');
+      console.log("✅ Data saved in development mode");
+      return res.status(200).json(mockResponse);
+    }
+
+    if (!process.env.CALENDAR_URL || !process.env.SHEETS_URL) {
+      console.error("❌ Missing CALENDAR_URL or SHEETS_URL in env");
+      return res.status(500).json({ success: false, message: "Server config error" });
+    }
+
+    console.log("📤 Sending to Google in production mode...");
+
+    const encodedBody = "data=" + encodeURIComponent(JSON.stringify(req.body));
+
+    const [calendarResp, sheetsResp] = await Promise.all([
+      fetch(process.env.CALENDAR_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "data=" + encodedData,
-        redirect: 'manual' // לא לעקוב אוטומטית
-    });
-    
-    // אם יש redirect, שלח שוב ל-URL החדש
-    if (response.status === 302 || response.status === 301) {
-        const redirectUrl = response.headers.get('location');
-        if (redirectUrl) {
-            console.log(`↪️ Following redirect to: ${redirectUrl.substring(0, 50)}...`);
-            
-            // שליחה שנייה ל-URL של ה-redirect
-            const finalResponse = await fetch(redirectUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: "data=" + encodedData
-            });
-            return finalResponse;
-        }
-    }
-    
-    return response;
-}
+        body: encodedBody,
+        redirect: 'follow'
+      }),
+      fetch(process.env.SHEETS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: encodedBody,
+        redirect: 'follow'
+      })
+    ]);
+
+    console.log("🗓️ Calendar status:", calendarResp.status);
+    res.status(200).json({ success: true, message: "נשלח בהצלחה" });
+
+  } catch (err) {
+    console.error("❌ Error sending data:", err);
+    res.status(500).json({ success: false, message: "שגיאת שרת" });
+  }
+});
 
 app.post("/api/submit-towing", async (req, res) => {
   try {
