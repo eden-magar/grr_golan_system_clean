@@ -228,7 +228,7 @@ class VehicleManager {
         
         if (!typeField) return;
 
-        console.log('🚗 Vehicle data:', vehicle);
+        console.log('🚗 Vehicle data received:', vehicle);
 
         // Create vehicle description
         let vehicleDescription = '';
@@ -238,17 +238,27 @@ class VehicleManager {
 
         typeField.value = sanitizeText(vehicleDescription);
 
-        // Save additional vehicle data as data attributes
+        // Save ALL vehicle data as data attributes
         typeField.dataset.color = vehicle.color || '';
-        typeField.dataset.gear = vehicle.gear || vehicle.transmission || '';
+        typeField.dataset.gear = vehicle.gear || vehicle.transmission || vehicle.gearType || '';
+        typeField.dataset.gearType = vehicle.gearType || vehicle.gear || vehicle.transmission || '';
         typeField.dataset.machineryType = vehicle.machineryType || '';
         typeField.dataset.selfWeight = vehicle.selfWeight || '';
+        typeField.dataset.totalWeight = vehicle.totalWeight || '';
         typeField.dataset.totalWeightTon = vehicle.totalWeightTon || '';
         typeField.dataset.fuelType = vehicle.fuelType || '';
         typeField.dataset.driveType = vehicle.driveType || '';
-        typeField.dataset.gearType = vehicle.gearType || '';
+        typeField.dataset.driveTechnology = vehicle.driveTechnology || '';
+        typeField.dataset.engineVolume = vehicle.engineVolume || '';
+        typeField.dataset.trimLevel = vehicle.trimLevel || '';
 
-        console.log(`Data saved for ${context}: color=${vehicle.color}, gear=${vehicle.gear || vehicle.transmission}`);
+        console.log(`✅ Data saved for ${context}:`, {
+            color: typeField.dataset.color,
+            fuelType: typeField.dataset.fuelType,
+            gear: typeField.dataset.gear,
+            driveType: typeField.dataset.driveType,
+            totalWeight: typeField.dataset.totalWeight
+        });
 
         // Show vehicle type field
         this.showVehicleTypeField(typeFieldId);
@@ -265,6 +275,7 @@ class VehicleManager {
 
         // Show vehicle info
         this.showVehicleInfo(vehicle, status, towTypes, context);
+        
         // הפעלת חישוב מחיר מחדש לאחר טעינת נתוני רכב
         if (window.pricingManager && typeof window.pricingManager.debouncedCalculation === 'function') {
             window.pricingManager.debouncedCalculation(1000);
@@ -319,9 +330,9 @@ class VehicleManager {
      */
     showVehicleStatusWarnings(status) {
         if (status.isCanceled) {
-            showNotification('הרכב מבוטל סופית ואינו כשיר לנסיעה!', 'error');
+            showNotification('🚫 הרכב מבוטל סופית ואינו כשיר לנסיעה!', 'error');
         } else if (status.isInactive) {
-            showNotification('הרכב לא מופיע כרכב פעיל במאגר משרד התחבורה', 'warning');
+            showNotification('⚠️ הרכב לא מופיע כרכב פעיל במאגר משרד התחבורה', 'warning');
         }
     }
 
@@ -352,7 +363,7 @@ class VehicleManager {
                 private: 'רכב פרטי',
                 motorcycle: 'דו-גלגלי',
                 heavy: 'מעל 3.5 טון',
-                machinery: 'צמ"ד'
+                machinery: 'צמ"ה'
             };
 
             const statusMap = {
@@ -367,40 +378,43 @@ class VehicleManager {
             sourceText = [vehicleType, vehicleStatus].filter(Boolean).join(' • ');
         }
 
-        // Add additional info
+        // Collect all available info - בסדר הנכון
         const additionalInfo = [];
 
-        // Gear
-        const gearType = field.dataset.gear || field.dataset.gearType;
-        if (gearType) {
-            additionalInfo.push(`גיר: ${gearType}`);
+        // 1. צבע - COLOR
+        const color = vehicle.color || field.dataset.color;
+        if (color) {
+            additionalInfo.push(`צבע: ${color}`);
         }
 
-        // Weight
-        const weight = field.dataset.selfWeight || field.dataset.totalWeightTon || vehicle.weight;
-        if (weight) {
-            let weightText;
-            if (typeof weight === 'string') {
-                weightText = weight.includes('טון') ? weight : `${weight} ק"ג`;
-            } else {
-                weightText = `${weight} ק"ג`;
-            }
-            additionalInfo.push(`משקל: ${weightText}`);
-        }
-
-        // Fuel type
-        const fuelType = field.dataset.fuelType;
+        // 2. דלק - Fuel type
+        const fuelType = vehicle.fuelType || field.dataset.fuelType;
         if (fuelType) {
             additionalInfo.push(`דלק: ${fuelType}`);
         }
 
-        // Drive type
-        const driveType = field.dataset.driveType;
+        // 3. גיר - Gear
+        const gearType = vehicle.gear || vehicle.gearType || vehicle.transmission || field.dataset.gear || field.dataset.gearType;
+        if (gearType) {
+            additionalInfo.push(`גיר: ${gearType}`);
+        }
+
+        // 4. הנעה - Drive type
+        const driveType = vehicle.driveType || field.dataset.driveType;
         if (driveType) {
             additionalInfo.push(`הנעה: ${driveType}`);
         }
 
-        // Create display
+        // 5. משקל - Weight
+        const totalWeight = vehicle.totalWeight || field.dataset.totalWeight;
+        const selfWeight = vehicle.selfWeight || field.dataset.selfWeight;
+        if (totalWeight && parseFloat(totalWeight) > 0) {
+            additionalInfo.push(`משקל כולל: ${parseFloat(totalWeight).toLocaleString()} ק"ג`);
+        } else if (selfWeight && parseFloat(selfWeight) > 0) {
+            additionalInfo.push(`משקל עצמי: ${parseFloat(selfWeight).toLocaleString()} ק"ג`);
+        }
+
+        // Create display div
         const infoDiv = document.createElement('div');
         infoDiv.className = 'vehicle-info-display';
         infoDiv.style.cssText = `
@@ -411,9 +425,10 @@ class VehicleManager {
             border-radius: 4px;
             font-size: 12px;
             color: #1e40af;
-            line-height: 1.4;
+            line-height: 1.6;
         `;
 
+        // Build display text
         let fullText = `מקור: ${sourceText}`;
         if (additionalInfo.length > 0) {
             fullText += '\n' + additionalInfo.join(' • ');
@@ -505,12 +520,16 @@ class VehicleManager {
 
     /**
      * Hide vehicle type field
-     * @param {string} fieldId - Field ID
+     * @param {string} context - Vehicle context
      */
-    hideVehicleTypeField(fieldId) {
-        const field = document.getElementById(fieldId);
+    hideVehicleTypeField(context) {
+        const typeFieldId = this.getCarTypeFieldId(context);
+        const field = document.getElementById(typeFieldId);
         if (field) {
-            field.closest('.form-group').classList.add('vehicle-type-hidden');
+            const formGroup = field.closest('.form-group');
+            if (formGroup) {
+                formGroup.classList.add('vehicle-type-hidden');
+            }
         }
     }
 
@@ -571,7 +590,7 @@ class VehicleManager {
                 'private': 'רכב פרטי',
                 'motorcycle': 'דו-גלגלי',
                 'heavy': 'מעל 3.5 טון',
-                'machinery': 'צמ"ד'
+                'machinery': 'צמ"ה'
             };
 
             console.log(`Vehicle type: ${vehicleType}, Base price: ${result}₪`);

@@ -1,5 +1,6 @@
 /**
  * API Manager - Handles all server communications
+ * Updated to fetch vehicle data directly from data.gov.il
  */
 
 class ApiManager {
@@ -8,13 +9,36 @@ class ApiManager {
         this.defaultHeaders = {
             'Content-Type': 'application/json'
         };
+        
+        // מזהי המאגרים ב-data.gov.il - כל המאגרים
+        this.vehicleResources = {
+            // מאגרים ראשיים
+            private: '053cea08-09bc-40ec-8f7a-156f0677aff3',
+            private_extra: '142afde2-6228-49f9-8a29-9b6c3a0cbe40',
+            motorcycle: 'bf9df4e2-d90d-4c0a-a400-19e15af8e95f',
+            heavy: 'cd3acc5c-03c3-4c89-9c54-d40f93c0d790',
+            machinery: '58dc4654-16b1-42ed-8170-98fadec153ea',
+            
+            // מאגרי רכבים מבוטלים
+            canceled_private: '851ecab1-0622-4dbe-a6c7-f950cf82abf9',
+            canceled_heavy: '4e6b9724-4c1e-43f0-909a-154d4cc4e046',
+            canceled_motorcycle: 'ec8cbc34-72e1-4b69-9c48-22821ba0bd6c',
+            
+            // מאגר רכבים לא פעילים
+            inactive: 'f6efe89a-fb3d-43a4-bb61-9bf12a9b9099'
+        };
+        
+        // תוויות לסוגי רכב
+        this.sourceLabels = {
+            private: 'רכב פרטי',
+            motorcycle: 'דו גלגלי',
+            heavy: 'רכב כבד',
+            machinery: 'צמ"ה',
+        };
     }
 
     /**
      * Make HTTP request with error handling
-     * @param {string} url - Request URL
-     * @param {object} options - Fetch options
-     * @returns {Promise<object>} - Response data
      */
     async makeRequest(url, options = {}) {
         try {
@@ -40,7 +64,183 @@ class ApiManager {
     }
 
     /**
-     * Look up vehicle data by license number
+     * חיפוש רכב במאגר ספציפי של data.gov.il
+     */
+    async searchInResource(licenseNumber, resourceId, source) {
+        try {
+            const cleanLicense = licenseNumber.replace(/[^0-9]/g, '');
+            
+            // ניסיון ראשון - חיפוש עם filter
+            const url1 = `https://data.gov.il/api/3/action/datastore_search?resource_id=${resourceId}&filters={"mispar_rechev":"${parseInt(cleanLicense, 10).toString()}"}`;
+            
+            const response1 = await fetch(url1);
+            const data1 = await response1.json();
+            
+            if (data1.success && data1.result?.records?.length > 0) {
+                return { found: true, data: data1.result.records[0] };
+            }
+            
+            // ניסיון שני - חיפוש כללי
+            const url2 = `https://data.gov.il/api/3/action/datastore_search?resource_id=${resourceId}&q=${cleanLicense}`;
+            
+            const response2 = await fetch(url2);
+            const data2 = await response2.json();
+            
+            if (data2.success && data2.result?.records?.length > 0) {
+                // בדיקה שהרשומה מכילה את מספר הרישוי
+                const record = data2.result.records.find(rec => {
+                    const recLicense = String(rec.mispar_rechev || rec.mispar_tzama || '').replace(/[^0-9]/g, '');
+                    return recLicense === cleanLicense || recLicense === parseInt(cleanLicense, 10).toString();
+                });
+                
+                if (record) {
+                    return { found: true, data: record };
+                }
+            }
+            
+            return { found: false, data: null };
+        } catch (error) {
+            console.error(`Error searching in ${source}:`, error);
+            return { found: false, data: null };
+        }
+    }
+
+    /**
+     * בדיקה אם רכב מבוטל
+     */
+    async checkCanceledVehicle(licenseNumber) {
+        const cleanLicense = licenseNumber.replace(/[^0-9]/g, '');
+        
+        const canceledResources = [
+            { id: this.vehicleResources.canceled_private, type: 'private' },
+            { id: this.vehicleResources.canceled_heavy, type: 'heavy' },
+            { id: this.vehicleResources.canceled_motorcycle, type: 'motorcycle' }
+        ];
+        
+        for (const resource of canceledResources) {
+            const result = await this.searchInResource(cleanLicense, resource.id, 'canceled');
+            if (result.found) {
+                return { isCanceled: true, data: result.data, type: resource.type };
+            }
+        }
+        
+        return { isCanceled: false, data: null };
+    }
+
+    /**
+     * בדיקה אם רכב לא פעיל
+     */
+    async checkInactiveVehicle(licenseNumber) {
+        const cleanLicense = licenseNumber.replace(/[^0-9]/g, '');
+        const result = await this.searchInResource(cleanLicense, this.vehicleResources.inactive, 'inactive');
+        
+        if (result.found) {
+            return { isInactive: true, data: result.data };
+        }
+        
+        return { isInactive: false, data: null };
+    }
+
+    /**
+     * מיפוי נתונים גולמיים לפורמט אחיד
+     */
+    mapVehicleData(rawData, source, licenseNumber) {
+        // חישוב סוג גיר
+        let gearType = null;
+        if (rawData['automatic_ind'] === 1 || rawData['automatic_ind'] === '1' || rawData['automatic_ind'] === true) {
+            gearType = 'אוטומטי';
+        } else if (rawData['automatic_ind'] === 0 || rawData['automatic_ind'] === '0' || rawData['automatic_ind'] === false) {
+            gearType = 'ידני';
+        }
+        
+        // חישוב משקל
+        let totalWeight = null;
+        let totalWeightTon = null;
+        let selfWeight = null;
+        
+        if (source === 'machinery') {
+            if (rawData['mishkal_kolel_ton']) {
+                totalWeightTon = parseFloat(rawData['mishkal_kolel_ton']);
+                totalWeight = totalWeightTon * 1000;
+            }
+            if (rawData['mishkal_ton']) {
+                selfWeight = parseFloat(rawData['mishkal_ton']) * 1000;
+            }
+        } else {
+            if (rawData['mishkal_kolel']) {
+                totalWeight = parseFloat(rawData['mishkal_kolel']);
+                totalWeightTon = totalWeight / 1000;
+            }
+            if (rawData['mishkal_azmi']) {
+                selfWeight = parseFloat(rawData['mishkal_azmi']);
+            }
+        }
+        
+        // יצרן
+        let manufacturer = rawData['tozeret_nm'] || rawData['shilda_totzar_en_nm'] || null;
+        
+        // דגם
+        let model = rawData['kinuy_mishari'] || rawData['degem_nm'] || null;
+        
+        // צבע
+        let color = rawData['tzeva_rechev'] || rawData['tzeva_cd'] || null;
+        
+        // סוג דלק
+        let fuelType = rawData['sug_delek_nm'] || null;
+        
+        // הנעה
+        let driveType = rawData['hanaa_nm'] || null;
+        
+        // טכנולוגיית הנעה
+        let driveTechnology = rawData['technologiat_hanaa_nm'] || null;
+        
+        return {
+            // פרטים בסיסיים
+            plateNumber: licenseNumber,
+            manufacturer: manufacturer,
+            model: model,
+            year: rawData['shnat_yitzur'] || null,
+            
+            // צבע
+            color: color,
+            
+            // דלק והנעה
+            fuelType: fuelType,
+            driveType: driveType,
+            driveTechnology: driveTechnology,
+            
+            // משקל
+            totalWeight: totalWeight,
+            totalWeightTon: totalWeightTon,
+            selfWeight: selfWeight,
+            
+            // גיר - שלושה שמות לתאימות
+            gear: gearType,
+            gearType: gearType,
+            transmission: gearType,
+            
+            // סוג רכב
+            vehicleType: rawData['sug_rechev_nm'] || rawData['sug_tzama_nm'] || null,
+            
+            // שדות נוספים
+            modelCode: rawData['degem_cd'] || null,
+            engineVolume: rawData['nefach_manoa'] || null,
+            engineModel: rawData['degem_manoa'] || null,
+            trimLevel: rawData['ramat_gimur'] || null,
+            
+            // לצמ"ה
+            machineryType: source === 'machinery' ? (rawData['sug_tzama_nm'] || null) : null,
+            
+            // מקור - לתצוגה
+            source: {
+                type: source,
+                label: this.sourceLabels[source] || source
+            }
+        };
+    }
+
+    /**
+     * Look up vehicle data by license number - directly from data.gov.il
      * @param {string} licenseNumber - Vehicle license number
      * @returns {Promise<object>} - Vehicle data response
      */
@@ -48,21 +248,113 @@ class ApiManager {
         const cleanLicense = licenseNumber.replace(/[^0-9]/g, '');
         
         if (cleanLicense.length < 5) {
-            throw new Error('License number too short');
+            return {
+                success: false,
+                error: 'מספר רישוי קצר מדי'
+            };
         }
+        
+        // סדר החיפוש: פרטי, דו גלגלי, כבד, צמ"ה
+        const searchOrder = ['private', 'motorcycle', 'heavy', 'machinery'];
+        
+        for (const source of searchOrder) {
+            const result = await this.searchInResource(cleanLicense, this.vehicleResources[source], source);
+            
+            if (result.found) {
+                let rawData = result.data;
+                
+                // אם זה רכב פרטי - נחפש פרטים נוספים
+                if (source === 'private') {
+                    const extraResult = await this.searchInResource(cleanLicense, this.vehicleResources.private_extra, 'private_extra');
+                    if (extraResult.found) {
+                        // מיזוג הנתונים
+                        rawData = { ...rawData, ...extraResult.data };
+                    }
+                }
+                
+                const mappedData = this.mapVehicleData(rawData, source, cleanLicense);
+                
+                return {
+                    success: true,
+                    vehicle: mappedData,
+                    source: {
+                        type: source,
+                        category: 'regular',
+                        label: this.sourceLabels[source]
+                    },
+                    status: {
+                        isCanceled: false,
+                        isInactive: false
+                    },
+                    towTypes: this.getSuggestedTowTypes(source)
+                };
+            }
+        }
+        
+        // לא נמצא במאגרים הפעילים - נבדוק אם מבוטל
+        const canceledCheck = await this.checkCanceledVehicle(cleanLicense);
+        if (canceledCheck.isCanceled) {
+            const mappedData = this.mapVehicleData(canceledCheck.data, canceledCheck.type, cleanLicense);
+            
+            return {
+                success: true,
+                vehicle: mappedData,
+                source: {
+                    type: canceledCheck.type,
+                    category: 'canceled',
+                    label: this.sourceLabels[canceledCheck.type] + ' (מבוטל)'
+                },
+                status: {
+                    isCanceled: true,
+                    isInactive: false
+                },
+                towTypes: this.getSuggestedTowTypes(canceledCheck.type)
+            };
+        }
+        
+        // נבדוק אם לא פעיל
+        const inactiveCheck = await this.checkInactiveVehicle(cleanLicense);
+        if (inactiveCheck.isInactive) {
+            const mappedData = this.mapVehicleData(inactiveCheck.data, 'private', cleanLicense);
+            
+            return {
+                success: true,
+                vehicle: mappedData,
+                source: {
+                    type: 'private',
+                    category: 'inactive',
+                    label: 'רכב לא פעיל'
+                },
+                status: {
+                    isCanceled: false,
+                    isInactive: true
+                },
+                towTypes: this.getSuggestedTowTypes('private')
+            };
+        }
+        
+        // לא נמצא באף מאגר
+        return {
+            success: false,
+            error: 'הרכב לא נמצא במאגרי משרד התחבורה'
+        };
+    }
 
-        return this.makeRequest(API_ENDPOINTS.VEHICLE_LOOKUP, {
-            method: 'POST',
-            body: JSON.stringify({
-                license: cleanLicense
-            })
-        });
+    /**
+     * המלצה לסוגי גרר לפי סוג רכב
+     */
+    getSuggestedTowTypes(vehicleType) {
+        const suggestions = {
+            private: ['רמ-סע', 'דולי', 'מובילית'],
+            motorcycle: ['רמ-סע', 'מובילית'],
+            heavy: ['גרר כבד', 'מובילית גדולה'],
+            machinery: ['לואו-בד', 'גרר כבד'],
+        };
+        return suggestions[vehicleType] || ['רמ-סע'];
     }
 
     /**
      * Check user authentication status
-     * @param {string} email - User email
-     * @returns {Promise<object>} - Auth status response
      */
     async checkAuth(email) {
         return this.makeRequest(API_ENDPOINTS.CHECK_AUTH, {
@@ -73,8 +365,6 @@ class ApiManager {
 
     /**
      * Check if user has admin privileges
-     * @param {string} email - User email
-     * @returns {Promise<object>} - Admin status response
      */
     async checkAdminStatus(email) {
         return this.makeRequest(API_ENDPOINTS.CHECK_ADMIN, {
@@ -85,8 +375,6 @@ class ApiManager {
 
     /**
      * Submit user registration request
-     * @param {object} userData - User registration data
-     * @returns {Promise<object>} - Registration response
      */
     async registerUser(userData) {
         const formData = new FormData();
@@ -96,14 +384,12 @@ class ApiManager {
         return this.makeRequest(API_ENDPOINTS.REGISTER, {
             method: 'POST',
             body: formData,
-            headers: {} // FormData sets its own headers
+            headers: {}
         });
     }
 
     /**
      * Submit user login request
-     * @param {string} email - User email
-     * @returns {Promise<object>} - Login response
      */
     async loginUser(email) {
         const formData = new FormData();
@@ -113,14 +399,12 @@ class ApiManager {
         return this.makeRequest(API_ENDPOINTS.LOGIN_USER, {
             method: 'POST',
             body: formData,
-            headers: {} // FormData sets its own headers
+            headers: {}
         });
     }
 
     /**
-     * Submit towing form data (goes through server to Calendar + Sheets)
-     * @param {object} formData - Complete form data
-     * @returns {Promise<object>} - Response from server
+     * Submit towing form data
      */
     async submitTowingForm(formData) {
         try {
@@ -148,9 +432,6 @@ class ApiManager {
 
     /**
      * Generic GET request
-     * @param {string} endpoint - API endpoint
-     * @param {object} params - Query parameters
-     * @returns {Promise<object>} - Response data
      */
     async get(endpoint, params = {}) {
         const url = new URL(endpoint, window.location.origin);
@@ -165,9 +446,6 @@ class ApiManager {
 
     /**
      * Generic POST request
-     * @param {string} endpoint - API endpoint
-     * @param {object} data - Request body data
-     * @returns {Promise<object>} - Response data
      */
     async post(endpoint, data = {}) {
         return this.makeRequest(endpoint, {
@@ -178,10 +456,6 @@ class ApiManager {
 
     /**
      * Upload file to server
-     * @param {string} endpoint - Upload endpoint
-     * @param {File} file - File to upload
-     * @param {object} additionalData - Additional form data
-     * @returns {Promise<object>} - Upload response
      */
     async uploadFile(endpoint, file, additionalData = {}) {
         const formData = new FormData();
@@ -194,14 +468,12 @@ class ApiManager {
         return this.makeRequest(endpoint, {
             method: 'POST',
             body: formData,
-            headers: {} // FormData sets its own headers
+            headers: {}
         });
     }
 
     /**
      * Handle API errors with user-friendly messages
-     * @param {Error} error - Error object
-     * @param {string} context - Context where error occurred
      */
     handleError(error, context = 'API request') {
         console.error(`${context} failed:`, error);
@@ -223,7 +495,6 @@ class ApiManager {
 
     /**
      * Set custom headers for all requests
-     * @param {object} headers - Headers to set
      */
     setHeaders(headers) {
         this.defaultHeaders = {
@@ -234,7 +505,6 @@ class ApiManager {
 
     /**
      * Set base URL for relative requests
-     * @param {string} url - Base URL
      */
     setBaseUrl(url) {
         this.baseUrl = url;
