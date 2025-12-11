@@ -421,6 +421,33 @@ class ApiManager {
             return { success: false, isAdmin: false };
         }
     }
+
+    /**
+     * Submit form data to calendar/server
+     * @param {object} formData - Form data to submit
+     * @returns {Promise<object>} - Submit result
+     */
+    async submitTowingOrder(formData) {
+        try {
+            const response = await fetch('/api/submit-towing', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            throw error;
+        }
+    }
 }
 
 // Create singleton instance
