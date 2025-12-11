@@ -1,339 +1,381 @@
 /**
- * API Manager - Handles all server communications
- * Updated to fetch vehicle data directly from data.gov.il
+ * API Manager - Handles all external API calls including vehicle lookup
+ * Updated: Now correctly searches private_extra by model name, not license number
  */
 
 class ApiManager {
     constructor() {
-        this.baseUrl = '';
-        this.defaultHeaders = {
-            'Content-Type': 'application/json'
-        };
-        
-        // מזהי המאגרים ב-data.gov.il - כל המאגרים
-        this.vehicleResources = {
-            // מאגרים ראשיים
+        // Government API resource IDs
+        this.resources = {
+            // Active vehicles
             private: '053cea08-09bc-40ec-8f7a-156f0677aff3',
-            private_extra: '142afde2-6228-49f9-8a29-9b6c3a0cbe40',
+            private_extra: '142afde2-6228-49f9-8a29-9b6c3a0cbe40', // Extra info - searched by model name!
             motorcycle: 'bf9df4e2-d90d-4c0a-a400-19e15af8e95f',
             heavy: 'cd3acc5c-03c3-4c89-9c54-d40f93c0d790',
             machinery: '58dc4654-16b1-42ed-8170-98fadec153ea',
             
-            // מאגרי רכבים מבוטלים
+            // Canceled vehicles
             canceled_private: '851ecab1-0622-4dbe-a6c7-f950cf82abf9',
             canceled_heavy: '4e6b9724-4c1e-43f0-909a-154d4cc4e046',
             canceled_motorcycle: 'ec8cbc34-72e1-4b69-9c48-22821ba0bd6c',
             
-            // מאגר רכבים לא פעילים
+            // Inactive vehicles
             inactive: 'f6efe89a-fb3d-43a4-bb61-9bf12a9b9099'
         };
+
+        this.baseUrl = 'https://data.gov.il/api/3/action/datastore_search';
+    }
+
+    /**
+     * Search for vehicle in a specific resource by license number
+     * @param {string} resourceId - Resource ID
+     * @param {string} licenseNumber - Vehicle license number
+     * @param {string} resourceName - Resource name for logging
+     * @returns {Promise<object|null>} - Vehicle record or null
+     */
+    async searchInResource(resourceId, licenseNumber, resourceName) {
+        const cleanLicense = licenseNumber.replace(/[^0-9]/g, '');
         
-        // תוויות לסוגי רכב
-        this.sourceLabels = {
-            private: 'רכב פרטי',
-            motorcycle: 'דו גלגלי',
-            heavy: 'רכב כבד',
-            machinery: 'צמ"ה',
-        };
-    }
-
-    /**
-     * Make HTTP request with error handling
-     */
-    async makeRequest(url, options = {}) {
+        // Use q parameter for general search (more reliable)
+        const url = `${this.baseUrl}?resource_id=${resourceId}&q=${cleanLicense}`;
+        
         try {
-            const response = await fetch(url, {
-                ...options,
-                headers: {
-                    ...this.defaultHeaders,
-                    ...options.headers
-                }
-            });
-
-            const result = await response.json();
+            const response = await fetch(url);
+            const data = await response.json();
             
-            if (!response.ok) {
-                throw new Error(result.message || `HTTP error! status: ${response.status}`);
-            }
-
-            return result;
-        } catch (error) {
-            console.error(`API Error for ${url}:`, error);
-            throw error;
-        }
-    }
-
-    /**
-     * חיפוש רכב במאגר ספציפי של data.gov.il
-     */
-    async searchInResource(licenseNumber, resourceId, source) {
-        try {
-            const cleanLicense = licenseNumber.replace(/[^0-9]/g, '');
-            
-            // ניסיון ראשון - חיפוש עם filter
-            const url1 = `https://data.gov.il/api/3/action/datastore_search?resource_id=${resourceId}&filters={"mispar_rechev":"${parseInt(cleanLicense, 10).toString()}"}`;
-            
-            const response1 = await fetch(url1);
-            const data1 = await response1.json();
-            
-            if (data1.success && data1.result?.records?.length > 0) {
-                return { found: true, data: data1.result.records[0] };
-            }
-            
-            // ניסיון שני - חיפוש כללי
-            const url2 = `https://data.gov.il/api/3/action/datastore_search?resource_id=${resourceId}&q=${cleanLicense}`;
-            
-            const response2 = await fetch(url2);
-            const data2 = await response2.json();
-            
-            if (data2.success && data2.result?.records?.length > 0) {
-                // בדיקה שהרשומה מכילה את מספר הרישוי
-                const record = data2.result.records.find(rec => {
-                    const recLicense = String(rec.mispar_rechev || rec.mispar_tzama || '').replace(/[^0-9]/g, '');
-                    return recLicense === cleanLicense || recLicense === parseInt(cleanLicense, 10).toString();
-                });
+            if (data.success && data.result?.records?.length > 0) {
+                // Find exact match by license number
+                const matchField = resourceName === 'machinery' ? 'mispar_tzama' : 'mispar_rechev';
+                const record = data.result.records.find(row => 
+                    String(row[matchField] || '').replace(/[^0-9]/g, '') === cleanLicense
+                );
                 
                 if (record) {
-                    return { found: true, data: record };
+                    console.log(`✅ Found in ${resourceName}:`, record);
+                    return record;
+                }
+            }
+            return null;
+        } catch (error) {
+            console.error(`Error searching in ${resourceName}:`, error);
+            return null;
+        }
+    }
+
+    /**
+     * Fetch extra info for private vehicle by model name
+     * This is the correct way - private_extra doesn't have license numbers!
+     * @param {object} vehicle - Vehicle data from primary search
+     * @returns {Promise<object|null>} - Extra info or null
+     */
+    async fetchExtraPrivateInfo(vehicle) {
+        try {
+            // Build search query from manufacturer + model name
+            const model = ((vehicle.tozeret_nm || '') + ' ' + (vehicle.kinuy_mishari || '')).trim();
+            
+            if (!model) {
+                console.log('No model info for extra search');
+                return null;
+            }
+
+            const query = encodeURIComponent(model);
+            const url = `${this.baseUrl}?resource_id=${this.resources.private_extra}&q=${query}`;
+            
+            console.log(`🔍 Searching private_extra for model: ${model}`);
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.success && data.result?.records?.length > 0) {
+                // Find exact match by year, model code, and engine volume
+                const match = data.result.records.find(record =>
+                    record.shnat_yitzur == vehicle.shnat_yitzur &&
+                    record.degem_cd == vehicle.degem_cd &&
+                    record.nefach_manoa == vehicle.nefach_manoa
+                );
+                
+                if (match) {
+                    console.log('✅ Found extra info:', match);
+                    
+                    // Convert automatic_ind to readable format
+                    if ('automatic_ind' in match) {
+                        match.automatic_ind = (match.automatic_ind === '1' || match.automatic_ind === 1)
+                            ? 'אוטומטי'
+                            : 'ידני';
+                    }
+                    
+                    return match;
+                } else {
+                    console.log('No exact match in private_extra - trying partial match');
+                    
+                    // Try partial match by year only
+                    const partialMatch = data.result.records.find(record =>
+                        record.shnat_yitzur == vehicle.shnat_yitzur
+                    );
+                    
+                    if (partialMatch) {
+                        console.log('✅ Found partial match:', partialMatch);
+                        if ('automatic_ind' in partialMatch) {
+                            partialMatch.automatic_ind = (partialMatch.automatic_ind === '1' || partialMatch.automatic_ind === 1)
+                                ? 'אוטומטי'
+                                : 'ידני';
+                        }
+                        return partialMatch;
+                    }
                 }
             }
             
-            return { found: false, data: null };
+            console.log('No extra info found in private_extra');
+            return null;
         } catch (error) {
-            console.error(`Error searching in ${source}:`, error);
-            return { found: false, data: null };
+            console.error('Error fetching extra private info:', error);
+            return null;
         }
     }
 
     /**
-     * בדיקה אם רכב מבוטל
+     * Check if vehicle is in canceled databases
+     * @param {string} licenseNumber - Vehicle license number
+     * @returns {Promise<object|null>} - Canceled vehicle data or null
      */
     async checkCanceledVehicle(licenseNumber) {
-        const cleanLicense = licenseNumber.replace(/[^0-9]/g, '');
-        
         const canceledResources = [
-            { id: this.vehicleResources.canceled_private, type: 'private' },
-            { id: this.vehicleResources.canceled_heavy, type: 'heavy' },
-            { id: this.vehicleResources.canceled_motorcycle, type: 'motorcycle' }
+            { id: this.resources.canceled_private, name: 'canceled_private' },
+            { id: this.resources.canceled_heavy, name: 'canceled_heavy' },
+            { id: this.resources.canceled_motorcycle, name: 'canceled_motorcycle' }
         ];
-        
+
         for (const resource of canceledResources) {
-            const result = await this.searchInResource(cleanLicense, resource.id, 'canceled');
-            if (result.found) {
-                return { isCanceled: true, data: result.data, type: resource.type };
+            const record = await this.searchInResource(resource.id, licenseNumber, resource.name);
+            if (record) {
+                return {
+                    ...this.mapVehicleFields(record, 'private'),
+                    isCanceled: true
+                };
             }
         }
-        
-        return { isCanceled: false, data: null };
+        return null;
     }
 
     /**
-     * בדיקה אם רכב לא פעיל
+     * Check if vehicle is in inactive database
+     * @param {string} licenseNumber - Vehicle license number
+     * @returns {Promise<object|null>} - Inactive vehicle data or null
      */
     async checkInactiveVehicle(licenseNumber) {
-        const cleanLicense = licenseNumber.replace(/[^0-9]/g, '');
-        const result = await this.searchInResource(cleanLicense, this.vehicleResources.inactive, 'inactive');
+        const record = await this.searchInResource(
+            this.resources.inactive, 
+            licenseNumber, 
+            'inactive'
+        );
         
-        if (result.found) {
-            return { isInactive: true, data: result.data };
+        if (record) {
+            return {
+                ...this.mapVehicleFields(record, 'private'),
+                isInactive: true
+            };
         }
-        
-        return { isInactive: false, data: null };
+        return null;
     }
 
     /**
-     * מיפוי נתונים גולמיים לפורמט אחיד
+     * Map raw API fields to standardized vehicle object
+     * @param {object} record - Raw API record
+     * @param {string} vehicleType - Type of vehicle
+     * @param {object} extraInfo - Extra info from private_extra (optional)
+     * @returns {object} - Standardized vehicle object
      */
-    mapVehicleData(rawData, source, licenseNumber) {
-        // חישוב סוג גיר
-        let gearType = null;
-        if (rawData['automatic_ind'] === 1 || rawData['automatic_ind'] === '1' || rawData['automatic_ind'] === true) {
-            gearType = 'אוטומטי';
-        } else if (rawData['automatic_ind'] === 0 || rawData['automatic_ind'] === '0' || rawData['automatic_ind'] === false) {
-            gearType = 'ידני';
-        }
-        
-        // חישוב משקל
-        let totalWeight = null;
-        let totalWeightTon = null;
-        let selfWeight = null;
-        
-        if (source === 'machinery') {
-            if (rawData['mishkal_kolel_ton']) {
-                totalWeightTon = parseFloat(rawData['mishkal_kolel_ton']);
-                totalWeight = totalWeightTon * 1000;
-            }
-            if (rawData['mishkal_ton']) {
-                selfWeight = parseFloat(rawData['mishkal_ton']) * 1000;
-            }
-        } else {
-            if (rawData['mishkal_kolel']) {
-                totalWeight = parseFloat(rawData['mishkal_kolel']);
-                totalWeightTon = totalWeight / 1000;
-            }
-            if (rawData['mishkal_azmi']) {
-                selfWeight = parseFloat(rawData['mishkal_azmi']);
-            }
-        }
-        
-        // יצרן
-        let manufacturer = rawData['tozeret_nm'] || rawData['shilda_totzar_en_nm'] || null;
-        
-        // דגם
-        let model = rawData['kinuy_mishari'] || rawData['degem_nm'] || null;
-        
-        // צבע
-        let color = rawData['tzeva_rechev'] || rawData['tzeva_cd'] || null;
-        
-        // סוג דלק
-        let fuelType = rawData['sug_delek_nm'] || null;
-        
-        // הנעה
-        let driveType = rawData['hanaa_nm'] || null;
-        
-        // טכנולוגיית הנעה
-        let driveTechnology = rawData['technologiat_hanaa_nm'] || null;
-        
-        return {
-            // פרטים בסיסיים
-            plateNumber: licenseNumber,
-            manufacturer: manufacturer,
-            model: model,
-            year: rawData['shnat_yitzur'] || null,
+    mapVehicleFields(record, vehicleType, extraInfo = null) {
+        const mapped = {
+            plateNumber: record.mispar_rechev || record.mispar_tzama || '',
+            manufacturer: record.tozeret_nm || record.shilda_totzar_en_nm || '',
+            model: record.kinuy_mishari || record.degem_nm || '',
+            year: record.shnat_yitzur || '',
+            color: record.tzeva_rechev || '',
+            fuelType: record.sug_delek_nm || '',
+            vehicleType: record.sug_rechev_nm || '',
             
-            // צבע
-            color: color,
+            // Fields that may come from primary or extra search
+            totalWeight: record.mishkal_kolel || '',
+            selfWeight: record.mishkal_azmi || '',
+            driveType: record.hanaa_nm || '',
+            driveTechnology: record.technologiat_hanaa_nm || '',
+            gear: record.automatic_ind || '',
             
-            // דלק והנעה
-            fuelType: fuelType,
-            driveType: driveType,
-            driveTechnology: driveTechnology,
+            // Additional fields for identification
+            engineVolume: record.nefach_manoa || '',
+            engineModel: record.degem_manoa || '',
+            trimLevel: record.ramat_gimur || '',
+            modelCode: record.degem_cd || '',
             
-            // משקל
-            totalWeight: totalWeight,
-            totalWeightTon: totalWeightTon,
-            selfWeight: selfWeight,
+            // Machinery specific
+            machineryType: record.sug_tzama_nm || '',
+            totalWeightTon: record.mishkal_kolel_ton || record.mishkal_ton || '',
             
-            // גיר - שלושה שמות לתאימות
-            gear: gearType,
-            gearType: gearType,
-            transmission: gearType,
-            
-            // סוג רכב
-            vehicleType: rawData['sug_rechev_nm'] || rawData['sug_tzama_nm'] || null,
-            
-            // שדות נוספים
-            modelCode: rawData['degem_cd'] || null,
-            engineVolume: rawData['nefach_manoa'] || null,
-            engineModel: rawData['degem_manoa'] || null,
-            trimLevel: rawData['ramat_gimur'] || null,
-            
-            // לצמ"ה
-            machineryType: source === 'machinery' ? (rawData['sug_tzama_nm'] || null) : null,
-            
-            // מקור - לתצוגה
+            // Source info
             source: {
-                type: source,
-                label: this.sourceLabels[source] || source
+                type: vehicleType,
+                label: this.getVehicleTypeLabel(vehicleType)
             }
         };
+
+        // Merge extra info if available
+        if (extraInfo) {
+            if (extraInfo.mishkal_kolel) mapped.totalWeight = extraInfo.mishkal_kolel;
+            if (extraInfo.hanaa_nm) mapped.driveType = extraInfo.hanaa_nm;
+            if (extraInfo.technologiat_hanaa_nm) mapped.driveTechnology = extraInfo.technologiat_hanaa_nm;
+            if (extraInfo.automatic_ind) mapped.gear = extraInfo.automatic_ind;
+        }
+
+        return mapped;
     }
 
     /**
-     * Look up vehicle data by license number - directly from data.gov.il
+     * Get Hebrew label for vehicle type
+     * @param {string} type - Vehicle type
+     * @returns {string} - Hebrew label
+     */
+    getVehicleTypeLabel(type) {
+        const labels = {
+            private: 'רכב פרטי',
+            motorcycle: 'דו-גלגלי',
+            heavy: 'מעל 3.5 טון',
+            machinery: 'צמ"ה'
+        };
+        return labels[type] || type;
+    }
+
+    /**
+     * Determine available tow types based on vehicle data
+     * @param {object} vehicle - Vehicle data
+     * @param {string} vehicleType - Type of vehicle
+     * @returns {array} - Available tow types
+     */
+    determineTowTypes(vehicle, vehicleType) {
+        const towTypes = [];
+        
+        // Default: all private vehicles can use flatbed
+        if (vehicleType === 'private' || vehicleType === 'motorcycle') {
+            towTypes.push('רמ-סע');
+        }
+        
+        // Check drive type for additional options
+        const driveType = (vehicle.driveType || vehicle.hanaa_nm || '').toLowerCase();
+        const driveTech = (vehicle.driveTechnology || vehicle.technologiat_hanaa_nm || '').toLowerCase();
+        
+        // 4x4 or AWD vehicles
+        if (driveType.includes('4') || driveType.includes('כפול') || 
+            driveTech.includes('4') || driveTech.includes('כפול')) {
+            towTypes.push('משקפיים', 'דולי');
+        }
+        
+        // Front wheel drive
+        if (driveType.includes('קדמ') || driveTech.includes('קדמ')) {
+            towTypes.push('משקפיים');
+        }
+        
+        // Heavy vehicles
+        if (vehicleType === 'heavy') {
+            towTypes.push('מובילית', 'גרר כבד');
+        }
+        
+        // Machinery
+        if (vehicleType === 'machinery') {
+            towTypes.push('מובילית');
+        }
+        
+        return [...new Set(towTypes)]; // Remove duplicates
+    }
+
+    /**
+     * Main vehicle lookup function
      * @param {string} licenseNumber - Vehicle license number
-     * @returns {Promise<object>} - Vehicle data response
+     * @returns {Promise<object>} - Vehicle lookup result
      */
     async lookupVehicle(licenseNumber) {
         const cleanLicense = licenseNumber.replace(/[^0-9]/g, '');
         
         if (cleanLicense.length < 5) {
-            return {
-                success: false,
-                error: 'מספר רישוי קצר מדי'
-            };
+            return { success: false, error: 'מספר רישוי קצר מדי' };
         }
-        
-        // סדר החיפוש: פרטי, דו גלגלי, כבד, צמ"ה
-        const searchOrder = ['private', 'motorcycle', 'heavy', 'machinery'];
-        
-        for (const source of searchOrder) {
-            const result = await this.searchInResource(cleanLicense, this.vehicleResources[source], source);
+
+        console.log(`🔍 Looking up vehicle: ${cleanLicense}`);
+
+        // Search order: private → motorcycle → heavy → machinery
+        const searchOrder = [
+            { type: 'private', resourceId: this.resources.private },
+            { type: 'motorcycle', resourceId: this.resources.motorcycle },
+            { type: 'heavy', resourceId: this.resources.heavy },
+            { type: 'machinery', resourceId: this.resources.machinery }
+        ];
+
+        // Try each active resource
+        for (const { type, resourceId } of searchOrder) {
+            const record = await this.searchInResource(resourceId, cleanLicense, type);
             
-            if (result.found) {
-                let rawData = result.data;
+            if (record) {
+                let extraInfo = null;
                 
-                // אם זה רכב פרטי - נחפש פרטים נוספים
-                if (source === 'private') {
-                    const extraResult = await this.searchInResource(cleanLicense, this.vehicleResources.private_extra, 'private_extra');
-                    if (extraResult.found) {
-                        // מיזוג הנתונים
-                        rawData = { ...rawData, ...extraResult.data };
-                    }
+                // For private vehicles, fetch extra info by model name
+                if (type === 'private') {
+                    extraInfo = await this.fetchExtraPrivateInfo(record);
                 }
                 
-                const mappedData = this.mapVehicleData(rawData, source, cleanLicense);
+                const vehicle = this.mapVehicleFields(record, type, extraInfo);
+                const towTypes = this.determineTowTypes(vehicle, type);
+                
+                console.log('✅ Final vehicle data:', vehicle);
                 
                 return {
                     success: true,
-                    vehicle: mappedData,
-                    source: {
-                        type: source,
-                        category: 'regular',
-                        label: this.sourceLabels[source]
-                    },
+                    vehicle: vehicle,
                     status: {
+                        isActive: true,
                         isCanceled: false,
                         isInactive: false
                     },
-                    towTypes: this.getSuggestedTowTypes(source)
+                    towTypes: towTypes,
+                    source: vehicle.source
                 };
             }
         }
-        
-        // לא נמצא במאגרים הפעילים - נבדוק אם מבוטל
-        const canceledCheck = await this.checkCanceledVehicle(cleanLicense);
-        if (canceledCheck.isCanceled) {
-            const mappedData = this.mapVehicleData(canceledCheck.data, canceledCheck.type, cleanLicense);
-            
+
+        // Not found in active databases, check canceled
+        console.log('🔍 Checking canceled vehicles...');
+        const canceledVehicle = await this.checkCanceledVehicle(cleanLicense);
+        if (canceledVehicle) {
             return {
                 success: true,
-                vehicle: mappedData,
-                source: {
-                    type: canceledCheck.type,
-                    category: 'canceled',
-                    label: this.sourceLabels[canceledCheck.type] + ' (מבוטל)'
-                },
+                vehicle: canceledVehicle,
                 status: {
+                    isActive: false,
                     isCanceled: true,
                     isInactive: false
                 },
-                towTypes: this.getSuggestedTowTypes(canceledCheck.type)
+                towTypes: [],
+                source: { type: 'canceled', category: 'canceled' }
             };
         }
-        
-        // נבדוק אם לא פעיל
-        const inactiveCheck = await this.checkInactiveVehicle(cleanLicense);
-        if (inactiveCheck.isInactive) {
-            const mappedData = this.mapVehicleData(inactiveCheck.data, 'private', cleanLicense);
-            
+
+        // Check inactive
+        console.log('🔍 Checking inactive vehicles...');
+        const inactiveVehicle = await this.checkInactiveVehicle(cleanLicense);
+        if (inactiveVehicle) {
             return {
                 success: true,
-                vehicle: mappedData,
-                source: {
-                    type: 'private',
-                    category: 'inactive',
-                    label: 'רכב לא פעיל'
-                },
+                vehicle: inactiveVehicle,
                 status: {
+                    isActive: false,
                     isCanceled: false,
                     isInactive: true
                 },
-                towTypes: this.getSuggestedTowTypes('private')
+                towTypes: [],
+                source: { type: 'inactive', category: 'inactive' }
             };
         }
-        
-        // לא נמצא באף מאגר
+
+        // Not found anywhere
+        console.log('❌ Vehicle not found in any database');
         return {
             success: false,
             error: 'הרכב לא נמצא במאגרי משרד התחבורה'
@@ -341,173 +383,15 @@ class ApiManager {
     }
 
     /**
-     * המלצה לסוגי גרר לפי סוג רכב
+     * Get pricing data for a route (placeholder for future implementation)
      */
-    getSuggestedTowTypes(vehicleType) {
-        const suggestions = {
-            private: ['רמ-סע', 'דולי', 'מובילית'],
-            motorcycle: ['רמ-סע', 'מובילית'],
-            heavy: ['גרר כבד', 'מובילית גדולה'],
-            machinery: ['לואו-בד', 'גרר כבד'],
+    async getRoutePricing(origin, destination) {
+        // This would integrate with Google Maps API or similar
+        return {
+            distance: 0,
+            duration: 0,
+            price: 0
         };
-        return suggestions[vehicleType] || ['רמ-סע'];
-    }
-
-    /**
-     * Check user authentication status
-     */
-    async checkAuth(email) {
-        return this.makeRequest(API_ENDPOINTS.CHECK_AUTH, {
-            method: 'POST',
-            body: JSON.stringify({ email })
-        });
-    }
-
-    /**
-     * Check if user has admin privileges
-     */
-    async checkAdminStatus(email) {
-        return this.makeRequest(API_ENDPOINTS.CHECK_ADMIN, {
-            method: 'POST',
-            body: JSON.stringify({ email })
-        });
-    }
-
-    /**
-     * Submit user registration request
-     */
-    async registerUser(userData) {
-        const formData = new FormData();
-        formData.append('action', 'register');
-        formData.append('data', JSON.stringify(userData));
-
-        return this.makeRequest(API_ENDPOINTS.REGISTER, {
-            method: 'POST',
-            body: formData,
-            headers: {}
-        });
-    }
-
-    /**
-     * Submit user login request
-     */
-    async loginUser(email) {
-        const formData = new FormData();
-        formData.append('action', 'login');
-        formData.append('data', JSON.stringify({ email }));
-
-        return this.makeRequest(API_ENDPOINTS.LOGIN_USER, {
-            method: 'POST',
-            body: formData,
-            headers: {}
-        });
-    }
-
-    /**
-     * Submit towing form data
-     */
-    async submitTowingForm(formData) {
-        try {
-            const response = await fetch(window.TOWING_SUBMIT_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData)
-            });
-
-            console.log('🔍 תגובת השרת:', response);
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log('🔍 תוצאה סופית:', result);
-            return result;
-
-        } catch (error) {
-            console.error('Error submitting form:', error);
-            throw new Error('Failed to submit form');
-        }
-    }
-
-    /**
-     * Generic GET request
-     */
-    async get(endpoint, params = {}) {
-        const url = new URL(endpoint, window.location.origin);
-        Object.keys(params).forEach(key => {
-            url.searchParams.append(key, params[key]);
-        });
-
-        return this.makeRequest(url.toString(), {
-            method: 'GET'
-        });
-    }
-
-    /**
-     * Generic POST request
-     */
-    async post(endpoint, data = {}) {
-        return this.makeRequest(endpoint, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    /**
-     * Upload file to server
-     */
-    async uploadFile(endpoint, file, additionalData = {}) {
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        Object.keys(additionalData).forEach(key => {
-            formData.append(key, additionalData[key]);
-        });
-
-        return this.makeRequest(endpoint, {
-            method: 'POST',
-            body: formData,
-            headers: {}
-        });
-    }
-
-    /**
-     * Handle API errors with user-friendly messages
-     */
-    handleError(error, context = 'API request') {
-        console.error(`${context} failed:`, error);
-        
-        let userMessage;
-        if (error.message.includes('network') || error.message.includes('fetch')) {
-            userMessage = ERROR_MESSAGES.NETWORK_ERROR;
-        } else if (error.message.includes('unauthorized') || error.message.includes('403')) {
-            userMessage = ERROR_MESSAGES.UNAUTHORIZED;
-        } else if (error.message.includes('not found') || error.message.includes('404')) {
-            userMessage = ERROR_MESSAGES.VEHICLE_NOT_FOUND;
-        } else {
-            userMessage = error.message || ERROR_MESSAGES.NETWORK_ERROR;
-        }
-        
-        showNotification(userMessage, 'error');
-        return { success: false, error: userMessage };
-    }
-
-    /**
-     * Set custom headers for all requests
-     */
-    setHeaders(headers) {
-        this.defaultHeaders = {
-            ...this.defaultHeaders,
-            ...headers
-        };
-    }
-
-    /**
-     * Set base URL for relative requests
-     */
-    setBaseUrl(url) {
-        this.baseUrl = url;
     }
 }
 
