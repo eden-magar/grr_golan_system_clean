@@ -244,6 +244,7 @@ class VehicleManager {
         typeField.dataset.gearType = vehicle.gearType || vehicle.gear || vehicle.transmission || '';
         typeField.dataset.machineryType = vehicle.machineryType || '';
         typeField.dataset.selfWeight = vehicle.selfWeight || '';
+        typeField.dataset.selfWeightTon = vehicle.selfWeightTon || '';
         typeField.dataset.totalWeight = vehicle.totalWeight || '';
         typeField.dataset.totalWeightTon = vehicle.totalWeightTon || '';
         typeField.dataset.fuelType = vehicle.fuelType || '';
@@ -381,37 +382,60 @@ class VehicleManager {
         // Collect all available info - בסדר הנכון
         const additionalInfo = [];
 
-        // 1. צבע - COLOR
-        const color = vehicle.color || field.dataset.color;
-        if (color) {
-            additionalInfo.push(`צבע: ${color}`);
-        }
+        // Check if this is machinery (צמ"ה)
+        const isMachinery = source && source.type === 'machinery';
 
-        // 2. דלק - Fuel type
-        const fuelType = vehicle.fuelType || field.dataset.fuelType;
-        if (fuelType) {
-            additionalInfo.push(`דלק: ${fuelType}`);
-        }
+        if (isMachinery) {
+            // מידע ספציפי לצמ"ה
+            const machineryType = vehicle.machineryType || field.dataset.machineryType;
+            if (machineryType) {
+                additionalInfo.push(`סוג צמ"ה: ${machineryType}`);
+            }
 
-        // 3. גיר - Gear
-        const gearType = vehicle.gear || vehicle.gearType || vehicle.transmission || field.dataset.gear || field.dataset.gearType;
-        if (gearType) {
-            additionalInfo.push(`גיר: ${gearType}`);
-        }
+            const selfWeightTon = vehicle.selfWeightTon || field.dataset.selfWeightTon;
+            if (selfWeightTon && parseFloat(selfWeightTon) > 0) {
+                additionalInfo.push(`משקל עצמי: ${selfWeightTon} טון`);
+            }
 
-        // 4. הנעה - Drive type
-        const driveType = vehicle.driveType || field.dataset.driveType;
-        if (driveType) {
-            additionalInfo.push(`הנעה: ${driveType}`);
-        }
+            const totalWeightTon = vehicle.totalWeightTon || field.dataset.totalWeightTon;
+            if (totalWeightTon && parseFloat(totalWeightTon) > 0) {
+                additionalInfo.push(`משקל כולל: ${totalWeightTon} טון`);
+            }
+        } else {
+            // מידע לרכבים רגילים
 
-        // 5. משקל - Weight
-        const totalWeight = vehicle.totalWeight || field.dataset.totalWeight;
-        const selfWeight = vehicle.selfWeight || field.dataset.selfWeight;
-        if (totalWeight && parseFloat(totalWeight) > 0) {
-            additionalInfo.push(`משקל כולל: ${parseFloat(totalWeight).toLocaleString()} ק"ג`);
-        } else if (selfWeight && parseFloat(selfWeight) > 0) {
-            additionalInfo.push(`משקל עצמי: ${parseFloat(selfWeight).toLocaleString()} ק"ג`);
+            // 1. צבע - COLOR
+            const color = vehicle.color || field.dataset.color;
+            if (color) {
+                additionalInfo.push(`צבע: ${color}`);
+            }
+
+            // 2. דלק - Fuel type
+            const fuelType = vehicle.fuelType || field.dataset.fuelType;
+            if (fuelType) {
+                additionalInfo.push(`דלק: ${fuelType}`);
+            }
+
+            // 3. גיר - Gear
+            const gearType = vehicle.gear || vehicle.gearType || vehicle.transmission || field.dataset.gear || field.dataset.gearType;
+            if (gearType) {
+                additionalInfo.push(`גיר: ${gearType}`);
+            }
+
+            // 4. הנעה - Drive type
+            const driveType = vehicle.driveType || field.dataset.driveType;
+            if (driveType) {
+                additionalInfo.push(`הנעה: ${driveType}`);
+            }
+
+            // 5. משקל - Weight
+            const totalWeight = vehicle.totalWeight || field.dataset.totalWeight;
+            const selfWeight = vehicle.selfWeight || field.dataset.selfWeight;
+            if (totalWeight && parseFloat(totalWeight) > 0) {
+                additionalInfo.push(`משקל כולל: ${parseFloat(totalWeight).toLocaleString()} ק"ג`);
+            } else if (selfWeight && parseFloat(selfWeight) > 0) {
+                additionalInfo.push(`משקל עצמי: ${parseFloat(selfWeight).toLocaleString()} ק"ג`);
+            }
         }
 
         // Create display div

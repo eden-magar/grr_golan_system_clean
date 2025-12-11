@@ -208,9 +208,10 @@ class ApiManager {
             trimLevel: record.ramat_gimur || '',
             modelCode: record.degem_cd || '',
             
-            // Machinery specific
+            // Machinery specific (צמ"ה)
             machineryType: record.sug_tzama_nm || '',
-            totalWeightTon: record.mishkal_kolel_ton || record.mishkal_ton || '',
+            selfWeightTon: record.mishkal_ton || '',
+            totalWeightTon: record.mishkal_kolel_ton || '',
             
             // Source info
             source: {
@@ -392,6 +393,33 @@ class ApiManager {
             duration: 0,
             price: 0
         };
+    }
+
+    /**
+     * Check if user is admin
+     * @param {string} email - User email to check
+     * @returns {Promise<object>} - Admin status
+     */
+    async checkAdminStatus(email) {
+        try {
+            const response = await fetch('/api/admin/check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            });
+            
+            if (!response.ok) {
+                return { success: false, isAdmin: false };
+            }
+            
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error checking admin status:', error);
+            return { success: false, isAdmin: false };
+        }
     }
 }
 
