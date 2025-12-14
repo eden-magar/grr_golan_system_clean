@@ -723,7 +723,6 @@ app.post('/login-user', upload.none(), async (req, res) => {
 });
 
 // חיפוש רכב ב-Supabase (מהיר)
-// חיפוש רכב ב-Supabase (מהיר)
 async function searchVehicleInSupabase(licenseNumber) {
   try {
     const { data, error } = await supabase
@@ -745,6 +744,32 @@ async function searchVehicleInSupabase(licenseNumber) {
     };
 
     const isMachinery = data.source_type === 'machinery';
+    const isPrivate = data.source_type === 'private';
+
+    // משתנים למידע נוסף
+    let driveType = data.drive_type || '';
+    let driveTechnology = data.drive_technology || '';
+    let gearType = data.gear_type || '';
+    let totalWeight = isMachinery ? '' : (data.total_weight || '');
+
+    // לרכב פרטי - שליפת מידע נוסף מטבלת vehicle_models
+    if (isPrivate) {
+      const { data: modelData } = await supabase
+        .from('vehicle_models')
+        .select('*')
+        .eq('manufacturer', data.manufacturer)
+        .eq('model', data.model)
+        .eq('year', data.year)
+        .single();
+
+      if (modelData) {
+        console.log('✅ נמצא מידע נוסף מטבלת דגמים');
+        driveType = modelData.drive_type || driveType;
+        driveTechnology = modelData.drive_technology || driveTechnology;
+        gearType = modelData.gear_type || gearType;
+        totalWeight = modelData.total_weight || totalWeight;
+      }
+    }
 
     return {
       success: true,
@@ -757,16 +782,16 @@ async function searchVehicleInSupabase(licenseNumber) {
         color: data.color || '',
         fuelType: data.fuel_type || '',
         vehicleType: data.vehicle_type || '',
-        weight: isMachinery ? '' : (data.total_weight || ''),
-        driveType: data.drive_type || '',
-        driveTechnology: data.drive_technology || '',
-        gearType: data.gear_type || '',
-        
+        weight: totalWeight,
+        driveType: driveType,
+        driveTechnology: driveTechnology,
+        gearType: gearType,
+
         // שדות ספציפיים לצמ"ה
-        machineryType: data.vehicle_type || '',
+        machineryType: isMachinery ? (data.vehicle_type || '') : '',
         selfWeight: data.raw_data?.mishkal_ton || '',
         totalWeightTon: data.raw_data?.mishkal_kolel_ton || '',
-        
+
         fullDescription: [data.manufacturer, data.model, data.year].filter(Boolean).join(' '),
         source: {
           type: data.source_type,
