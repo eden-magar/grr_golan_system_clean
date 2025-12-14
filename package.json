@@ -17,6 +17,7 @@
   "author": "גרר גולן",
   "license": "ISC",
   "dependencies": {
+    "@supabase/supabase-js": "^2.87.1",
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^4.18.2",

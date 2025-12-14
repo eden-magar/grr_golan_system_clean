@@ -8,6 +8,14 @@ const multer = require('multer');
 const fetch = require("node-fetch");
 const upload = multer();
 
+const { createClient } = require('@supabase/supabase-js');
+
+// Supabase client
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
 // ===== הוספה חדשה - מצב פיתוח =====
 const DEV_MODE = process.env.DEV_MODE === 'true';
 const MOCK_SERVICES = process.env.MOCK_SERVICES === 'true' || DEV_MODE;
@@ -714,6 +722,47 @@ app.post('/login-user', upload.none(), async (req, res) => {
     }
 });
 
+// חיפוש רכב ב-Supabase (מהיר)
+async function searchVehicleInSupabase(licenseNumber) {
+  try {
+    const { data, error } = await supabase
+      .from('vehicles')
+      .select('*')
+      .eq('license_number', licenseNumber)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return {
+      success: true,
+      fromCache: true,
+      vehicle: {
+        licenseNumber: data.license_number,
+        manufacturer: data.manufacturer || '',
+        model: data.model || '',
+        year: data.year || '',
+        color: data.color || '',
+        fuelType: data.fuel_type || '',
+        vehicleType: data.vehicle_type || '',
+        weight: data.total_weight || '',
+        driveType: data.drive_type || '',
+        gearType: data.gear_type || '',
+        fullDescription: [data.manufacturer, data.model, data.year].filter(Boolean).join(' ')
+      },
+      status: {
+        isCanceled: false,
+        isInactive: false,
+        isActive: true
+      }
+    };
+  } catch (error) {
+    console.error('Error searching in Supabase:', error);
+    return null;
+  }
+}
+
 // API route for vehicle quick search - המרה של get-vehicle-quick.php
 app.post('/api/vehicles/quick', async (req, res) => {
     let sourceMeta = null;
@@ -730,7 +779,36 @@ app.post('/api/vehicles/quick', async (req, res) => {
 
         const cleanLicense = license.replace(/[^0-9]/g, '');
 
-        // API resources בדיוק כמו במערכת המקורית
+        // שלב 1: חיפוש ב-Supabase (מהיר)
+        const supabaseResult = await searchVehicleInSupabase(cleanLicense);
+        if (supabaseResult) {
+            console.log('✅ נמצא ב-Supabase:', cleanLicense);
+            
+            // בדיקה של מידע נוסף מהמאגר המקומי (סוגי גרר)
+            const localDataFile = path.join(__dirname, 'public', 'shared', 'vehicle_data.json');
+            try {
+                const localDataExists = await fs.access(localDataFile).then(() => true).catch(() => false);
+                if (localDataExists) {
+                    const localDataContent = await fs.readFile(localDataFile, 'utf8');
+                    const localData = JSON.parse(localDataContent.replace(/^\uFEFF/, ''));
+                    const genericKey = createGenericKeyFromSupabase(supabaseResult.vehicle);
+                    if (genericKey && localData[genericKey]) {
+                        supabaseResult.additionalData = localData[genericKey];
+                        if (localData[genericKey].towTypes) {
+                            supabaseResult.towTypes = localData[genericKey].towTypes;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error reading local data:', error);
+            }
+            
+            return res.json(supabaseResult);
+        }
+
+        console.log('🔍 לא נמצא ב-Supabase, מחפש ב-API...', cleanLicense);
+
+        // שלב 2: חיפוש ב-data.gov.il (fallback)
         const apiResources = {
             'private': '053cea08-09bc-40ec-8f7a-156f0677aff3',
             'motorcycle': 'bf9df4e2-d90d-4c0a-a400-19e15af8e95f',
@@ -744,7 +822,7 @@ app.post('/api/vehicles/quick', async (req, res) => {
 
         // חיפוש בכל סוגי הרכב
         for (const [type, resourceId] of Object.entries(apiResources)) {
-            if (type === 'private_extra') continue; // נדלג על זה בשלב הראשון
+            if (type === 'private_extra') continue;
             
             const apiUrl = `https://data.gov.il/api/3/action/datastore_search?resource_id=${resourceId}&q=${cleanLicense}`;
             
@@ -759,10 +837,10 @@ app.post('/api/vehicles/quick', async (req, res) => {
                         const recordNumber = String(record[matchField] || '').replace(/[^0-9]/g, '');
                         if (recordNumber === cleanLicense) {
                             sourceMeta = {
-                            category: 'regular',
-                            type: type,        
-                            resourceId: resourceId,
-                            apiUrl: apiUrl
+                                category: 'regular',
+                                type: type,        
+                                resourceId: resourceId,
+                                apiUrl: apiUrl
                             };
                             vehicleData = record;
                             vehicleType = type;
@@ -794,7 +872,6 @@ app.post('/api/vehicles/quick', async (req, res) => {
                     
                     if (result.success && result.result && result.result.records.length > 0) {
                         for (const record of result.result.records) {
-                            // בדיקה בכל השדות האפשריים
                             const found = Object.values(record).some(value => 
                                 String(value || '').includes(cleanLicense)
                             );
@@ -803,9 +880,9 @@ app.post('/api/vehicles/quick', async (req, res) => {
                                 vehicleData = record;
                                 vehicleData.__canceled = true;
                                 sourceMeta = {
-                                category: 'canceled',
-                                resourceId,
-                                apiUrl
+                                    category: 'canceled',
+                                    resourceId,
+                                    apiUrl
                                 };
                                 break;
                             }
@@ -832,9 +909,9 @@ app.post('/api/vehicles/quick', async (req, res) => {
                     vehicleData = result.result.records[0];
                     vehicleData.__inactive = true;
                     sourceMeta = {
-                    category: 'inactive',
-                    resourceId: inactiveResourceId,
-                    apiUrl
+                        category: 'inactive',
+                        resourceId: inactiveResourceId,
+                        apiUrl
                     };
                 }
             } catch (error) {
@@ -849,7 +926,6 @@ app.post('/api/vehicles/quick', async (req, res) => {
             });
         }
 
-        // עיבוד הנתונים לפורמט פשוט לטופס הגרירה
         // אם זה רכב פרטי, חפש מידע נוסף במאגר הנוסף
         if (vehicleType === 'private' && vehicleData) {
             try {
@@ -875,16 +951,17 @@ app.post('/api/vehicles/quick', async (req, res) => {
                             vehicleData.automatic_ind = (vehicleData.automatic_ind === '1' || vehicleData.automatic_ind === 1) 
                                 ? 'אוטומטי' 
                                 : 'ידני';
-                            }
-                    
+                        }
                     }
                 }
             } catch (error) {
                 console.error('Error fetching extra private vehicle data:', error);
             }
         }
+
         const responseData = {
             success: true,
+            fromCache: false,
             vehicle: {
                 licenseNumber: cleanLicense,
                 manufacturer: vehicleData.tozeret_nm || vehicleData.shilda_totzar_en_nm || '',
@@ -894,13 +971,11 @@ app.post('/api/vehicles/quick', async (req, res) => {
                 fuelType: vehicleData.sug_delek_nm || '',
                 vehicleType: vehicleData.sug_rechev_nm || '',
                 weight: vehicleData.mishkal_kolel || '',
-
-                machineryType: vehicleData.sug_tzama_nm || '',        // סוג צמ״ה
-                driveType: vehicleData.hanaa_nm || '',               // סוג הנעה
-                gearType: vehicleData.automatic_ind || '',           // סוג גיר
-                selfWeight: vehicleData.mishkal_ton || '',           // משקל עצמי (צמ״ה)
-                totalWeightTon: vehicleData.mishkal_kolel_ton || '', // משקל כולל בטון (צמ״ה)
-
+                machineryType: vehicleData.sug_tzama_nm || '',
+                driveType: vehicleData.hanaa_nm || '',
+                gearType: vehicleData.automatic_ind || '',
+                selfWeight: vehicleData.mishkal_ton || '',
+                totalWeightTon: vehicleData.mishkal_kolel_ton || '',
                 source: sourceMeta,
                 fullDescription: ''
             },
@@ -929,7 +1004,6 @@ app.post('/api/vehicles/quick', async (req, res) => {
                 const localDataContent = await fs.readFile(localDataFile, 'utf8');
                 const localData = JSON.parse(localDataContent.replace(/^\uFEFF/, ''));
                 
-                // יצירת מפתח גנרי כמו במערכת המקורית
                 const genericKey = createGenericKey(vehicleData);
                 if (genericKey && localData[genericKey]) {
                     responseData.additionalData = localData[genericKey];
@@ -942,6 +1016,7 @@ app.post('/api/vehicles/quick', async (req, res) => {
             console.error('Error reading local data:', error);
         }
 
+        console.log('💾 נמצא ב-API:', cleanLicense);
         res.json(responseData);
 
     } catch (error) {
@@ -952,6 +1027,18 @@ app.post('/api/vehicles/quick', async (req, res) => {
         });
     }
 });
+
+// יצירת מפתח גנרי מנתוני Supabase
+function createGenericKeyFromSupabase(vehicle) {
+    const manufacturer = String(vehicle.manufacturer || '').trim();
+    const model = String(vehicle.model || '').trim();
+    const year = String(vehicle.year || '').trim();
+
+    if (!manufacturer || !model) return null;
+
+    let key = `${manufacturer}_${model}_${year}`;
+    return key.replace(/[,\.\/\\\(\)\s]+/g, '_');
+}
 
 // פונקציה ליצירת מפתח גנרי - העתקה מדויקת מהPHP
 function createGenericKey(vehicle) {

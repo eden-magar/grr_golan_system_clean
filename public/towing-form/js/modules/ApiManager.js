@@ -302,85 +302,68 @@ class ApiManager {
 
         console.log(`🔍 Looking up vehicle: ${cleanLicense}`);
 
-        // Search order: private → motorcycle → heavy → machinery
-        const searchOrder = [
-            { type: 'private', resourceId: this.resources.private },
-            { type: 'motorcycle', resourceId: this.resources.motorcycle },
-            { type: 'heavy', resourceId: this.resources.heavy },
-            { type: 'machinery', resourceId: this.resources.machinery }
-        ];
+        try {
+            // קריאה לשרת - הוא יחפש ב-Supabase קודם ואז ב-API
+            const response = await fetch('/api/vehicles/quick', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ license: cleanLicense })
+            });
 
-        // Try each active resource
-        for (const { type, resourceId } of searchOrder) {
-            const record = await this.searchInResource(resourceId, cleanLicense, type);
-            
-            if (record) {
-                let extraInfo = null;
-                
-                // For private vehicles, fetch extra info by model name
-                if (type === 'private') {
-                    extraInfo = await this.fetchExtraPrivateInfo(record);
-                }
-                
-                const vehicle = this.mapVehicleFields(record, type, extraInfo);
-                const towTypes = this.determineTowTypes(vehicle, type);
-                
-                console.log('✅ Final vehicle data:', vehicle);
-                
+            const data = await response.json();
+
+            if (!data.success) {
+                console.log('❌ Vehicle not found');
                 return {
-                    success: true,
-                    vehicle: vehicle,
-                    status: {
-                        isActive: true,
-                        isCanceled: false,
-                        isInactive: false
-                    },
-                    towTypes: towTypes,
-                    source: vehicle.source
+                    success: false,
+                    error: data.error || 'הרכב לא נמצא במאגרי משרד התחבורה'
                 };
             }
-        }
 
-        // Not found in active databases, check canceled
-        console.log('🔍 Checking canceled vehicles...');
-        const canceledVehicle = await this.checkCanceledVehicle(cleanLicense);
-        if (canceledVehicle) {
+            // מיפוי התשובה מהשרת לפורמט שהמערכת מצפה לו
+            const vehicle = {
+                plateNumber: data.vehicle.licenseNumber,
+                manufacturer: data.vehicle.manufacturer,
+                model: data.vehicle.model,
+                year: data.vehicle.year,
+                color: data.vehicle.color,
+                fuelType: data.vehicle.fuelType,
+                vehicleType: data.vehicle.vehicleType,
+                totalWeight: data.vehicle.weight,
+                driveType: data.vehicle.driveType,
+                gear: data.vehicle.gearType,
+                machineryType: data.vehicle.machineryType,
+                selfWeightTon: data.vehicle.selfWeight,
+                totalWeightTon: data.vehicle.totalWeightTon,
+                source: data.vehicle.source || { type: 'unknown' }
+            };
+
+            const towTypes = data.towTypes || this.determineTowTypes(vehicle, vehicle.source?.type || 'private');
+
+            console.log(`✅ Vehicle found (fromCache: ${data.fromCache || false}):`, vehicle);
+
             return {
                 success: true,
-                vehicle: canceledVehicle,
-                status: {
-                    isActive: false,
-                    isCanceled: true,
+                vehicle: vehicle,
+                status: data.status || {
+                    isActive: true,
+                    isCanceled: false,
                     isInactive: false
                 },
-                towTypes: [],
-                source: { type: 'canceled', category: 'canceled' }
+                towTypes: towTypes,
+                source: vehicle.source,
+                fromCache: data.fromCache || false
             };
-        }
 
-        // Check inactive
-        console.log('🔍 Checking inactive vehicles...');
-        const inactiveVehicle = await this.checkInactiveVehicle(cleanLicense);
-        if (inactiveVehicle) {
+        } catch (error) {
+            console.error('Error in vehicle lookup:', error);
             return {
-                success: true,
-                vehicle: inactiveVehicle,
-                status: {
-                    isActive: false,
-                    isCanceled: false,
-                    isInactive: true
-                },
-                towTypes: [],
-                source: { type: 'inactive', category: 'inactive' }
+                success: false,
+                error: 'שגיאה בחיפוש הרכב'
             };
         }
-
-        // Not found anywhere
-        console.log('❌ Vehicle not found in any database');
-        return {
-            success: false,
-            error: 'הרכב לא נמצא במאגרי משרד התחבורה'
-        };
     }
 
     /**
