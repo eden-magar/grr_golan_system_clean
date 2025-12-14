@@ -735,6 +735,14 @@ async function searchVehicleInSupabase(licenseNumber) {
       return null;
     }
 
+    // תוויות לסוגי רכב
+    const sourceLabels = {
+      private: 'רכב פרטי',
+      motorcycle: 'דו גלגלי',
+      heavy: 'רכב כבד',
+      machinery: 'צמ"ה'
+    };
+
     return {
       success: true,
       fromCache: true,
@@ -749,7 +757,11 @@ async function searchVehicleInSupabase(licenseNumber) {
         weight: data.total_weight || '',
         driveType: data.drive_type || '',
         gearType: data.gear_type || '',
-        fullDescription: [data.manufacturer, data.model, data.year].filter(Boolean).join(' ')
+        fullDescription: [data.manufacturer, data.model, data.year].filter(Boolean).join(' '),
+        source: {
+          type: data.source_type,
+          label: sourceLabels[data.source_type] || data.source_type
+        }
       },
       status: {
         isCanceled: false,
