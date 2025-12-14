@@ -723,6 +723,7 @@ app.post('/login-user', upload.none(), async (req, res) => {
 });
 
 // חיפוש רכב ב-Supabase (מהיר)
+// חיפוש רכב ב-Supabase (מהיר)
 async function searchVehicleInSupabase(licenseNumber) {
   try {
     const { data, error } = await supabase
@@ -743,6 +744,8 @@ async function searchVehicleInSupabase(licenseNumber) {
       machinery: 'צמ"ה'
     };
 
+    const isMachinery = data.source_type === 'machinery';
+
     return {
       success: true,
       fromCache: true,
@@ -754,9 +757,16 @@ async function searchVehicleInSupabase(licenseNumber) {
         color: data.color || '',
         fuelType: data.fuel_type || '',
         vehicleType: data.vehicle_type || '',
-        weight: data.total_weight || '',
+        weight: isMachinery ? '' : (data.total_weight || ''),
         driveType: data.drive_type || '',
+        driveTechnology: data.drive_technology || '',
         gearType: data.gear_type || '',
+        
+        // שדות ספציפיים לצמ"ה
+        machineryType: data.vehicle_type || '',
+        selfWeight: data.raw_data?.mishkal_ton || '',
+        totalWeightTon: data.raw_data?.mishkal_kolel_ton || '',
+        
         fullDescription: [data.manufacturer, data.model, data.year].filter(Boolean).join(' '),
         source: {
           type: data.source_type,
